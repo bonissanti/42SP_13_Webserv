@@ -29,11 +29,13 @@ SRC			= $(addprefix ./src/, $(MAND_SRC))
 TEST_SRC	= $(shell find $(TEST_DIR) -name '*cpp')
 
 
-################################# Objects ###################################
+################################# Webserv objects ###########################
 
 OBJS		= $(addprefix $(OBJS_DIR)/, $(MAND_SRC:.cpp=.o))
 TEST_OBJS	= $(addprefix $(OBJS_DIR)/, $(notdir $(TEST_SRCS:.c=.o)))
 OBJS_DIR	= ./objs
+
+SRC_TESTCOMMON	= $(filter-out main.c, $(MAND_SRC))
 
 ################################# Rules #####################################
 
@@ -51,3 +53,10 @@ $(OBJS_DIR)/%.o: src/%.cpp
 	$(call print_progress, $(BLUE_B)Compiling:$(RESET) $<)
 
 $(TEST_OBJS)/%.o: src/%.cpp
+	@mkdir -p $(@D)
+	@$(CC) $(CFLAGS) -c $< -o $@
+	$(call print_progress, $(BLUE_B)Compiling:$(RESET) $<)
+
+test: CFLAGS += TEST
+test: (OBJS)
+
