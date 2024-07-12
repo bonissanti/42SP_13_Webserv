@@ -57,6 +57,12 @@ $(TEST_OBJS)/%.o: src/%.cpp
 	@$(CC) $(CFLAGS) -c $< -o $@
 	$(call print_progress, $(BLUE_B)Compiling:$(RESET) $<)
 
+fclean: clean
+	$(RM) $(NAME)
+	
+clean:
+	$(RM) -rf $(OBJS_DIR)
+
 test: CFLAGS += TEST
 test: (OBJS)
 
