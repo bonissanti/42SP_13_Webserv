@@ -21,21 +21,33 @@ HEADER	= ./include/
 
 CPP			= c++
 CFLAGS		= -Wall -Werror -Wextra -g3
+DEBUG_FLAG	= -D DEBUG
 
+################################# Webserv src ################################
 
-
-MAND_SRC	= main.cpp
-SRC			= $(addprefix ./src/, $(MAND_SRC))
-TEST_SRC	= $(shell find $(TEST_DIR) -name '*cpp')
-
+MAND_SRCS	= main.cpp
+SRC_DIR		= ./src
+SRC			= $(addprefix $(SRC_DIR)/, $(MAND_SRCS))
+TEST_DIR	= $(SRC_DIR)/tests
+TEST_SRCS	= $(shell find $(TEST_DIR) -name '*.cpp')
+SRC_COMMON = $(filter-out main.cpp, $(MAND_SRCS))
 
 ################################# Webserv objects ###########################
 
-OBJS		= $(addprefix $(OBJS_DIR)/, $(MAND_SRC:.cpp=.o))
-TEST_OBJS	= $(addprefix $(OBJS_DIR)/, $(notdir $(TEST_SRCS:.c=.o)))
 OBJS_DIR	= ./objs
+OBJS		= $(addprefix $(OBJS_DIR)/, $(notdir $(MAND_SRCS:.cpp=.o)))
+TEST_OBJS	= $(addprefix $(OBJS_DIR)/, $(notdir $(TEST_SRCS:.cpp=.o)))
+OBJS_COMMON	= $(addprefix $(OBJS_DIR)/, $(notdir $(SRC_COMMON:.cpp=.o)))
 
-SRC_TESTCOMMON	= $(filter-out main.c, $(MAND_SRC))
+################################# Progress ##################################
+
+TOTAL_FILES		= $(words $(SRC))
+CURRENT_FILES	= 0
+
+define print_progress
+	$(eval CURRENT_FILES=$(shell echo $$(($(CURRENT_FILES)+1))))
+	@echo -n "\r$(MAG_B)Progress: $(MAGENT)$(CURRENT_FILES) / $(TOTAL_FILES) [$$((($(CURRENT_FILES) * 100) / $(TOTAL_FILES)))%] $(RESET) : $(BLUE)$(1)$(RESET) "
+endef
 
 ################################# Rules #####################################
 
@@ -43,26 +55,33 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	@$(CPP) $(CFLAGS) $(OBJS) -o $(NAME)
+	@echo ""
 	@echo "$(GREEN)$(NAME) created$(RESET)"
 
-################################# Flags #####################################
-
-$(OBJS_DIR)/%.o: src/%.cpp
+$(OBJS_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CPP) $(CFLAGS) -c $< -o $@
 	$(call print_progress, $(BLUE_B)Compiling:$(RESET) $<)
 
-$(TEST_OBJS)/%.o: src/%.cpp
+$(OBJS_DIR)/%.o: $(TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c $< -o $@
-	$(call print_progress, $(BLUE_B)Compiling:$(RESET) $<)
+	@$(CPP) $(CFLAGS) -c $< -o $@
+	@echo "$(BLUE_B)Compiling:$(RESET) $<"
+
+debug: CFLAGS += $(DEBUG_FLAG)
+debug: clean $(NAME)
+	@echo "$(GREEN)$(NAME) compiled with debug flag$(RESET)"
+
+test: $(TEST_OBJS) $(OBJS_COMMON)
+	@$(CPP) $(CFLAGS) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
+	@echo "$(GREEN)$(TEST_N) created$(RESET)"
 
 fclean: clean
-	$(RM) $(NAME)
-	
+	@$(RM) $(NAME) $(TEST_N)
+
 clean:
-	$(RM) -rf $(OBJS_DIR)
+	@$(RM) -rf $(OBJS_DIR)
 
-test: CFLAGS += TEST
-test: (OBJS)
+re: fclean all
 
+.PHONY: all debug test clean fclean
