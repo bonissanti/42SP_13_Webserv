@@ -1,29 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/11 16:47:10 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/16 18:45:08 by brunrodr         ###   ########.fr       */
+/*   Created: 2024/07/16 18:53:22 by brunrodr          #+#    #+#             */
+/*   Updated: 2024/07/16 18:55:03 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Parser.hpp"
+#include "../../include/ServerConfig.hpp"
 
-int main(int argc, char **argv)
-{
-	std::string aaaa = "";
-	try
-	{
-		if (argc != 2)
-			throw Parser::exception(RED "Error: invalid number of arguments" RESET);
-		Parser server(argv[1]);
-	}
-	catch(const Parser::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
-	(void)aaaa;
-}
+ServerConfig::ServerConfig() : port(0), id(0){};
+ServerConfig::~ServerConfig(){};

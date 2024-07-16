@@ -20,14 +20,16 @@ HEADER	= ./include/
 ################################# Flags #####################################
 
 CPP			= c++
-CFLAGS		= -Wall -Werror -Wextra -g3
+CFLAGS		= -Wall -Werror -Wextra -std=c++98 -g3
 DEBUG_FLAG	= -D DEBUG
 
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
+START		= start/Parser.cpp \
+				start/Utils.cpp
 
-MAND_SRCS	= main.cpp Webserver.cpp $(DEBUG)
+MAND_SRCS	= main.cpp $(DEBUG) $(START)
 SRC_DIR		= ./src
 SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
 TEST_DIR	= $(SRC_DIR)/tests

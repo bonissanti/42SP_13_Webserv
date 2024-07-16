@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   WEBSERVER.hpp                                            :+:      :+:    :+:   */
+/*   PARSER.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef WEBSERVER_HPP
-# define WEBSERVER_HPP
+#ifndef PARSER_HPP
+# define PARSER_HPP
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -20,20 +20,26 @@
 #include <unistd.h>
 #include <sstream>
 #include <exception>
+#include <fstream>
+#include <vector>
 #include "defines.h"
 
 #define PORT 8080
 
-class Webserver
+class Parser
 {
 	private:
-	/* data */
+	
 
 	public:
-	Webserver(char **argv);
-	~Webserver();
-	Webserver(const Webserver& toCopy);
-	Webserver& operator=(const Webserver& toCopy);
+	Parser(std::string arg);
+	~Parser();
+	Parser(const Parser& toCopy);
+	Parser& operator=(const Parser& toCopy);
+
+	bool	checkBrackets(std::vector<std::string> line);
+	void	analyzeConfig(std::vector<std::string> line);
+
 
 	class exception : public std::exception
 	{
@@ -42,11 +48,12 @@ class Webserver
 
 		public:
 		exception(const std::string& msg);
-		virtual ~exception();
+		virtual ~exception() throw();
 		virtual const char* what() const throw();
 	};
 };
 
+std::string	trim(std::string str);
 void	debugMode(const std::string& msg);
 std::string binToHex(const char* digits);
 
