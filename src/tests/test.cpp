@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:47:15 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/15 21:57:36 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/15 22:00:05 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ int	main(void)
 	bzero(&servaddress, sizeof(servaddress));
 	
 	//Popula struct sockaddr_in
-	servaddress.sin_family = AF_INET;
-	servaddress.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddress.sin_port = htons(SERVER_PORT);
+	servaddress.sin_family = AF_INET; // AF_INET = ipv4
+	servaddress.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY ip address specified (default is localhost)
+	servaddress.sin_port = htons(SERVER_PORT); // a random port, for test this is 18000
 
 	//associa a struct sockaddr e o file descriptor do socket
 	if ((bind(listenFd, (struct sockaddr *) &servaddress, sizeof(servaddress))) < 0)	
