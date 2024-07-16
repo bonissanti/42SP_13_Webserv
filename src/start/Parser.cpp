@@ -15,7 +15,7 @@
 Parser::Parser(std::string arg){
 	debugMode("<Parser> Default Constructor called");
 
-	// jogar numa função de utils
+	// start of function
 	std::string temp;
 	std::ifstream file(arg.c_str());
 	std::vector<std::string> line;
@@ -33,7 +33,7 @@ Parser::Parser(std::string arg){
 	if (Parser::checkBrackets(line))
 		return ;
 	analyzeConfig(line);
-	// fim da função
+	// end of function
 }
 
 Parser::~Parser(){
