@@ -1,27 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   debug.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/11 16:47:10 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/15 21:54:08 by brunrodr         ###   ########.fr       */
+/*   Created: 2024/07/15 20:19:13 by brunrodr          #+#    #+#             */
+/*   Updated: 2024/07/15 20:19:51 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Webserver.hpp"
+#include "../../include/Webserver.hpp"
 
-int main(int argc, char **argv)
+void	debugMode(const std::string& msg)
 {
-	(void)argv;
-	try
-	{
-		if (argc != 2)
-			throw Webserver::exception(RED "Error: invalid number of arguments" RESET);
-	}
-	catch(const Webserver::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+	#ifndef DEBUG
+	(void)msg;
+	#endif
+
+	#ifdef DEBUG
+	std::cout << BBLUE << msg << RESET << std::endl;
+	#endif
+}
+
+std::string binToHex(const char* digits)
+{
+	std::stringstream ss;
+	unsigned int res = 0;
+	while (*digits)
+		res = (res << 1) | (*digits++ - '0');
+
+	ss << std::hex << std::uppercase << res;
+	return (ss.str());
 }

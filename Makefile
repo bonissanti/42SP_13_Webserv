@@ -25,23 +25,25 @@ DEBUG_FLAG	= -D DEBUG
 
 ################################# Webserv src ################################
 
-MAND_SRCS	= main.cpp
+DEBUG		= debug/debug.cpp
+
+MAND_SRCS	= main.cpp Webserver.cpp $(DEBUG)
 SRC_DIR		= ./src
-SRC			= $(addprefix $(SRC_DIR)/, $(MAND_SRCS))
+SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
 TEST_DIR	= $(SRC_DIR)/tests
 TEST_SRCS	= $(shell find $(TEST_DIR) -name '*.cpp')
-SRC_COMMON = $(filter-out main.cpp, $(MAND_SRCS))
+SRCS_COMMON = $(filter-out main.cpp, $(MAND_SRCS))
 
 ################################# Webserv objects ###########################
 
 OBJS_DIR	= ./objs
-OBJS		= $(addprefix $(OBJS_DIR)/, $(notdir $(MAND_SRCS:.cpp=.o)))
-TEST_OBJS	= $(addprefix $(OBJS_DIR)/, $(notdir $(TEST_SRCS:.cpp=.o)))
-OBJS_COMMON	= $(addprefix $(OBJS_DIR)/, $(notdir $(SRC_COMMON:.cpp=.o)))
+OBJS 		= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_FILES))
+TEST_OBJS	= $(patsubst $(TEST_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(TEST_SRCS))
+OBJS_COMMON	= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_COMMON))
 
 ################################# Progress ##################################
 
-TOTAL_FILES		= $(words $(SRC))
+TOTAL_FILES		= $(words $(SRC_FILES))
 CURRENT_FILES	= 0
 
 define print_progress
