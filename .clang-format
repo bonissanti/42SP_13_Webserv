@@ -1,0 +1,41 @@
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+
+UseTab: Never
+BreakBeforeBraces: Stroustrup
+BraceWrapping:
+  BeforeElse: true
+  AfterControlStatement: true
+AllowShortFunctionsOnASingleLine: Inline
+ColumnLimit: 100
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInSquareBrackets: false
+SpaceAfterCStyleCast: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+BreakConstructorInitializersBeforeComma: true
+AlwaysBreakTemplateDeclarations: Yes
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AlignAfterOpenBracket: Align
+AlignOperands: true
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignTrailingComments: true
+AlignArrayOfStructures: Left
+
+# Custom settings
+AccessModifierOffset: -1
+IndentAccessModifiers: true
