@@ -38,8 +38,9 @@ class Parser
 	Parser& operator=(const Parser& toCopy);
 
 	bool	checkBrackets(std::vector<std::string> line);
+	bool	checkFileName(std::string file);
 	void	analyzeConfig(std::vector<std::string> line);
-
+	bool	isEmpty(std::ifstream& file);
 
 	class exception : public std::exception
 	{

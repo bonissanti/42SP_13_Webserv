@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 18:51:27 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/16 18:53:10 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/17 12:31:23 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 class ServerConfig
 {
 	private:
-	int id;
-	int port;
+	int _id;
+	int _port;
 	// adicionar outras coisas
 
 	public:

@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 18:02:18 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/16 18:49:32 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/17 12:54:29 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,4 +59,16 @@ void	Parser::analyzeConfig(std::vector<std::string> line)
 			numServers++;
 	}
 	std::cout << "numServers: " << numServers << std::endl;
+}
+
+bool	Parser::checkFileName(std::string file)
+{
+	if (file.substr(file.find(".") + 1) == "conf")
+		return (true);
+	return (false);
+}
+
+bool	Parser::isEmpty(std::ifstream& file)
+{
+	return (file.peek() == std::ifstream::traits_type::eof());
 }
