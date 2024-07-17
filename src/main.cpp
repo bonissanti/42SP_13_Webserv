@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:47:10 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/16 18:45:08 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/17 17:48:23 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 int main(int argc, char **argv)
 {
-	std::string aaaa = "";
 	try
 	{
 		if (argc != 2)
@@ -25,5 +24,4 @@ int main(int argc, char **argv)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	(void)aaaa;
 }

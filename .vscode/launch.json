@@ -9,7 +9,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/webserv",
-			"args": ["./config/empty.conf"],
+			"args": ["./config/wrong.conf"],
 			"stopAtEntry": true,
 			"cwd": ".",
 			"environment": [],

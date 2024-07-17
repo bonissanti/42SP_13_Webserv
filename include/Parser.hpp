@@ -24,12 +24,14 @@
 #include <vector>
 #include "defines.h"
 
-#define PORT 8080
+
+/* Classe de parser, basicamente ela valida o arquivo de configuração e popula
+um vector com as linhas retiradas do arquivo de configuração. É este vector que
+a classe ServerConfig utiliza para configurar o servidor */
 
 class Parser
 {
 	private:
-	
 
 	public:
 	Parser(std::string arg);
@@ -39,8 +41,9 @@ class Parser
 
 	bool	checkBrackets(std::vector<std::string> line);
 	bool	checkFileName(std::string file);
-	void	analyzeConfig(std::vector<std::string> line);
+	void	validConfigFile(std::vector<std::string> line);
 	bool	isEmpty(std::ifstream& file);
+	void	analyzeConfig(std::string arg);
 
 	class exception : public std::exception
 	{
@@ -56,6 +59,6 @@ class Parser
 
 std::string	trim(std::string str);
 void	debugMode(const std::string& msg);
-std::string binToHex(const char* digits);
+std::string binToHex(const char* digits); // talvez seja util no futuro
 
 #endif
