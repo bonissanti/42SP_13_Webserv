@@ -31,12 +31,16 @@ class Parser
 	Parser(const Parser& toCopy);
 	Parser& operator=(const Parser& toCopy);
 
+	//validations
 	bool	checkBrackets(std::vector<std::string> line);
 	bool	checkFileName(std::string file);
 	void	validConfigFile(std::vector<std::string> line);
 	bool	isEmpty(std::ifstream& file);
 	void	analyzeConfig(std::string arg);
+
+	//getters
 	std::vector<std::string> getLines(void);
+	int	getNumServers(void);
 
 	class exception : public std::exception
 	{

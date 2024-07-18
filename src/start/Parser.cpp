@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 20:14:26 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 14:12:55 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/18 16:38:40 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,11 @@ Parser& Parser::operator=(const Parser& toCopy){
 std::vector<std::string> Parser::getLines(void)
 {
 	return (this->_lines);
+}
+
+int	Parser::getNumServers(void)
+{
+	return (this->_numServers);
 }
 
 // exception 

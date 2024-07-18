@@ -6,18 +6,18 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:47:15 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 13:23:52 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/18 15:42:51y brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Webserver.hpp"
+#include "../../include/defines.h"
 
 #define SERVER_PORT 18000
 
 int	main(void)
 {
 	int n;
-	int	listenFd;
+	int	socketFd;
 	int connFd;
 	struct sockaddr_in	servaddress;
 
@@ -25,8 +25,8 @@ int	main(void)
 	uint8_t recvline[1024];
 
 	// Cria o file descriptor - socket
-	listenFd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenFd == -1)
+	socketFd = socket(AF_INET, SOCK_STREAM, 0);
+	if (socketFd == -1)
 	{
 		std::cout << "RIP" << std::endl;
 		return (1);
@@ -39,13 +39,19 @@ int	main(void)
 	servaddress.sin_port = htons(SERVER_PORT); // a random port, for test this is 18000
 
 	//associa a struct sockaddr e o file descriptor do socket
-	if ((bind(listenFd, (struct sockaddr *) &servaddress, sizeof(servaddress))) < 0)	
+	int test = socket(AF_INET, SOCK_STREAM, 0);
+
+
+	int result = bind(socketFd, (struct sockaddr *) &servaddress, sizeof(servaddress));
+	if (result < 0)
 	{
-		std::cout << "RIP 2" << std::endl;
-		return (1);
+		if (errno == EADDRINUSE){
+			std::cout << "RIP 2" << std::endl;
+			return (1);
+		}
 	}
 
-	if ((listen(listenFd, 10)) < 0)
+	if ((listen(socketFd, 10)) < 0)
 	{
 		std::cout << "RIP 3" << std::endl;
 		return (1);
@@ -55,7 +61,7 @@ int	main(void)
 	while (true)
 	{
 		std::cout << "Waiting for a connection on port: " << SERVER_PORT << std::endl;
-		connFd = accept(listenFd, (struct sockaddr *)NULL, NULL);
+		connFd = accept(socketFd, (struct sockaddr *)NULL, NULL);
 
 		memset(recvline, 0, 1024);
 

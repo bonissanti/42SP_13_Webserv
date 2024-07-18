@@ -29,7 +29,8 @@ DEBUG		= debug/debug.cpp
 MINILIB		= minilib/Minilib.cpp
 START		= start/Parser.cpp \
 			start/Parser-Utils.cpp \
-			start/Server.cpp
+			start/Server.cpp \
+			start/Config.cpp
 
 MAND_SRCS	= main.cpp $(DEBUG) $(MINILIB) $(START)
 SRC_DIR		= ./src
