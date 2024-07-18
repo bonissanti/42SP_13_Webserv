@@ -1,28 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Utils.cpp                                          :+:      :+:    :+:   */
+/*   Parser-Utils.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 18:02:18 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/17 18:33:53 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/18 14:11:14 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Parser.hpp"
-
-std::string	trim(std::string str)
-{
-	//trim right
-	size_t pos = str.find_last_not_of(" \t\n");
-	str.erase(pos + 1);
-
-	//trim left
-	pos = str.find_first_not_of(" \t\n"); 
-	str.erase(0, pos);
-	return (str);
-}
+#include "../../include/Minilib.hpp"
 
 bool	Parser::checkBrackets(std::vector<std::string> line)
 {
@@ -48,7 +37,6 @@ bool	Parser::checkBrackets(std::vector<std::string> line)
 
 void	Parser::validConfigFile(std::vector<std::string> line)
 {
-	int numServers = 0; // temp
 	int nestedServer = 0;
 	bool minimumReq;
 
@@ -56,15 +44,15 @@ void	Parser::validConfigFile(std::vector<std::string> line)
 	{
 		if (line[i].empty())
 			continue ;
-		if (line[i].substr(0, 7) == "server ")
+		if (line[i].substr(0, 6) == "server")
 		{
-			numServers++;
+			_numServers++;
 			nestedServer++;
 			if (nestedServer > 1)
 				throw Parser::exception(RED "Error: Nested servers are not allowed" RESET);
 			minimumReq = false;
 		}
-		else if (line[i].substr(0, 7) == "listen ")
+		else if (line[i].substr(0, 6) == "listen")
 			minimumReq = true;
 		else if (line[i].substr(0, 1) == "}")
 			if (nestedServer > 0)
@@ -72,7 +60,7 @@ void	Parser::validConfigFile(std::vector<std::string> line)
 	}
 	if (!minimumReq)
 		throw Parser::exception(RED "Error: port number (listen <number>) not informed in config file" RESET);
-	std::cout << "numServers: " << numServers << std::endl;
+	std::cout << "numServers: " << _numServers << std::endl;
 }
 
 bool	Parser::checkFileName(std::string file)
@@ -91,7 +79,6 @@ void	Parser::analyzeConfig(std::string arg)
 {
 	std::string temp;
 	std::ifstream file(arg.c_str());
-	std::vector<std::string> line;
 
 	if (isEmpty(file)){
 		file.close();
@@ -99,18 +86,18 @@ void	Parser::analyzeConfig(std::string arg)
 	}
 	// analyze first line
 	getline(file, temp);
-	line.push_back(trim(temp));
-	if (line[0].substr(0, 7) != "server "){
+	_lines.push_back(trim(temp));
+	if (_lines[0].substr(0, 6) != "server"){
 		file.close();
 		throw Parser::exception(RED "Error: misformatted config file" RESET);
 	}
 
 	// if first line okay, start to analyze other lines
 	while (getline(file, temp))
-		line.push_back(trim(temp));
+		_lines.push_back(trim(temp));
 
-	if (!Parser::checkBrackets(line)){
+	if (!Parser::checkBrackets(_lines)){
 		file.close();
 	}
-	validConfigFile(line);
+	validConfigFile(_lines);
 }

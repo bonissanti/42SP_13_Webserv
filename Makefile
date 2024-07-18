@@ -26,10 +26,12 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
+MINILIB		= minilib/Minilib.cpp
 START		= start/Parser.cpp \
-				start/Utils.cpp
+			start/Parser-Utils.cpp \
+			start/Server.cpp
 
-MAND_SRCS	= main.cpp $(DEBUG) $(START)
+MAND_SRCS	= main.cpp $(DEBUG) $(MINILIB) $(START)
 SRC_DIR		= ./src
 SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
 TEST_DIR	= $(SRC_DIR)/tests

@@ -6,13 +6,13 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 20:14:26 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/17 18:08:37 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/18 14:12:55 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/Parser.hpp"
+#include "../../include/defines.h"
 
-Parser::Parser(std::string arg){
+Parser::Parser(std::string arg) : _numServers(0){
 	debugMode("<Parser> Default Constructor called");
 
 	if (checkFileName(arg))
@@ -33,6 +33,11 @@ Parser& Parser::operator=(const Parser& toCopy){
 	debugMode("<Parser> Copy Assignment Operator called");
 	(void)toCopy;
 	return (*this);
+}
+
+std::vector<std::string> Parser::getLines(void)
+{
+	return (this->_lines);
 }
 
 // exception 

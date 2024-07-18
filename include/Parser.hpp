@@ -13,17 +13,7 @@
 #ifndef PARSER_HPP
 # define PARSER_HPP
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <sstream>
-#include <exception>
-#include <fstream>
-#include <vector>
 #include "defines.h"
-
 
 /* Classe de parser, basicamente ela valida o arquivo de configuração e popula
 um vector com as linhas retiradas do arquivo de configuração. É este vector que
@@ -32,6 +22,8 @@ a classe ServerConfig utiliza para configurar o servidor */
 class Parser
 {
 	private:
+	int	_numServers;
+	std::vector<std::string> _lines;
 
 	public:
 	Parser(std::string arg);
@@ -44,6 +36,7 @@ class Parser
 	void	validConfigFile(std::vector<std::string> line);
 	bool	isEmpty(std::ifstream& file);
 	void	analyzeConfig(std::string arg);
+	std::vector<std::string> getLines(void);
 
 	class exception : public std::exception
 	{
@@ -57,7 +50,6 @@ class Parser
 	};
 };
 
-std::string	trim(std::string str);
 void	debugMode(const std::string& msg);
 std::string binToHex(const char* digits); // talvez seja util no futuro
 
