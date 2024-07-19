@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/19 18:45:36 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/19 19:03:34 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ class Server
 	Server(void);
 	~Server();	
 
-	int		addPort(int port);
+	int		setListen(int port);
 	void	setDefaultServer(void);
 	void	creatingServers(int numServers, std::vector<std::string> lines);
 	// void start(); // void loadConfig(const std::string& config_path);

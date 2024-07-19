@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:21:41 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/19 18:50:08 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/19 19:08:15 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void	Server::setDefaultServer(void)
 	_error_page.push_back(errors);
 }
 
-int	Server::addPort(int port)
+int	Server::setListen(int port)
 {
 	try
 	{
@@ -68,5 +68,36 @@ void	Server::creatingServers(int numServers, std::vector<std::string> lines)
 	// for (int i = 0; i < numServers; i++)
 	// 	std::cout << arrayServer[i]._listen << std::endl;
 
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		std::string key, value;
+		std::stringstream ss(lines[i]);
 
+		if (getline(ss, key, '=') && getline(ss, value))
+		{
+			/*
+			trim
+			if (key == "listen")
+				arrayServer[i].setListen()
+			else if (key == "server_name")
+				arrayServer[i].setServerName()
+			else if (key == "host")
+				arrayServer[i]. setHost()
+
+			ouuu com switch case, com uma função auxiliar que retorna um index para cada string
+			e chama o 'case' para setar aquela key especifica 
+
+			switch (getKeyIndex(key))
+			{
+				case LISTEN: enum ou 0 diretão
+				arrayServer[i].setListen();
+				
+				case SERVER_NAME:
+				arrayServer[i].setServerName();
+			}
+			*/
+			
+		}
+			
+	}
 }
