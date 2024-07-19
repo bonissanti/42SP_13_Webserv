@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 18:53:22 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 19:42:54 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/19 17:04:50 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 /* Basic config of the server */
 
-Config::Config() {
+Config::Config() 
+{
 	_config["server_name"] = "default";
 	_config["listen"] = "1024";
 	_config["host"] = "localhost";
@@ -22,6 +23,7 @@ Config::Config() {
 	_config["client_max_body_size"] = "30MB";
 	_config["root"] = "/www";
 };
+
 Config::~Config(){};
 
 

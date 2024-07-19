@@ -22,16 +22,14 @@
 presente no vector e irá 'setar' a classe de acordo com o que estava no arquivo
 de configuração */
 
-class Config {
-    public:
-		std::map<std::string, std::string> _config;
-		// int         _port;
-        // int         _connectionType;
-        // std::string _address;
-        // std::string _serverName;
-        Config();
-        ~Config();
+class Config 
+{
+	public:
+	std::map<std::string, std::string> _config;
+	Config();
+	~Config();
 };
+
 // Retirado do arquivo config (aquele de sugestão do gpt, caso precise)
 // void        loadFromFile(const std::string& filepath);
 // int         getPort() const;

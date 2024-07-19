@@ -6,20 +6,24 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:47:10 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 17:05:47 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/19 18:40:39 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Server.hpp"
+#include "../include/defines.h"
+
 
 int main(int argc, char **argv)
 {
+	Server server;
+
 	try
 	{
 		if (argc != 2)
 			throw Parser::exception(RED "Error: invalid number of arguments" RESET);
+
 		Parser parsing(argv[1]);
-		Server server(parsing.getLines());
+		server.creatingServers(parsing.getNumServers(), parsing.getLines());
 	}
 	catch(const Parser::exception& e)
 	{
