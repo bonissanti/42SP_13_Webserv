@@ -11,11 +11,11 @@
 /* ************************************************************************** */
 
 #ifndef MINILIB_HPP
-# define MINILIB_HPP
+#define MINILIB_HPP
 
-#include "defines.h"
+#include "defines.hpp"
 
-std::string	trim(std::string str);
-int	strtoi(std::string number);
+std::string trim(std::string str);
+int         strtoi(std::string number);
 
 #endif

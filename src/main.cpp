@@ -10,23 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/defines.h"
+#include "../include/defines.hpp"
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	Server server;
+    Server server;
 
-	try
-	{
-		if (argc != 2)
-			throw Parser::exception(RED "Error: invalid number of arguments" RESET);
+    try {
+        if (argc != 2)
+            throw Parser::exception(RED "Error: invalid number of arguments" RESET);
 
-		Parser parsing(argv[1]);
-		server.creatingServers(parsing.getNumServers(), parsing.getLines());
-	}
-	catch(const Parser::exception& e)
-	{
-		std::cerr << e.what() << '\n';
-	}
+        Parser parsing(argv[1]);
+        server.creatingServers(parsing.getNumServers(), parsing.getLines());
+    }
+    catch (const Parser::exception& e) {
+        std::cerr << e.what() << '\n';
+    }
 }

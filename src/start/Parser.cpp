@@ -10,44 +10,49 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/defines.h"
+#include "../../include/Parser.hpp"
 
-Parser::Parser(std::string arg) : _numServers(0){
-	debugMode("<Parser> Default Constructor called");
+Parser::Parser(std::string arg) : _numServers(0)
+{
+    debugMode("<Parser> Default Constructor called");
 
-	if (checkFileName(arg))
-		throw Parser::exception(RED "Error: incorrect config file" RESET);
-	analyzeConfig(arg);
+    if (checkFileName(arg))
+        throw Parser::exception(RED "Error: incorrect config file" RESET);
+    analyzeConfig(arg);
 }
 
-Parser::~Parser(){
-	debugMode("<Parser> Destructor called");
+Parser::~Parser()
+{
+    debugMode("<Parser> Destructor called");
 }
 
-Parser::Parser(const Parser& toCopy){
-	debugMode("<Parser> Copy Constructor called");
-		*this = toCopy;
+Parser::Parser(const Parser& toCopy)
+{
+    debugMode("<Parser> Copy Constructor called");
+    *this = toCopy;
 }
 
-Parser& Parser::operator=(const Parser& toCopy){
-	debugMode("<Parser> Copy Assignment Operator called");
-	(void)toCopy;
-	return (*this);
+Parser& Parser::operator=(const Parser& toCopy)
+{
+    debugMode("<Parser> Copy Assignment Operator called");
+    (void)toCopy;
+    return (*this);
 }
 
 std::vector<std::string> Parser::getLines(void)
 {
-	return (this->_lines);
+    return (this->_lines);
 }
 
-int	Parser::getNumServers(void)
+int Parser::getNumServers(void)
 {
-	return (this->_numServers);
+    return (this->_numServers);
 }
 
-// exception 
-Parser::exception::exception(const std::string& msg) : msg(msg){};
-Parser::exception::~exception() throw(){};
-const char* Parser::exception:: what() const throw(){
-	return (msg.c_str());
+// exception
+Parser::exception::exception(const std::string& msg) : msg(msg) {};
+Parser::exception::~exception() throw() {};
+const char* Parser::exception::what() const throw()
+{
+    return (msg.c_str());
 }
