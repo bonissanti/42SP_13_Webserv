@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/21 20:21:57 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 17:58:15 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,14 @@
 #include "defines.hpp"
 
 typedef enum s_error_page {
-    ERROR_NOT_FOUND = 404  // TODO: adicionar outros erros
+    DEFAULT = 0,
+    OK = 200,
+    BAD_REQUEST = 400,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    METHOD_NOT_ALLOWED = 405,
+    INTERNAL_SERVER_ERROR = 500,
+    BAD_GATEWAY = 502
 } t_error_page;
 
 typedef struct s_route {
@@ -26,8 +33,8 @@ typedef struct s_route {
         std::string root;
         std::string allow_methods;
         std::string index;
-        std::string cgi_path;
-        std::string cgi_ext;
+        std::string cgi;
+        std::string redirect;
 } t_route;
 
 class Server {
@@ -48,7 +55,6 @@ class Server {
         void    setListen(int port);
         void    setServerName(std::string name);
         void    setHost(std::string host);
-        void    setRoot(std::string root);
         void    setBodySize(std::string size);
         void    setRoute(std::vector<std::string> routeLines, size_t& i);
 
@@ -67,5 +73,7 @@ class Server {
                 virtual const char* what() const throw();
         };
 };
+
+std::string    setRoot(std::string root);
 
 #endif  // SERVER_HPP

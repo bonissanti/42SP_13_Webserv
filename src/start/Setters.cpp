@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/21 22:32:48 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 12:26:46 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 17:09:32 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,13 @@ void    Server::setHost(std::string host)
     _host = host;
 }
 
-void    Server::setRoot(std::string root)
+std::string    setRoot(std::string root)
 {
     if (root[0] != '/')
         throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-    _root = root;
+    if (root.substr(root.length() - 1) != "/")
+        root.insert(root.end(), '/');
+    return (root);
 }
 
 void    Server::setBodySize(std::string size)
@@ -76,11 +78,60 @@ void    Server::setBodySize(std::string size)
     }
 }
 
+std::string setMethods(std::string methods)
+{
+    std::string allow_method;
+    std::stringstream ss(methods);
+    
+    while (ss >> allow_method)
+    {
+        if (allow_method == "get" || allow_method == "GET")
+            continue;
+
+        else if (allow_method == "post" || allow_method == "POST")
+            continue;
+
+        else if (allow_method == "delete" || allow_method == "DELETE")
+            continue;
+        else
+            throw std::invalid_argument(RED "Error: invalid method" RESET);
+    }
+    return (methods);   
+}
+
+std::string setIndex(std::string index)
+{
+    if (index[0] == '/')
+        index.erase(index.begin());
+    if (index.substr(index.length() - 1) == "/")
+        index.erase(index.length() - 1);
+    return (index);
+}
+
+std::string setCGI(std::string file)
+{
+    if (file.substr(file.find_last_of(".") + 1) != ".py")
+       throw std::invalid_argument(RED "Error: file extension is not '.py'" RESET);
+
+    if (file[0] == '/')
+        file.erase(file.begin());
+    if (file.substr(file.length() - 1) == "/")
+        file.erase(file.length() - 1); 
+    return (file);
+}
+
+std::string setRedirect(std::string url)
+{
+    if (url[0] == '/' || url.empty())
+        throw Server::exception(RED "Error: this is not a valid url" RESET);
+    return (url);
+}
+
 static int	checkInsideRoute(std::string config)
 {
-	std::string type[] = {"autoindex"}; // adicionar outros
+	std::string type[] = {"autoindex", "root", "allow_methods", "index", "cgi", "redirect"}; // adicionar outros
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 6; i++)
 		if (config == type[i])
 			return (i);
 	return (-1);
@@ -106,27 +157,25 @@ void	Server::setRoute(std::vector<std::string> lines, size_t& i)
                 _route[routeIndex].autoindex = (trim(value) == "on") ? true : false;
 				break;
 
-				/*
-				case ROOT ou RROOT:
-				_route[0].root = 
+				case RROOT:
+				_route[routeIndex].root = setRoot(trim(value));
 				break;
 
 				case AMETHODS:
-				_route[0].allow_methods = 
+				_route[routeIndex].allow_methods = setMethods(trim(value));
 				break;
 				
 				case INDEX:
-				_route[0].index = 
+				_route[routeIndex].index = setIndex(trim(value));
 				break;
 
-				case CGIPATH
-				_route[0].cgi_path = 
+				case CGI:
+				_route[routeIndex].cgi = setCGI(trim(value));
 				break;
 
-				case CGIEXT
-				_route[0].cgi_ext =
-				break;
-				*/
+                case REDIRECT:
+                _route[routeIndex].redirect = setRedirect(trim(value));
+                break ;
             }
         }
         else if (lines[i] == "}")

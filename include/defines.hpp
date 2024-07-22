@@ -32,7 +32,14 @@
 #define ROUTE 5
 
 // Macro route
+#define CGIDIR "/cgi/"
+#define CGIEXEC "/usr/bin/python3"
 #define AUTOINDEX 0
+#define RROOT 1
+#define AMETHODS 2
+#define INDEX 3
+#define CGI 4
+#define REDIRECT 5
 
 #define MB 1024
 #define GB 1048576
@@ -49,5 +56,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #endif
