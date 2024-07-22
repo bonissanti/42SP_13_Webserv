@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:21:41 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 17:58:02 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 18:00:47 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ void Server::creatingServers(int numServers, std::vector<std::string> lines)
             arrayServer[serverIndex].setRoute(lines, i);
         else if (lines[i] == "}")
             break;
-        arrayServer->_error_page[0] = OK;
     }
 }
 
