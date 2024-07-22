@@ -21,7 +21,8 @@ a classe ServerConfig utiliza para configurar o servidor */
 
 class Parser {
     private:
-        int                      _numServers;
+        int _numServers;
+    	int _numRoute;
         std::vector<std::string> _lines;
 
     public:

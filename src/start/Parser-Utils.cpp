@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/16 18:02:18 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 14:11:14 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 11:57:15 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ void	Parser::validConfigFile(std::vector<std::string> line)
 				throw Parser::exception(RED "Error: Nested servers are not allowed" RESET);
 			minimumReq = false;
 		}
+		if (line[i].substr(0, 5) == "route")
+			_numRoute++;
 		else if (line[i].substr(0, 6) == "listen")
 			minimumReq = true;
 		else if (line[i].substr(0, 1) == "}")
@@ -60,7 +62,7 @@ void	Parser::validConfigFile(std::vector<std::string> line)
 	}
 	if (!minimumReq)
 		throw Parser::exception(RED "Error: port number (listen <number>) not informed in config file" RESET);
-	std::cout << "numServers: " << _numServers << std::endl;
+	std::cout << _numRoute << std::endl;
 }
 
 bool	Parser::checkFileName(std::string file)

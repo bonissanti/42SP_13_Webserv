@@ -6,13 +6,13 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/15 20:14:26 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/18 16:38:40 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 11:56:46 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Parser.hpp"
 
-Parser::Parser(std::string arg) : _numServers(0)
+Parser::Parser(std::string arg) : _numServers(0), _numRoute(0)
 {
     debugMode("<Parser> Default Constructor called");
 

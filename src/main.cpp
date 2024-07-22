@@ -6,11 +6,12 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:47:10 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/19 18:40:39 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/21 23:02:47 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/defines.hpp"
+#include "../include/Server.hpp"
+#include "../include/Parser.hpp"
 
 int main(int argc, char** argv)
 {
@@ -26,4 +27,5 @@ int main(int argc, char** argv)
     catch (const Parser::exception& e) {
         std::cerr << e.what() << '\n';
     }
+    //server.startServer(); cria o socket, verifica se a porta está em uso com setsockopt, chama bind e listen (se ok)
 }

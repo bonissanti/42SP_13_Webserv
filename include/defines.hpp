@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef DEFINES_H
-#define DEFINES_H
+#ifndef DEFINES_HPP
+#define DEFINES_HPP
 
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
@@ -22,6 +22,20 @@
 #define BLACK "\033[1;30m"
 #define GREEN "\033[0;32m"
 #define RESET "\033[0m"
+
+// Macro configs
+#define LISTEN 0
+#define SERVER_NAME 1
+#define HOST 2
+#define ROOT 3
+#define CLIENT_MBSIZE 4
+#define ROUTE 5
+
+// Macro route
+#define AUTOINDEX 0
+
+#define MB 1024
+#define GB 1048576
 
 #include <netinet/in.h>
 #include <sys/socket.h>

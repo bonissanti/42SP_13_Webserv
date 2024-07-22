@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/19 19:03:34 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/21 20:21:57 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,7 @@ class Server {
         std::string               _server_name;
         std::string               _host;
         std::string               _root;
-        std::string               _max_body_size;
-        std::string               _client_max_body_size;
+        int                       _client_max_body_size;
         std::vector<t_error_page> _error_page;
         std::vector<t_route>      _route;
 
@@ -46,8 +45,13 @@ class Server {
         ~Server();
 
         t_route createRoute();
-        int     setListen(int port);
-        void    setDefaultServer(void);
+        void    setListen(int port);
+        void    setServerName(std::string name);
+        void    setHost(std::string host);
+        void    setRoot(std::string root);
+        void    setBodySize(std::string size);
+        void    setRoute(std::vector<std::string> routeLines, size_t& i);
+
         void    creatingServers(int numServers, std::vector<std::string> lines);
         // void start(); // void loadConfig(const std::string& config_path);
         // void handleClient(int client_socket);
