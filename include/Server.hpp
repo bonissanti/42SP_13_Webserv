@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 17:58:15 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 18:11:51 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,8 @@ class Server {
         void    setBodySize(std::string size);
         void    setRoute(std::vector<std::string> routeLines, size_t& i);
 
-        void    creatingServers(int numServers, std::vector<std::string> lines);
-        // void start(); // void loadConfig(const std::string& config_path);
-        // void handleClient(int client_socket);
-        // Config              config_;
+        static std::vector<Server>    creatingServers(int numServers, std::vector<std::string> lines);
+        static void    startServer(std::vector<Server> servers);
 
         class exception : public std::exception {
             private:
@@ -74,6 +72,8 @@ class Server {
         };
 };
 
+        // void start(); // void loadConfig(const std::string& config_path);
+        // void handleClient(int client_socket);
 std::string    setRoot(std::string root);
 
 #endif  // SERVER_HPP

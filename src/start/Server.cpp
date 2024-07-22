@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:21:41 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 18:00:47 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/22 18:08:57 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,10 +50,10 @@ const char* Server::Server::exception::what() const throw()
     return (this->msg.c_str());
 }
 
-void Server::creatingServers(int numServers, std::vector<std::string> lines)
+std::vector<Server> Server::creatingServers(int numServers, std::vector<std::string> lines)
 {
     int serverIndex = -1;
-    Server* arrayServer = new Server[numServers](); // new ou um container pra guardar servers (fora dessa função)
+    std::vector<Server> servers(numServers);
 
 	for (size_t i = 0; i < lines.size(); i++) {
 		std::string       key, value;
@@ -68,31 +68,32 @@ void Server::creatingServers(int numServers, std::vector<std::string> lines)
 		    switch (getKeyIndex(trim(key)))
 		    {
 		        case LISTEN:
-		        arrayServer[serverIndex].setListen(strtoi(value));
+		        servers[serverIndex].setListen(strtoi(value));
 				break;
 
 				case SERVER_NAME:
-				arrayServer[serverIndex].setServerName(value);
+				servers[serverIndex].setServerName(value);
                 break;
 
                 case HOST:
-                arrayServer[serverIndex].setHost(value);
+                servers[serverIndex].setHost(value);
                 break;
 
                 case ROOT:
-                arrayServer[serverIndex]._root = setRoot(trim(value));
+                servers[serverIndex]._root = setRoot(trim(value));
                 break;
       
                 case CLIENT_MBSIZE:
-                arrayServer[serverIndex].setBodySize(trim(value));
+                servers[serverIndex].setBodySize(trim(value));
                 break;
 		    }
 		}
         else if (lines[i].substr(0, 5) == "route")
-            arrayServer[serverIndex].setRoute(lines, i);
+           servers[serverIndex].setRoute(lines, i);
         else if (lines[i] == "}")
             break;
     }
+    return (servers);
 }
 
 static int getKeyIndex(std::string key)
