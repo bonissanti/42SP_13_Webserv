@@ -8,7 +8,7 @@ BraceWrapping:
   BeforeElse: true
   AfterControlStatement: true
 AllowShortFunctionsOnASingleLine: Inline
-ColumnLimit: 100
+ColumnLimit: 120
 PointerAlignment: Left
 SpaceBeforeParens: ControlStatements
 SpacesInParentheses: false
@@ -31,7 +31,7 @@ AllowShortBlocksOnASingleLine: false
 AlignAfterOpenBracket: Align
 AlignOperands: true
 AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: true
+# AlignConsecutiveDeclarations: true
 AlignEscapedNewlines: Left
 AlignTrailingComments: true
 AlignArrayOfStructures: Left
