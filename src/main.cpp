@@ -22,7 +22,7 @@ int main(int argc, char** argv)
         Parser parsing(argv[1]);
         std::vector<Server> servers = Server::creatingServers(parsing.getNumServers(), parsing.getLines());
 
-        // Server::startServer(servers); //cria o socket, verifica se a porta está em uso com setsockopt, chama bind e listen (se ok)
+        Server::startServer(servers); //cria o socket, verifica se a porta está em uso com setsockopt, chama bind e listen (se ok)
     }
     catch (const Parser::exception& e) {
         std::cerr << e.what() << '\n';
