@@ -14,6 +14,7 @@
 #define PARSER_HPP
 
 #include "defines.hpp"
+#include <Minilib.hpp>
 
 /* Classe de parser, basicamente ela valida o arquivo de configuração e popula
 um vector com as linhas retiradas do arquivo de configuração. É este vector que
