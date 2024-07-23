@@ -6,11 +6,12 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/22 18:21:01 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/23 15:24:02 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/23 18:45:36 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Server.hpp"
+
 
 void	Server::startServer(std::vector<Server> servers)
 {
@@ -22,7 +23,6 @@ void	Server::startServer(std::vector<Server> servers)
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	
-		
 	for (size_t i = 0; i < servers.size(); i++)
 	{
 		serverAddr.sin_port = htons(servers[i]._listen);
@@ -34,14 +34,15 @@ void	Server::startServer(std::vector<Server> servers)
 		if (bind(socketFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
 		{
 			if (errno == EADDRINUSE)
-				std::cout << "RIP" << std::endl;
-			else
-				std::cout << "lalal" << std::endl;
+				throw Server::exception(RED "Error: port already setted in more than one server" RESET);
 		}
-		
 		if (listen(socketFd, 10) < 0)
 		{
 			std::cout << "RIP 2" << std::endl;
+		}
+		if (fcntl(socketFd, F_SETFL, O_NONBLOCK) < 0)
+		{
+			std::cout << "RIP 3" << std::endl;
 		}
 	}
 }

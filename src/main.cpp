@@ -24,6 +24,9 @@ int main(int argc, char** argv)
 
         Server::startServer(servers); //cria o socket, verifica se a porta está em uso com setsockopt, chama bind e listen (se ok)
     }
+    catch (const Server::exception& e) {
+        std::cerr << e.what() << '\n';
+    }
     catch (const Parser::exception& e) {
         std::cerr << e.what() << '\n';
     }

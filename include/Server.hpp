@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 18:11:51 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/23 18:34:32 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,8 @@ class Server {
         ~Server();
 
         t_route createRoute();
-        void    setListen(int port);
+        int     getListen(void);
+        void    setListen(int port, std::vector<Server> servers);
         void    setServerName(std::string name);
         void    setHost(std::string host);
         void    setBodySize(std::string size);

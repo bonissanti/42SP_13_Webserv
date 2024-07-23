@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:21:41 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 18:08:57 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/23 18:38:37 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ t_route Server::createRoute()
     route.root = "/data/"; // se não especificado, fica o mesmo do server
     route.allow_methods = "GET POST DELETE";
     route.index = "index.html";
-    route.cgi = "";
+    route.cgi = CGIDIR;
     return (route);
 }
 
@@ -68,7 +68,7 @@ std::vector<Server> Server::creatingServers(int numServers, std::vector<std::str
 		    switch (getKeyIndex(trim(key)))
 		    {
 		        case LISTEN:
-		        servers[serverIndex].setListen(strtoi(value));
+		        servers[serverIndex].setListen(strtoi(value), servers);
 				break;
 
 				case SERVER_NAME:
@@ -90,8 +90,6 @@ std::vector<Server> Server::creatingServers(int numServers, std::vector<std::str
 		}
         else if (lines[i].substr(0, 5) == "route")
            servers[serverIndex].setRoute(lines, i);
-        else if (lines[i] == "}")
-            break;
     }
     return (servers);
 }

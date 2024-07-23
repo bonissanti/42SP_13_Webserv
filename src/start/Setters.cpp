@@ -6,15 +6,24 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/21 22:32:48 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 17:09:32 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/23 18:42:34 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Server.hpp"
 #include "../../include/Minilib.hpp"
 
-void Server::setListen(int port)
+bool	repeatedPort(int port, std::vector<Server> servers)
 {
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); ++it)
+		if (it->getListen() == port)
+			return (true);
+	return (false);
+}
+
+void Server::setListen(int port, std::vector<Server> servers)
+{
+    (void)servers;
     try {
         if (port < 1024 || port > 49151)
             throw Server::exception(RED"Error: port number outside of the range. e.g.: 1024 ~ 49151");
@@ -23,6 +32,11 @@ void Server::setListen(int port)
         std::cerr << e.what() << '\n';
     }
 	_listen = port;
+}
+
+int Server::getListen(void)
+{
+    return (_listen);
 }
 
 void    Server::setServerName(std::string name)
