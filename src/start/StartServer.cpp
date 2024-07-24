@@ -15,7 +15,6 @@
 void	Server::startServer(std::vector<Server> servers)
 {
 	int	inUse = 1;
-	int socketFd;
 	struct sockaddr_in serverAddr;
 
 	bzero(&serverAddr, sizeof(serverAddr));
