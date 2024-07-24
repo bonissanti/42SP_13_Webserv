@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 12:21:41 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/23 18:38:37 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/24 18:09:16 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ t_route Server::createRoute()
     route.root = "/data/"; // se não especificado, fica o mesmo do server
     route.allow_methods = "GET POST DELETE";
     route.index = "index.html";
-    route.cgi = CGIDIR;
+    route.cgi = ""; /* na hora de usar cgi, olhamos se ele é vazio, se não for, concatenamos 
+    CGIDIR + route.cgi (/cgi/arquivo.py) */
     return (route);
 }
 
