@@ -12,7 +12,7 @@
 
 #include "../../include/defines.hpp"
 
-#define SERVER_PORT 18000
+#define SERVER_PORT 1026
 
 int main(void)
 {
@@ -34,12 +34,8 @@ int main(void)
 
     // Popula struct sockaddr_in
     servaddress.sin_family = AF_INET;  // AF_INET = ipv4
-    servaddress.sin_addr.s_addr =
-        htonl(INADDR_ANY);  // INADDR_ANY ip address specified (default is localhost)
+    servaddress.sin_addr.s_addr = htonl(INADDR_ANY);  // INADDR_ANY ip address specified (default is localhost)
     servaddress.sin_port = htons(SERVER_PORT);  // a random port, for test this is 18000
-
-    // associa a struct sockaddr e o file descriptor do socket
-    int test = socket(AF_INET, SOCK_STREAM, 0);
 
     int result = bind(socketFd, (struct sockaddr *)&servaddress, sizeof(servaddress));
     if (result < 0) {
@@ -70,9 +66,10 @@ int main(void)
             return (1);
         }
 
-        snprintf((char *)buff, sizeof(buff), "HTTP/1.1 200/OK\r\n\r\nHello");
+        snprintf((char *)buff, sizeof(buff), "HTTP/1.1 200/OK\r\n\r\nWebserver ta pronto");
         write(connFd, (char *)buff, strlen((char *)buff));
         close(connFd);
     }
+    close(socketFd);
     return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/23 18:34:32 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/24 16:05:34 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct s_route {
 class Server {
     private:
         int                       _listen;
+        int                       _socketFd;
         std::string               _server_name;
         std::string               _host;
         std::string               _root;
