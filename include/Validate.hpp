@@ -1,36 +1,21 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   PARSER.hpp                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/15 13:29:56 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/15 13:54:16 by brunrodr         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#ifndef VALIDATE_HPP
+#define VALIDATE_HPP
 
 #include "defines.hpp"
-#include <Minilib.hpp>
+#include "Utils.hpp"
 
 /* Classe de parser, basicamente ela valida o arquivo de configuração e popula
 um vector com as linhas retiradas do arquivo de configuração. É este vector que
 a classe ServerConfig utiliza para configurar o servidor */
 
-class Parser {
+class Validate {
     private:
-        int _numServers;
     	int _numRoute;
         std::vector<std::string> _lines;
 
     public:
-        Parser(std::string arg);
-        ~Parser();
-        Parser(const Parser& toCopy);
-        Parser& operator=(const Parser& toCopy);
+        Validate(std::string arg);
+        ~Validate();
 
         // validations
         bool checkBrackets(std::vector<std::string> line);

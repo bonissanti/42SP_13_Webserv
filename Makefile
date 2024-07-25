@@ -32,7 +32,7 @@ START		= start/Parser.cpp \
 			start/Setters.cpp \
 			start/StartServer.cpp
 
-MAND_SRCS	= main.cpp $(DEBUG) $(MINILIB) $(START)
+MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src
 SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
 TEST_DIR	= $(SRC_DIR)/tests
