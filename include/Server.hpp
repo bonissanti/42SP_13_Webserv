@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/24 16:05:34 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/25 17:54:36 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,16 @@ typedef struct s_route {
         std::string redirect;
 } t_route;
 
+typedef struct s_timeval{
+    long    tvSec;
+    long    tvuSec;
+} t_timeval;
+
 class Server {
     private:
         int                       _listen;
         int                       _socketFd;
+        int                       _pollFd;
         std::string               _server_name;
         std::string               _host;
         std::string               _root;
@@ -62,6 +68,7 @@ class Server {
 
         static std::vector<Server>    creatingServers(int numServers, std::vector<std::string> lines);
         static void    startServer(std::vector<Server> servers);
+        static void           setupPolls(std::vector<Server> servers);
 
         class exception : public std::exception {
             private:

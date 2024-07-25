@@ -24,6 +24,7 @@ int main(int argc, char** argv)
 
         // while (true) um looping infinito aqui talvez?
         Server::startServer(servers);
+        Server::setupPolls(servers);
     }
     catch (const Server::exception& e) {
         std::cerr << e.what() << '\n';

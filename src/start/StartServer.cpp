@@ -28,13 +28,39 @@ void	Server::startServer(std::vector<Server> servers)
 	
 		if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
 			throw Server::exception(RED "Error: setsockopt failed" RESET);
-	
+
 		if (bind(servers[i]._socketFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
-		{
-			if (errno == EADDRINUSE)
-				throw Server::exception(RED "Error: port already setted in more than one server" RESET);
-		}
+			throw Server::exception(RED "Error: bind failed" RESET);
+
 		if (listen(servers[i]._socketFd, 10) < 0)
 			throw Server::exception(RED "Error: listen failed" RESET);
 	}
+}
+
+static int	acceptNewConnection(int serverSocket)
+{
+	int clientSocket;
+	if (clientSocket = accept(serverSocket, (struct sockaddr *)NULL, NULL))
+	{
+		perror("accept failed");
+		return (-1);
+	}
+	return (clientSocket);
+}
+
+void Server::setupPolls(std::vector<Server> servers)
+{
+	fd_set	socketSet;
+	struct timeval setTimeout;
+
+	FD_ZERO(&socketSet);
+	for (size_t i = 0; i < servers.size(); i++)
+		FD_SET(servers[i]._listen, &socketSet);
+	
+	setTimeout.tv_sec = 100000000;
+	setTimeout.tv_usec = 0;
+
+	// for (std::vector<Servers>::iterator listn = servers.begin(); listn = servers.end(); ++listn)
+
+
 }

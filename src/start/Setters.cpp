@@ -6,30 +6,30 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/21 22:32:48 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/23 18:42:34 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/25 17:55:23 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/Server.hpp"
 #include "../../include/Minilib.hpp"
 
-bool	repeatedPort(int port, std::vector<Server> servers)
+bool	invalidPort(int port, std::vector<Server> servers)
 {
-	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); ++it)
+    if (port < 1024 || port > 49151){
+        return (false);
+    }
+ 
+	for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); ++it){
 		if (it->getListen() == port)
-			return (true);
-	return (false);
+			return (false);
+    }
+	return (true);
 }
 
 void Server::setListen(int port, std::vector<Server> servers)
 {
-    (void)servers;
-    try {
-        if (port < 1024 || port > 49151)
-            throw Server::exception(RED"Error: port number outside of the range. e.g.: 1024 ~ 49151");
-    }
-    catch (const std::exception& e) {
-        std::cerr << e.what() << '\n';
+    if (!invalidPort(port, servers)){
+        throw Server::exception(RED "Error: port setted in more than one server" RESET);
     }
 	_listen = port;
 }
