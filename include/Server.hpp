@@ -1,21 +1,10 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/22 18:11:51 by brunrodr         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
 #include "Config.hpp"
 #include "Request.hpp"
 #include "defines.hpp"
+#include "Utils.hpp"
 
 typedef enum {
     DEFAULT = 0,
@@ -30,25 +19,22 @@ typedef enum {
 } status_request;
 
 typedef struct s_route {
-        bool _autoindex;
-        bool _cgi;
+        bool _autoIndex;
+        bool _cgiOn;
         std::string _route;
         std::string _root;
-        std::string _allow_methods;
+        std::string _allowMethods;
         std::string _index;
         std::string _redirect;
         std::string _return;
-        std::string _autoindex;
         std::string _cgi;
-        std::string _return;
-        std::string _redirect;
 } t_route;
 
 class Server {
     private:
         int _listen;
         std::string _server_name;
-        std::string _host; // acredito que seja o mesmo que _server_name
+        std::string _host;  // acredito que seja o mesmo que _server_name
         std::string _root;
         int _client_max_body_size;
         std::vector<status_request> _error_page;
