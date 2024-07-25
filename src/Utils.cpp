@@ -1,5 +1,7 @@
 #include "../include/Utils.hpp"
+
 #include <stack>
+#include "../include/Validate.hpp"
 
 std::string Utils::trim(std::string str)
 {
@@ -51,7 +53,7 @@ int Utils::getServersNumber(std::string filePath)
                 }
                 else if (c == '}') {
                     if (brackets.empty()) {
-                        return -1;
+                        serverCount = -1;
                     }
                     brackets.pop();
                     if (brackets.empty()) {
@@ -62,10 +64,9 @@ int Utils::getServersNumber(std::string filePath)
             }
         }
     }
-
-    if (!brackets.empty()) {
-        return -1;
-    }
-
+    if (serverCount == -1 && serverCount > 1024)
+        throw Validate::exception(RED "Error: invalid config file" RESET);
+    else if (brackets.empty())
+        throw Validate::exception(RED "Error: empty config file" RESET);
     return serverCount;
 }
