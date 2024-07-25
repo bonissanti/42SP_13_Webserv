@@ -12,11 +12,6 @@ int main(int argc, char** argv)
 
         int numbersOfServers = Utils::getServersNumber(argv[1]);
 
-        if (numbersOfServers == -1)
-            throw Validate::exception(RED "Error: invalid config file" RESET);
-        else if (numbersOfServers == 0)
-            throw Validate::exception(RED "Error: empty config file" RESET);
-
         Server servers[numbersOfServers];
         for(int i = 0; i < numbersOfServers; i++)
         {
