@@ -22,7 +22,6 @@ int main(int argc, char** argv)
         Parser parsing(argv[1]);
         std::vector<Server> servers = Server::creatingServers(parsing.getNumServers(), parsing.getLines());
 
-        // while (true) um looping infinito aqui talvez?
         Server::startServer(servers);
         Server::setupPolls(servers);
     }

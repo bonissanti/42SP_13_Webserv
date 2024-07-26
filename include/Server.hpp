@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/25 17:54:36 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/26 17:06:27 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,8 +67,8 @@ class Server {
         void    setRoute(std::vector<std::string> routeLines, size_t& i);
 
         static std::vector<Server>    creatingServers(int numServers, std::vector<std::string> lines);
-        static void    startServer(std::vector<Server> servers);
-        static void           setupPolls(std::vector<Server> servers);
+        static void    startServer(std::vector<Server>& servers);
+        static void    setupPolls(std::vector<Server> servers);
 
         class exception : public std::exception {
             private:
