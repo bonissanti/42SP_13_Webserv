@@ -1,7 +1,6 @@
 #include "../include/Server.hpp"
 #include "../include/Utils.hpp"
 #include "../include/Validate.hpp"
-using namespace std;
 
 int main(int argc, char** argv)
 {
@@ -12,17 +11,16 @@ int main(int argc, char** argv)
 
         int numbersOfServers = Utils::getServersNumber(argv[1]);
 
-        Server servers[numbersOfServers];
-        for(int i = 0; i < numbersOfServers; i++)
-        {
-            servers[i].
+        vector<Server> servers(numbersOfServers);
+
+        ifstream file(argv[1]);
+        if (!file.is_open()) {
+            return -1;
         }
 
-        // Validate request(argv[1]);
-        // std::vector<Server> servers = Server::creatingServers(request.getNumServers(), request.getLines());
-
-        // Server::startServer(servers); //cria o socket, verifica se a porta está em uso com setsockopt, chama bind e
-        // listen (se ok)
+        for (int i = 0; i < numbersOfServers; i++) {
+            servers[i].create(file);
+        }
     }
     catch (const Validate::exception& e) {
         cerr << e.what() << '\n';

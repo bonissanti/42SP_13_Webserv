@@ -1,9 +1,10 @@
 #include "../include/Utils.hpp"
 
 #include <stack>
+
 #include "../include/Validate.hpp"
 
-std::string Utils::trim(std::string str)
+string Utils::trim(string str)
 {
     // trim right
     size_t pos = str.find_last_not_of(" \t\n");
@@ -15,30 +16,30 @@ std::string Utils::trim(std::string str)
     return (str);
 }
 
-int Utils::strtoi(std::string number)
+int Utils::strtoi(string number)
 {
     int result;
-    std::stringstream ss;
+    stringstream ss;
 
     ss << number;
     ss >> result;
     return (result);
 }
 
-int Utils::getServersNumber(std::string filePath)
+int Utils::getServersNumber(string filePath)
 {
-    std::ifstream file(filePath.c_str());
+    ifstream file(filePath.c_str());
     if (!file.is_open()) {
         return -1;
     }
 
-    std::string line;
+    string line;
     int serverCount = 0;
     bool insideServerBlock = false;
-    std::stack<char> brackets;
+    stack<char> brackets;
 
-    while (std::getline(file, line)) {
-        for (std::string::size_type i = 0; i < line.size(); ++i) {
+    while (getline(file, line)) {
+        for (string::size_type i = 0; i < line.size(); ++i) {
             char c = line[i];
 
             if (!insideServerBlock && line.substr(i, 6) == "server") {
