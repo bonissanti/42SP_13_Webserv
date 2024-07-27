@@ -3,6 +3,7 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "defines.hpp"
 
 class Client {
     public:

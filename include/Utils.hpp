@@ -3,12 +3,11 @@
 
 #include "defines.hpp"
 
-class Utils
-{
-	public:
-		static std::string trim(std::string str);
-		static int strtoi(std::string number);
-		static int getServersNumber(std::string filePath);
+class Utils {
+    public:
+        static string trim(string str);
+        static int strtoi(string number);
+        static int getServersNumber(string filePath);
 };
 
 #endif

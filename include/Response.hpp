@@ -15,10 +15,18 @@ class Response {
 
     public:
         Response();
-        void        setStatusCode(int code);
-        void        setBody(const std::string& body);
-        void        setHeader(const std::string& field, const std::string& value);
-        std::string toString() const;
+        void setStatusCode(int code);
+        void setBody(const string& body);
+        void setHeader(const string& field, const string& value);
+        string toString() const;
+
+    private:
+        int status_code_;
+        string status_message_;
+        map<string, string> headers_;
+        string body_;
+
+        string getStatusMessage(int code) const;
 };
 
 #endif  // RESPONSE_HPP
