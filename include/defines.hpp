@@ -46,4 +46,6 @@
 #include <vector>
 #include <stdexcept>
 
+using namespace std;
+
 #endif
