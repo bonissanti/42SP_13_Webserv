@@ -12,24 +12,24 @@
 
 #include "../../include/defines.hpp"
 
-void debugMode(const std::string& msg)
+void debugMode(const string& msg)
 {
 #ifndef DEBUG
     (void)msg;
 #endif
 
 #ifdef DEBUG
-    std::cout << BBLUE << msg << RESET << std::endl;
+    cout << BBLUE << msg << RESET << endl;
 #endif
 }
 
-std::string binToHex(const char* digits)
+string binToHex(const char* digits)
 {
-    std::stringstream ss;
-    unsigned int      res = 0;
+    stringstream ss;
+    unsigned int res = 0;
     while (*digits)
         res = (res << 1) | (*digits++ - '0');
 
-    ss << std::hex << std::uppercase << res;
+    ss << hex << uppercase << res;
     return (ss.str());
 }
