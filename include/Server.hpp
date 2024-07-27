@@ -3,9 +3,10 @@
 
 #include "Config.hpp"
 #include "Request.hpp"
+#include "Utils.hpp"
 #include "Response.hpp"
 #include "defines.hpp"
-#include "Utils.hpp"
+#include "Route.hpp"
 
 typedef enum {
     DEFAULT = 0,
@@ -18,18 +19,6 @@ typedef enum {
     BAD_GATEWAY = 502,
     MOVED_PERMANENTLY = 301,
 } status_request;
-
-typedef struct s_route {
-        bool _autoIndex;
-        bool _cgiOn;
-        std::string _route;
-        std::string _root;
-        std::string _allowMethods;
-        std::string _index;
-        std::string _redirect;
-        std::string _return;
-        std::string _cgi;
-} t_route;
 
 typedef struct s_timeval{
     long    tvSec;
@@ -48,18 +37,26 @@ class Server {
         std::vector<t_error_page> _error_page;
         std::vector<t_route>      _route;
         int _listen;
-        std::string _server_name;
-        std::string _host;  // acredito que seja o mesmo que _server_name
-        std::string _root;
+        string _server_name;
+        string _root;
         int _client_max_body_size;
-        std::vector<status_request> _error_page;
-        std::vector<t_route> _route;
+        vector<int> _error_page;
+        vector<Route> _routes;
 
     public:
     	friend class Response;
         Server(void);
         ~Server();
 
+        void create(ifstream& file);
+        static void startServer(vector<Server> servers);
+
+        void setListen(int port);
+        void setServerName(string name);
+        void setHost(string host);
+        void setClientMaxBodySize(string size);
+        void setRoute(vector<string> routeLines, size_t& i);
+        void setErrorPage(string error_page);
         t_route createRoute();
         int     getListen(void);
         void setListen(int port, std::vector<Server> servers);
@@ -74,17 +71,15 @@ class Server {
 
         class exception : public std::exception {
             private:
-                std::string msg;
+                string msg;
 
             public:
-                exception(const std::string& msg);
+                exception(const string& msg);
                 virtual ~exception() throw();
                 virtual const char* what() const throw();
         };
 };
 
-// void start(); // void loadConfig(const std::string& config_path);
-// void handleClient(int client_socket);
-std::string setRoot(std::string root);
+string setRoot(string root);
 
 #endif  // SERVER_HPP
