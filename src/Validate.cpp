@@ -1,7 +1,8 @@
 #include "../include/Validate.hpp"
+
 #include "../include/Utils.hpp"
 
-Validate::Validate(std::string arg) : _numServers(0), _numRoute(0)
+Validate::Validate(string arg) : _numRoute(0)
 {
     debugMode("<Validate> Default Constructor called");
 
@@ -10,31 +11,26 @@ Validate::Validate(std::string arg) : _numServers(0), _numRoute(0)
     analyzeConfig(arg);
 }
 
-std::vector<std::string> Validate::getLines(void)
+vector<string> Validate::getLines(void)
 {
     return (this->_lines);
 }
 
-int Validate::getNumServers(void)
-{
-    return (this->_numServers);
-}
-
 // exception
-Validate::exception::exception(const std::string& msg) : msg(msg){};
-Validate::exception::~exception() throw(){};
+Validate::exception::exception(const string& msg) : msg(msg) {};
+Validate::exception::~exception() throw() {};
 const char* Validate::exception::what() const throw()
 {
     return (msg.c_str());
 }
 
-bool Validate::checkBrackets(std::vector<std::string> line)
+bool Validate::checkBrackets(vector<string> line)
 {
     int openBrackets = 0;
     int closeBrackets = 0;
 
-    for (std::vector<std::string>::iterator vecIt = line.begin(); vecIt != line.end(); ++vecIt) {
-        for (std::string::iterator it = vecIt->begin(); it != vecIt->end(); ++it) {
+    for (vector<string>::iterator vecIt = line.begin(); vecIt != line.end(); ++vecIt) {
+        for (string::iterator it = vecIt->begin(); it != vecIt->end(); ++it) {
             if (*it == '{')
                 openBrackets++;
             else if (*it == '}')
@@ -48,16 +44,15 @@ bool Validate::checkBrackets(std::vector<std::string> line)
     return (true);
 }
 
-void Validate::validConfigFile(std::vector<std::string> line)
+void Validate::validConfigFile(vector<string> line)
 {
-    int  nestedServer = 0;
+    int nestedServer = 0;
     bool minimumReq;
 
     for (size_t i = 0; i < line.size(); i++) {
         if (line[i].empty())
             continue;
         if (line[i].substr(0, 6) == "server") {
-            _numServers++;
             nestedServer++;
             if (nestedServer > 1)
                 throw Validate::exception(RED "Error: Nested servers are not allowed" RESET);
@@ -72,28 +67,27 @@ void Validate::validConfigFile(std::vector<std::string> line)
                 nestedServer--;
     }
     if (!minimumReq)
-        throw Validate::exception(
-            RED "Error: port number (listen <number>) not informed in config file" RESET);
-    std::cout << _numRoute << std::endl;
+        throw Validate::exception(RED "Error: port number (listen <number>) not informed in config file" RESET);
+    cout << _numRoute << endl;
 }
 
-bool Validate::checkFileName(std::string file)
+bool Validate::checkFileName(string file)
 {
-    std::string tmp = file.substr(file.find(".") + 1);
+    string tmp = file.substr(file.find(".") + 1);
     if (file.substr(file.find(".") + 1) == "conf")
         return (true);
     return (false);
 }
 
-bool Validate::isEmpty(std::ifstream& file)
+bool Validate::isEmpty(ifstream& file)
 {
-    return (file.peek() == std::ifstream::traits_type::eof());
+    return (file.peek() == ifstream::traits_type::eof());
 }
 
-void Validate::analyzeConfig(std::string arg)
+void Validate::analyzeConfig(string arg)
 {
-    std::string   temp;
-    std::ifstream file(arg.c_str());
+    string temp;
+    ifstream file(arg.c_str());
 
     if (isEmpty(file)) {
         file.close();
