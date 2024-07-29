@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/18 13:59:37 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/26 17:06:27 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/29 18:12:06 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "Config.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 #include "defines.hpp"
 
 typedef enum s_error_page {
@@ -55,6 +56,7 @@ class Server {
         std::vector<t_route>      _route;
 
     public:
+    	friend class Response;
         Server(void);
         ~Server();
 

@@ -6,7 +6,7 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/21 22:32:48 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/25 17:55:23 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/07/29 17:16:16 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,8 +155,7 @@ void	Server::setRoute(std::vector<std::string> lines, size_t& i)
 {
     static int routeIndex;
 
-    _route.push_back(createRoute()); /*ver se na 42 cada posição do vector com o route
-    funcionam de forma independente, mas acredito que esteja ok */
+    _route.push_back(createRoute());
     
 	for ( ; i < lines.size(); i++)
 	{

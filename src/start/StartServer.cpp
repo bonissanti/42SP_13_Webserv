@@ -54,9 +54,15 @@ static void	acceptNewConnection(int serverSocket, std::vector<struct pollfd>& po
 
 	addrlen = sizeof(clientAddr);
 	clientFd = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrlen);
-	if (clientFd < 0)
-		perror("Error: accept failed");
-	std::cout << "Connection established successfully!" << std::endl; // log message
+	if (clientFd == -1)
+	{
+		if (errno == EWOULDBLOCK)
+			std::cout << "No pending connections for now" << std::endl;
+		else
+			perror("Error: accept failed");
+	}
+	else
+		std::cout << "New communication established!" << std::endl; // log message
 
 	struct pollfd commFd;
 
@@ -69,16 +75,28 @@ static void	acceptNewConnection(int serverSocket, std::vector<struct pollfd>& po
 static void	readRequest(std::vector<struct pollfd>& pollFds, int i)
 {
 	char buffer[65535];
-	static int a;
+	static int a; // deletar
 	ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
 	if (bytesReceived > 0)
-	 	std::cout << ++a << std::endl;
+	 	std::cout << ++a << std::endl; // deletar
 		// std::cout << "Received from client: " << std::string(buffer, bytesReceived) << std::endl;
 	else if (bytesReceived == 0)
 		std::cout << "Connection closed" << std::endl;
 	else
 		perror("Error: recv failed");
+
 	close (pollFds[i].fd);
+	pollFds.erase(pollFds.begin() + i);
+}
+
+static void	sendResponse(std::vector<struct pollfd>& pollFds, int i)
+{
+	std::string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
+
+	send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
+	std::cout << "Message sent" << std::endl;
+
+	close(pollFds[i].fd);
 	pollFds.erase(pollFds.begin() + i);
 }
 
@@ -93,7 +111,7 @@ void Server::setupPolls(std::vector<Server> servers)
 	}
 	while (true)
 	{
-		returnValue = poll(pollFds.data(), pollFds.size(), -1);
+		returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
 		switch (returnValue)
 		{
 			case 0:
@@ -111,6 +129,8 @@ void Server::setupPolls(std::vector<Server> servers)
 				}
 				else if (pollFds[i].revents & POLLIN)
 					readRequest(pollFds, i);
+				else if (pollFds[i].revents & POLLOUT)
+					sendResponse(pollFds, i);
 			}
 			break;
 		}
