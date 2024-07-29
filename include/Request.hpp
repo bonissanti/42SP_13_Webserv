@@ -7,6 +7,8 @@
 class Request {
     public:
         Request(const string &raw_request);
+        ~Request();
+
         string getMethod() const;
         string getPath() const;
         string getHeader(const string &field) const;
@@ -17,6 +19,7 @@ class Request {
 
         string method_;
         string path_;
+        string version_;
         map<string, string> headers_;
         string body_;
 };
