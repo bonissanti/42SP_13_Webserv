@@ -18,6 +18,9 @@ int main(int argc, char** argv)
         for (int i = 0; i < numbersOfServers; i++) {
             servers[i].create(file);
         }
+        Server::startServer(servers);
+        Server::setupPolls(servers);
+  
     }
     catch (const Server::exception& e) {
         cerr << e.what() << '\n';

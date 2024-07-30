@@ -20,7 +20,7 @@ HEADER	= ./include/
 ################################# Flags #####################################
 
 CPP			= c++
-CFLAGS		= -Wall -Werror -Wextra -std=c++98 -g3
+CFLAGS		= -Wall -Werror -Wextra -std=c++98 -g
 DEBUG_FLAG	= -D DEBUG
 
 ################################# Webserv src ################################

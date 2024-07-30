@@ -25,7 +25,7 @@ void Route::create(const string& line, ifstream& file)
 
     pos = currentLine.find(' ');
     if (pos != string::npos and currentLine.find("redirect{") == string::npos) {
-        int pos_col = currentLine.find('{') -1;
+        int pos_col = currentLine.find('{') - 1;
         _route = Utils::trim(currentLine.substr(6, pos_col - 6));
     }
     else if (pos != string::npos) {
@@ -197,7 +197,8 @@ void Route::setCgi(string& cgi)
     _cgi = cgi;
 }
 
-Route::exception::exception(const std::string& msg) : msg(msg) {}
+
+Route::exception::exception(const string& msg) : msg(msg) {}
 
 Route::exception::~exception() throw() {}
 
