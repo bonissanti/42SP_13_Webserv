@@ -8,8 +8,8 @@ int main(int argc, char** argv)
             throw Server::exception(RED "Error: invalid number of arguments" RESET);
 
         int numbersOfServers = Utils::getServersNumber(argv[1]);
-        Server servers[numbersOfServers];
-   
+        vector<Server> servers(numbersOfServers);
+
         ifstream file(argv[1]);
         if (!file.is_open()) {
             return -1;
@@ -23,8 +23,7 @@ int main(int argc, char** argv)
         Server::setupPolls(servers);
     }
     catch (const Server::exception& e) {
-        std::cerr << e.what() << '\n';
-
+        cerr << e.what() << '\n';
     }
     catch (const Server::exception& e) {
         cerr << e.what() << '\n';

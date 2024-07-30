@@ -16,9 +16,9 @@
 
 int main(void)
 {
-    int                n;
-    int                socketFd;
-    int                connFd;
+    int n;
+    int socketFd;
+    int connFd;
     struct sockaddr_in servaddress;
 
     uint8_t buff[1024];
@@ -27,31 +27,31 @@ int main(void)
     // Cria o file descriptor - socket
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFd == -1) {
-        std::cout << "RIP" << std::endl;
+        cout << "RIP" << endl;
         return (1);
     }
     bzero(&servaddress, sizeof(servaddress));
 
     // Popula struct sockaddr_in
-    servaddress.sin_family = AF_INET;  // AF_INET = ipv4
+    servaddress.sin_family = AF_INET;                 // AF_INET = ipv4
     servaddress.sin_addr.s_addr = htonl(INADDR_ANY);  // INADDR_ANY ip address specified (default is localhost)
-    servaddress.sin_port = htons(SERVER_PORT);  // a random port, for test this is 18000
+    servaddress.sin_port = htons(SERVER_PORT);        // a random port, for test this is 18000
 
     int result = bind(socketFd, (struct sockaddr *)&servaddress, sizeof(servaddress));
     if (result < 0) {
         if (errno == EADDRINUSE) {
-            std::cout << "RIP 2" << std::endl;
+            cout << "RIP 2" << endl;
             return (1);
         }
     }
 
     if ((listen(socketFd, 10)) < 0) {
-        std::cout << "RIP 3" << std::endl;
+        cout << "RIP 3" << endl;
         return (1);
     }
 
     while (true) {
-        std::cout << "Waiting for a connection on port: " << SERVER_PORT << std::endl;
+        cout << "Waiting for a connection on port: " << SERVER_PORT << endl;
         connFd = accept(socketFd, (struct sockaddr *)NULL, NULL);
 
         memset(recvline, 0, 1024);
@@ -62,7 +62,7 @@ int main(void)
             memset(recvline, 0, 1024);
         }
         if (n < 0) {
-            std::cout << "fueeen" << std::endl;
+            cout << "fueeen" << endl;
             return (1);
         }
 
