@@ -16,6 +16,7 @@ class Request {
         string getHeader(const string &field) const;
         string getBody() const;
         void parseRequest(const string &raw_request); //mover para private depois dos testes
+        void printRequest() const;
 
     private:
 		bool validateFields() const;

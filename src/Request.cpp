@@ -53,4 +53,19 @@ void Request::parseRequest(const string &raw_request) {
     // The rest of the request_stream, if any, is the body
     getline(request_stream, body_, '\0');
 }
+
+bool Request::validateFields() const {
+    if (method_ != "GET" && method_ != "POST" && method_ != "DELETE")
+        return false;
+    
+}
+
+void Request::printRequest() const {
+    cout << method_ << " " << path_ << " " << version_ << endl;
+    vector<string> key, value;
+    for (map<string, string>::const_iterator it = headers_.begin(); it != headers_.end(); ++it) {
+        cout << it->first << ": " << it->second << endl;
+    } 
+    cout << body_ << endl;
+}
       
