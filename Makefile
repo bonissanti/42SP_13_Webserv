@@ -26,11 +26,9 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
-MINILIB		= minilib/Minilib.cpp
-START		= start/Parser.cpp \
-			start/Server.cpp \
-			start/Setters.cpp \
-			start/StartServer.cpp
+FILES		= Utils.cpp \
+			Server.cpp \
+			Route.cpp \
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src
