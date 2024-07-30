@@ -45,10 +45,6 @@ OBJS 		= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_FILES))
 TEST_OBJS	= $(patsubst $(TEST_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(TEST_SRCS))
 OBJS_COMMON	= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_COMMON))
 
-################################# Test Catch2 include #######################
-
-TEST_INC	= -I./include -I./include/test
-
 ################################# Progress ##################################
 
 TOTAL_FILES		= $(words $(SRC_FILES))
@@ -83,7 +79,7 @@ debug: clean $(NAME)
 	@echo "$(GREEN)$(NAME) compiled with debug flag$(RESET)"
 
 test: $(TEST_OBJS) $(OBJS_COMMON)
-	@$(CPP) $(TEST_INC) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
+	@$(CPP) $(CFLAGS) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
 	@echo "$(GREEN)$(TEST_N) created$(RESET)"
 
 fclean: clean
