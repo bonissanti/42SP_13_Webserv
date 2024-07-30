@@ -4,6 +4,8 @@ Request::Request(const string &raw_request) {
     parseRequest(raw_request);
 }
 
+Request::Request() {}
+
 Request::~Request() {}
 
 string Request::getMethod() const {
@@ -12,6 +14,10 @@ string Request::getMethod() const {
 
 string Request::getPath() const {
     return path_;
+}
+
+string Request::getVersion() const {
+    return version_;
 }
 
 string Request::getBody() const {
