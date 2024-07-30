@@ -26,10 +26,9 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
-FILES		= Validate.cpp \
-			Utils.cpp \
-			# Server.cpp \
-			# Setters.cpp \
+FILES		= Utils.cpp \
+			Server.cpp \
+			Route.cpp \
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

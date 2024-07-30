@@ -1,17 +1,16 @@
 #include "../include/Utils.hpp"
+#include "../include/Server.hpp"
 
 #include <stack>
-
-#include "../include/Validate.hpp"
 
 string Utils::trim(string str)
 {
     // trim right
-    size_t pos = str.find_last_not_of(" \t\n");
+    size_t pos = str.find_last_not_of(" \t\n\r");
     str.erase(pos + 1);
 
     // trim left
-    pos = str.find_first_not_of(" \t\n");
+    pos = str.find_first_not_of(" \t\n\r");
     str.erase(0, pos);
     return (str);
 }
@@ -26,8 +25,21 @@ int Utils::strtoi(string number)
     return (result);
 }
 
+bool Utils::validateFile(string file_name)
+{
+    if (file_name.find(".conf") == string::npos)
+        return false;
+    ifstream file(file_name.c_str());
+    if (file.peek() == ifstream::traits_type::eof())
+        return false;
+    return true;
+}
+
 int Utils::getServersNumber(string filePath)
 {
+    if(Utils::validateFile(filePath) == false)
+        throw Server::exception("Error: invalid file format");
+
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         return -1;
@@ -66,8 +78,6 @@ int Utils::getServersNumber(string filePath)
         }
     }
     if (serverCount == -1 && serverCount > 1024)
-        throw Validate::exception(RED "Error: invalid config file" RESET);
-    else if (brackets.empty())
-        throw Validate::exception(RED "Error: empty config file" RESET);
+        throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }
