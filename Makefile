@@ -47,7 +47,7 @@ OBJS_COMMON	= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_COMMON))
 
 ################################# Test Catch2 include #######################
 
-TEST_INC	= ./include
+TEST_INC	= -I./include -I./include/test
 
 ################################# Progress ##################################
 
@@ -83,7 +83,7 @@ debug: clean $(NAME)
 	@echo "$(GREEN)$(NAME) compiled with debug flag$(RESET)"
 
 test: $(TEST_OBJS) $(OBJS_COMMON)
-	@$(CPP) $(CFLAGS) -I$(TEST_INC) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
+	@$(CPP) $(TEST_INC) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
 	@echo "$(GREEN)$(TEST_N) created$(RESET)"
 
 fclean: clean

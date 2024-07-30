@@ -21,6 +21,10 @@ int main(int argc, char** argv)
         for (int i = 0; i < numbersOfServers; i++) {
             servers[i].create(file);
         }
+        
+        while (1) {
+            
+        }
     }
     catch (const Validate::exception& e) {
         cerr << e.what() << '\n';

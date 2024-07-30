@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "catch_amalgamated.hpp"
-#include "Request.hpp" // Include your Request class header
+#include "Request.hpp"
 #include <iostream>
 
 class RequestTest {
@@ -19,9 +19,7 @@ TEST_CASE_METHOD(RequestTest, "ParsesValidRequest") {
     REQUIRE(request.getHeader("Host") == "example.com");
     REQUIRE(request.getHeader("Connection") == "close");
 	
-	cout << request.getMethod() << " " << request.getPath() << " " << request.getVersion() << endl
-		 << request.getHeader("Host") << endl
-		 << request.getHeader("Connection") << endl;
+	request.printRequest();
 }
 
 TEST_CASE_METHOD(RequestTest, "ParsesRequestWithBody") {
@@ -37,8 +35,5 @@ TEST_CASE_METHOD(RequestTest, "ParsesRequestWithBody") {
     REQUIRE(request.getHeader("Content-Length") == "11");
     REQUIRE(request.getBody() == "Hello World");
 	
-	cout << request.getMethod() << " " << request.getPath() << " " << request.getVersion() << endl
-		 << request.getHeader("Host") << endl
-		 << request.getHeader("Content-Length") << endl
-		 << request.getBody() << endl;
+	request.printRequest();
 }
