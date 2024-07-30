@@ -1,17 +1,13 @@
 #include "../include/Server.hpp"
 
-static int getKeyIndex(string key);
+#include "../include/Route.hpp"
 
 Server::Server()
 {
-    status_request status = DEFAULT;
-
-    _listen = 8080;
+    _listen = 100;
     _client_max_body_size = 2 * MB;
     _server_name = "default";
     _root = "/data/";
-
-    _error_page.push_back(status);
 }
 
 Server::~Server() {}
@@ -29,11 +25,11 @@ void Server::create(ifstream& file)
     string line;
     while (getline(file, line)) {
         line = Utils::trim(line);
-        if (line.empty()) {
+        if (line.empty() or line[0] == '#') {
             continue;
         }
 
-        if (line.find("server") == 0)
+        if (line.substr(0, 2) == "}," and line.length() == 2)
             break;
 
         string key, value;
@@ -56,25 +52,18 @@ void Server::create(ifstream& file)
                 throw Server::exception("Unknown configuration key: " + key);
         }
         else if (line.find("route") == 0) {
-            Route route;
-            // create a route and push it on the vector
-            _routes.push_back(route);
+            Route new_route;
+
+            new_route.create(line, file);
+            _routes.push_back(new_route);
         }
     }
 
+    if (_listen == 100)
+        throw Server::exception(RED "Error: listen is not set" RESET);
     if (file.good()) {
         file.seekg(-line.length(), ios_base::cur);
     }
-}
-
-static int getKeyIndex(string key)
-{
-    string types[] = {"listen", "server_name", "host", "root", "client_max_body_size"};
-
-    for (size_t i = 0; i < 6; i++)
-        if (key == types[i])
-            return (i);
-    return (-1);
 }
 
 void Server::setListen(int port)
@@ -137,58 +126,14 @@ void Server::setClientMaxBodySize(string size)
 
 void Server::setErrorPage(string error_page)
 {
-    _error_page.push_back(Utils::strtoi(error_page));
+    size_t pos = error_page.find_first_of(" ");
+    if (pos == string::npos) {
+        throw invalid_argument("Error: invalid error_page format");
+    }
+    int key = Utils::strtoi(Utils::trim(error_page.substr(0, pos)));
+    string value = Utils::trim(error_page.substr(pos + 1));
+
+    map<int, string> mapErrorPage;
+    mapErrorPage[key] = value;
+    _error_page.push_back(mapErrorPage);
 }
-
-// static int checkInsideRoute(string config)
-// {
-//     string type[] = {"autoindex", "root", "allow_methods", "index", "cgi", "_redirect"};  // adicionar outros
-
-//     for (int i = 0; i < 6; i++)
-//         if (config == type[i])
-//             return (i);
-//     return (-1);
-// }
-
-// void Server::setRoute(vector<string> lines, size_t& i)
-// {
-//     static int routeIndex;
-
-//     _route.push_back(createRoute());
-
-//     for (; i < lines.size(); i++) {
-//         string key, value;
-//         stringstream ss(lines[i]);
-
-//         if (getline(ss, key, '=') && getline(ss, value)) {
-//             switch (checkInsideRoute(trim(key))) {
-//                 case AUTOINDEX:
-//                     _route[routeIndex]._autoIndex = (trim(value) == "on") ? true : false;
-//                     break;
-
-//                 case RROOT:
-//                     _route[routeIndex]._root = setRoot(trim(value));
-//                     break;
-
-//                 case AMETHODS:
-//                     _route[routeIndex]._allowMethods = setMethods(trim(value));
-//                     break;
-
-//                 case INDEX:
-//                     _route[routeIndex]._index = setIndex(trim(value));
-//                     break;
-
-//                 case CGI:
-//                     _route[routeIndex]._cgi = setCGI(trim(value));
-//                     break;
-
-//                 case REDIRECT:
-//                     _route[routeIndex]._redirect = setRedirect(trim(value));
-//                     break;
-//             }
-//         }
-//         else if (lines[i] == "}")
-//             break;
-//     }
-//     ++routeIndex;
-// }
