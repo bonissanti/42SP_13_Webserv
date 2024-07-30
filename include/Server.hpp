@@ -25,7 +25,7 @@ class Server {
         string _server_name;
         string _root;
         int _client_max_body_size;
-        vector<int> _error_page;
+        vector< map<int, string> > _error_page;
         vector<Route> _routes;
 
     public:
