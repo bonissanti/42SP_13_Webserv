@@ -3,9 +3,6 @@
 
 #include <map>
 #include <string>
-
-#include "defines.hpp"
-
 class Response {
     private:
         int _statusCode;
@@ -21,6 +18,12 @@ class Response {
         void setBody(const string& body);
         void setHeader(const string& field, const string& value);
         string toString() const;
+        int status_code_;
+        string status_message_;
+        map<string, string> headers_;
+        string body_;
+
+        string getStatusMessage(int code) const;
 };
 
 #endif  // RESPONSE_HPP

@@ -197,6 +197,7 @@ void Route::setCgi(string& cgi)
     _cgi = cgi;
 }
 
+
 Route::exception::exception(const string& msg) : msg(msg) {}
 
 Route::exception::~exception() throw() {}

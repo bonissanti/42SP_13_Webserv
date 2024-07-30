@@ -7,6 +7,7 @@
 #include "Route.hpp"
 #include "Utils.hpp"
 #include "defines.hpp"
+#include "Route.hpp"
 
 typedef enum {
     DEFAULT = 0,
@@ -25,16 +26,16 @@ typedef struct s_timeval {
         long tvuSec;
 } t_timeval;
 
+
 class Server {
     private:
-        int _listen;
+
         int _socketFd;
         int _pollFd;
         string _server_name;
         string _root;
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
-        vector<Route> _routes;
 
     public:
         friend class Response;
@@ -46,9 +47,10 @@ class Server {
         void setClientMaxBodySize(string size);
         void setErrorPage(string error_page);
         void setListen(int port);
-        static vector<Server> creatingServers(int numServers, vector<string> lines);
         static void startServer(vector<Server>& servers);
         static void setupPolls(vector<Server> servers);
+        static void startServer(vector<Server> servers);
+        void setRoute(vector<string> routeLines, size_t& i);
 
         class exception : public std::exception {
             private:
