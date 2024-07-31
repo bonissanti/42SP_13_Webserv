@@ -8,18 +8,22 @@ class Request {
     public:
         Request(const string &raw_request);
         ~Request();
-		Request(); //remover apos testes
+		Request();
 
         string getMethod() const;
         string getPath() const;
 		string getVersion() const;
         string getHeader(const string &field) const;
         string getBody() const;
-        void parseRequest(const string &raw_request); //mover para private depois dos testes
         void printRequest() const;
 
     private:
-		bool validateFields() const;
+
+		bool validateMethod() const;
+        bool validateHeaders() const;
+        bool checkVersion() const;
+
+        void parseRequest(const string &raw_request);
 
         string method_;
         string path_;

@@ -22,11 +22,10 @@ int main(int argc, char** argv)
             servers[i].create(file);
         }
         
-        while (1) {
-            
-        }
     }
     catch (const Validate::exception& e) {
         cerr << e.what() << '\n';
     }
+
+    
 }

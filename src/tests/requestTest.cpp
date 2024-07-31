@@ -3,16 +3,11 @@
 #include "Request.hpp"
 #include <iostream>
 
-class RequestTest {
-protected:
-    Request request;
-};
-
-TEST_CASE_METHOD(RequestTest, "ParsesValidRequest") {
+TEST_CASE_METHOD(Request, "ParsesValidRequest") {
     std::string raw_request = "GET /index.html HTTP/1.1\r\n"
                               "Host: example.com\r\n"
                               "Connection: close\r\n\r\n";
-    request.parseRequest(raw_request);
+    Request request(raw_request);
 
     REQUIRE(request.getMethod() == "GET");
     REQUIRE(request.getPath() == "/index.html");
@@ -20,14 +15,16 @@ TEST_CASE_METHOD(RequestTest, "ParsesValidRequest") {
     REQUIRE(request.getHeader("Connection") == "close");
 	
 	request.printRequest();
+    cout << endl;
 }
 
-TEST_CASE_METHOD(RequestTest, "ParsesRequestWithBody") {
+TEST_CASE_METHOD(Request, "ParsesRequestWithBody") {
     std::string raw_request = "POST /submit HTTP/1.1\r\n"
                               "Host: example.com\r\n"
                               "Content-Length: 11\r\n\r\n"
                               "Hello World";
-    request.parseRequest(raw_request);
+
+    Request request(raw_request);
 
     REQUIRE(request.getMethod() == "POST");
     REQUIRE(request.getPath() == "/submit");

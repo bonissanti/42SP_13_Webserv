@@ -50,14 +50,35 @@ void Request::parseRequest(const string &raw_request) {
         }
     }
 
-    // The rest of the request_stream, if any, is the body
+    //Get body
     getline(request_stream, body_, '\0');
 }
 
-bool Request::validateFields() const {
-    if (method_ != "GET" && method_ != "POST" && method_ != "DELETE")
+bool Request::validateMethod() const {
+    if (method_ != "GET" && method_ != "POST" && method_ != "DELETE") {
+        cout << "Error: invalid method" << endl;
         return false;
-    
+    }
+
+    return true;
+}
+
+bool Request::validateHeaders() const {
+    if (headers_.find("Host") == headers_.end()) {
+        cout << "Error: missing Host" << endl;
+        return false;
+    }
+
+    if (method_.compare("POST") == 0 && headers_.find("Content-Length") == headers_.end()) {
+        cout << "Error: missing Content-Length" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool Request::checkVersion() const {
+    return true;
 }
 
 void Request::printRequest() const {
