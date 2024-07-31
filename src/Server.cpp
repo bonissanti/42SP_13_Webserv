@@ -135,6 +135,7 @@ void Server::setErrorPage(string error_page)
     map<int, string> mapErrorPage;
     mapErrorPage[key] = value;
     _error_page.push_back(mapErrorPage);
+}
 
 void Server::startServer(vector<Server>& servers)
 {
