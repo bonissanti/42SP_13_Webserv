@@ -20,16 +20,15 @@ HEADER	= ./include/
 ################################# Flags #####################################
 
 CPP			= c++
-CFLAGS		= -Wall -Werror -Wextra -std=c++98 -g3
+CFLAGS		= -Wall -Werror -Wextra -std=c++98 -g
 DEBUG_FLAG	= -D DEBUG
 
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
-FILES		= Validate.cpp \
-			Utils.cpp \
-			# Server.cpp \
-			# Setters.cpp \
+FILES		= Utils.cpp \
+			Server.cpp \
+			Route.cpp \
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

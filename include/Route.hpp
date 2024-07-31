@@ -1,6 +1,7 @@
 #ifndef ROUTE_HPP
 #define ROUTE_HPP
 
+#include "Utils.hpp"
 #include "defines.hpp"
 
 class Route {
@@ -19,6 +20,7 @@ class Route {
         Route();
         ~Route();
 
+        void create(const string& line, ifstream& file);
         bool getAutoIndex() const;
         bool getCgiOn() const;
         string getRoot() const;

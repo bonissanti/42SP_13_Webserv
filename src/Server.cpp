@@ -1,17 +1,12 @@
 #include "../include/Server.hpp"
-
-static int getKeyIndex(string key);
+#include "../include/Route.hpp"
 
 Server::Server()
 {
-    status_request status = DEFAULT;
-
-    _listen = 8080;
+    _listen = 100;
     _client_max_body_size = 2 * MB;
     _server_name = "default";
     _root = "/data/";
-
-    _error_page.push_back(status);
 }
 
 Server::~Server() {}
@@ -29,11 +24,11 @@ void Server::create(ifstream& file)
     string line;
     while (getline(file, line)) {
         line = Utils::trim(line);
-        if (line.empty()) {
+        if (line.empty() or line[0] == '#') {
             continue;
         }
 
-        if (line.find("server") == 0)
+        if (line.substr(0, 2) == "}," and line.length() == 2)
             break;
 
         string key, value;
@@ -56,25 +51,18 @@ void Server::create(ifstream& file)
                 throw Server::exception("Unknown configuration key: " + key);
         }
         else if (line.find("route") == 0) {
-            Route route;
-            // create a route and push it on the vector
-            _routes.push_back(route);
+            Route new_route;
+
+            new_route.create(line, file);
+            _routes.push_back(new_route);
         }
     }
 
+    if (_listen == 100)
+        throw Server::exception(RED "Error: listen is not set" RESET);
     if (file.good()) {
         file.seekg(-line.length(), ios_base::cur);
     }
-}
-
-static int getKeyIndex(string key)
-{
-    string types[] = {"listen", "server_name", "host", "root", "client_max_body_size"};
-
-    for (size_t i = 0; i < 6; i++)
-        if (key == types[i])
-            return (i);
-    return (-1);
 }
 
 void Server::setListen(int port)
@@ -137,58 +125,133 @@ void Server::setClientMaxBodySize(string size)
 
 void Server::setErrorPage(string error_page)
 {
-    _error_page.push_back(Utils::strtoi(error_page));
+    size_t pos = error_page.find_first_of(" ");
+    if (pos == string::npos) {
+        throw invalid_argument("Error: invalid error_page format");
+    }
+    int key = Utils::strtoi(Utils::trim(error_page.substr(0, pos)));
+    string value = Utils::trim(error_page.substr(pos + 1));
+
+    map<int, string> mapErrorPage;
+    mapErrorPage[key] = value;
+    _error_page.push_back(mapErrorPage);
+
+void Server::startServer(vector<Server>& servers)
+{
+    int inUse = 1;
+    struct sockaddr_in serverAddr;
+
+    bzero(&serverAddr, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    for (size_t i = 0; i < servers.size(); i++) {
+        serverAddr.sin_port = htons(servers[i]._listen);
+        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0);
+
+        if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
+            throw Server::exception(RED "Error: setsockopt failed" RESET);
+
+        int flags = fcntl(servers[i]._socketFd, F_GETFL);
+        if (flags < 0)
+            throw Server::exception(RED "Error: fcntl failed" RESET);
+
+        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
+            throw Server::exception(RED "Error: fcntl failed" RESET);
+
+        if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+            if (errno == EADDRINUSE)
+                throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
+        }
+        if (listen(servers[i]._socketFd, 10) < 0)
+            throw Server::exception(RED "Error: listen failed" RESET);
+    }
 }
 
-// static int checkInsideRoute(string config)
-// {
-//     string type[] = {"autoindex", "root", "allow_methods", "index", "cgi", "_redirect"};  // adicionar outros
+static void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
+{
+    int clientFd;
+    socklen_t addrlen;
+    struct sockaddr_in clientAddr;
 
-//     for (int i = 0; i < 6; i++)
-//         if (config == type[i])
-//             return (i);
-//     return (-1);
-// }
+    addrlen = sizeof(clientAddr);
+    clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
+    if (clientFd == -1) {
+        if (errno == EWOULDBLOCK)
+            cout << "No pending connections for now" << endl;
+        else
+            perror("Error: accept failed");
+    }
+    else
+        cout << "New communication established!" << endl;  // log message
 
-// void Server::setRoute(vector<string> lines, size_t& i)
-// {
-//     static int routeIndex;
+    struct pollfd commFd;
 
-//     _route.push_back(createRoute());
+    commFd.fd = clientFd;
+    commFd.events = POLLIN | POLLOUT;
+    commFd.revents = 0;
+    pollFds.push_back(commFd);
+}
 
-//     for (; i < lines.size(); i++) {
-//         string key, value;
-//         stringstream ss(lines[i]);
+static void readRequest(vector<struct pollfd>& pollFds, int i)
+{
+    char buffer[65535];
+    static int a;  // deletar
+    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
+    if (bytesReceived > 0)
+        cout << ++a << endl;  // deletar
+                              // cout << "Received from client: " << string(buffer, bytesReceived) << endl;
+    else if (bytesReceived == 0)
+        cout << "Connection closed" << endl;
+    else
+        perror("Error: recv failed");
 
-//         if (getline(ss, key, '=') && getline(ss, value)) {
-//             switch (checkInsideRoute(trim(key))) {
-//                 case AUTOINDEX:
-//                     _route[routeIndex]._autoIndex = (trim(value) == "on") ? true : false;
-//                     break;
+    close(pollFds[i].fd);
+    pollFds.erase(pollFds.begin() + i);
+}
 
-//                 case RROOT:
-//                     _route[routeIndex]._root = setRoot(trim(value));
-//                     break;
+static void sendResponse(vector<struct pollfd>& pollFds, int i)
+{
+    string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
 
-//                 case AMETHODS:
-//                     _route[routeIndex]._allowMethods = setMethods(trim(value));
-//                     break;
+    send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
+    cout << "Message sent" << endl;
 
-//                 case INDEX:
-//                     _route[routeIndex]._index = setIndex(trim(value));
-//                     break;
+    close(pollFds[i].fd);
+    pollFds.erase(pollFds.begin() + i);
+}
 
-//                 case CGI:
-//                     _route[routeIndex]._cgi = setCGI(trim(value));
-//                     break;
+void Server::setupPolls(vector<Server> servers)
+{
+    int returnValue;
+    vector<struct pollfd> pollFds(servers.size());
 
-//                 case REDIRECT:
-//                     _route[routeIndex]._redirect = setRedirect(trim(value));
-//                     break;
-//             }
-//         }
-//         else if (lines[i] == "}")
-//             break;
-//     }
-//     ++routeIndex;
-// }
+    for (size_t i = 0; i < servers.size(); i++) {
+        pollFds[i].fd = servers[i]._socketFd;
+        pollFds[i].events = POLLIN | POLLOUT;
+    }
+    while (true) {
+        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
+        switch (returnValue) {
+            case 0:
+                cout << "Error: poll Timeout" << endl;
+                break;
+
+            case -1:
+                cout << "Error: poll failed" << endl;
+                break;
+
+            default:
+                for (size_t i = 0; i < pollFds.size(); i++) {
+                    if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
+                        acceptNewConnection(pollFds[i].fd, pollFds);
+                    }
+                    else if (pollFds[i].revents & POLLIN)
+                        readRequest(pollFds, i);
+                    else if (pollFds[i].revents & POLLOUT)
+                        sendResponse(pollFds, i);
+                }
+                break;
+        }
+    }
+}
