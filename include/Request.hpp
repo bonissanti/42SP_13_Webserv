@@ -10,26 +10,29 @@ class Request {
         ~Request();
 		Request();
 
-        string getMethod() const;
-        string getPath() const;
-		string getVersion() const;
-        string getHeader(const string &field) const;
-        string getBody() const;
-        void printRequest() const;
+        string  getMethod() const;
+        string  getPath() const;
+		string  getVersion() const;
+        string  getHeader(const string &field) const;
+        string  getBody() const;
+        void    printRequest() const;
+        bool    validateRequest(string& errorResponse) const;
 
     private:
 
-		bool validateMethod() const;
-        bool validateHeaders() const;
-        bool checkVersion() const;
+		bool    validateMethod() const;
+        bool    validateHeaders() const;
+        bool    validateVersion() const;
 
-        void parseRequest(const string &raw_request);
+        void    parseRequest(const string &raw_request);
 
-        string method_;
-        string path_;
-        string version_;
+        string  method_;
+        string  path_;
+        string  version_;
         map<string, string> headers_;
-        string body_;
+        string  body_;
 };
+
+void handle_request(int client_socket);
 
 #endif  // REQUEST_HPP
