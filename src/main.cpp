@@ -20,6 +20,8 @@ int main(int argc, char** argv)
         }
         Server::startServer(servers);
         Server::setupPolls(servers);
+  
+>>>>>>> master
     }
     catch (const Server::exception& e) {
         cerr << e.what() << '\n';
