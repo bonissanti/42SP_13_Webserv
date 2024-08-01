@@ -1,4 +1,9 @@
 #include "Request.hpp"
+#include <algorithm>
+#include <set>
+#include <string>
+
+//-------CONSTRUCTORS---------
 
 Request::Request(const string &raw_request) {
     parseRequest(raw_request);
@@ -6,7 +11,11 @@ Request::Request(const string &raw_request) {
 
 Request::Request() {}
 
+//---------DESTRUCTOR---------
+
 Request::~Request() {}
+
+//----------GETTERS-----------
 
 string Request::getMethod() const {
     return method_;
@@ -32,21 +41,35 @@ string Request::getHeader(const string &field) const {
     return "";
 }
 
+//---------MEMBER FUNCTIONS----------
+//---------PARSER FUNCTIONS----------
+
 void Request::parseRequest(const string &raw_request) {
     istringstream request_stream(raw_request);
     string line;
-    getline(request_stream, line);
     
+    if (!getline(request_stream, line) || line.empty()) {
+        throw runtime_error("Invalid request line");
+    }
+    
+    //Get message
     istringstream line_stream(line);
-    line_stream >> method_ >> path_ >> version_;
-    // getline(line_stream, version_, ' ');
-
+    if (!(line_stream >> method_ >> path_ >> version_)) {
+        throw runtime_error("Invalid request line format");
+    }
+    transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
+    
+    //Get headers
     while (getline(request_stream, line) && line != "\r") {
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string key = line.substr(0, colon_pos);
             string value = line.substr(colon_pos + 2, line.length() - colon_pos - 3);
+            transform(key.begin(), key.end(), key.begin(), ::tolower);
+            transform(value.begin(), value.end(), value.begin(), ::tolower);
             headers_[key] = value;
+        } else {
+            throw runtime_error("Invalid header format");
         }
     }
 
@@ -54,39 +77,83 @@ void Request::parseRequest(const string &raw_request) {
     getline(request_stream, body_, '\0');
 }
 
+//---------VALIDATION FUNCTIONS----------
+
 bool Request::validateMethod() const {
-    if (method_ != "GET" && method_ != "POST" && method_ != "DELETE") {
+    static const set<string> valid_methods = {"GET", "POST", "DELETE"};
+    if (valid_methods.find(method_) == valid_methods.end()) {
         cout << "Error: invalid method" << endl;
         return false;
     }
-
     return true;
 }
 
 bool Request::validateHeaders() const {
-    if (headers_.find("Host") == headers_.end()) {
+    if (headers_.find("host") == headers_.end()) {
         cout << "Error: missing Host" << endl;
         return false;
     }
 
-    if (method_.compare("POST") == 0 && headers_.find("Content-Length") == headers_.end()) {
+    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
         cout << "Error: missing Content-Length" << endl;
         return false;
     }
-
     return true;
 }
 
-bool Request::checkVersion() const {
+bool Request::validateVersion() const {
+    if (version_ != "HTTP/1.1") {
+        cout << "Error: invalid HTTP version" << endl;
+        return false;
+    }
     return true;
 }
+
+string generateErrorResponse(int statusCode) {
+    
+    map<int, string> statusMessages = {
+        {400, "Bad Request"},
+        {404, "Not Found"},
+        {500, "Internal Server Error"},
+        // Add more status codes and messages as needed
+    };
+    string statusMessage = statusMessages[statusCode];
+    string response = "HTTP/1.1 " + to_string(statusCode) + " " + statusMessage + "\r\n";
+    response += "Content-Type: text/plain\r\n";
+    response += "Content-Length: " + to_string(statusMessage.length()) + "\r\n";
+    response += "\r\n";
+    response += statusMessage;
+    return response;
+}
+
+// Implement later
+bool Request::validateRequest(string& errorResponse) const {
+    if (!validateMethod()) {
+        errorResponse = generateErrorResponse(400);
+        return false;
+    }
+    if (!validateVersion()) {
+        errorResponse = generateErrorResponse(400);
+        return false;
+    }
+    if (!validateHeaders()) {
+        errorResponse = generateErrorResponse(400);
+        return false;
+    }
+    return true;
+}
+
+//-----------UTILS-------------
+
+
 
 void Request::printRequest() const {
     cout << method_ << " " << path_ << " " << version_ << endl;
+
     vector<string> key, value;
     for (map<string, string>::const_iterator it = headers_.begin(); it != headers_.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
-    } 
+    }
+
     cout << body_ << endl;
 }
-      
