@@ -1,0 +1,55 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
+{
+	"name": "C++",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers-contrib/features/zsh-plugins:0": {},
+		"ghcr.io/jungaretti/features/vim:1": {},
+		"ghcr.io/duduribeiro/devcontainer-features/tmux:1": {},
+		"ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {},
+		"ghcr.io/devcontainers/features/git:1": {
+			"ppa": true,
+			"version": "latest"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools-extension-pack",
+				"xaver.clang-format",
+				"Codeium.codeium",
+				"naumovs.color-highlight",
+				"fabiospampinato.vscode-diff",
+				"donjayamanne.git-extension-pack",
+				"codezombiech.gitignore",
+				"VisualStudioExptTeam.vscodeintellicode",
+				"VisualStudioExptTeam.intellicode-api-usage-examples",
+				"VisualStudioExptTeam.vscodeintellicode-completions",
+				"ms-vsliveshare.vsliveshare",
+				"ziyasal.vscode-open-in-github",
+				"christian-kohler.path-intellisense",
+				"humao.rest-client",
+				"Gruntfuggly.todo-tree",
+				"donjayamanne.githistory",
+				"eamodio.gitlens",
+				"ms-vscode.hexeditor",
+				"kisstkondoros.vscode-gutter-preview",
+				"neptunedesign.vs-sequential-number",
+				"foxundermoon.shell-format"
+			]
+		}
+	}
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "gcc -v",
+	// Configure tool-specific properties.
+	// "customizations": {},
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
