@@ -1,7 +1,11 @@
-#include "Request.hpp"
+#include "../include/Request.hpp"
 #include <algorithm>
 #include <set>
 #include <string>
+#include <sstream> // Add this line to include the <sstream> header
+#include <string> // Add this line to include the <string> header
+
+// ...
 
 //-------CONSTRUCTORS---------
 
@@ -44,36 +48,44 @@ string Request::getHeader(const string &field) const {
 //---------MEMBER FUNCTIONS----------
 //---------PARSER FUNCTIONS----------
 
+// Member functions
 void Request::parseRequest(const string &raw_request) {
     istringstream request_stream(raw_request);
     string line;
-    
+
     if (!getline(request_stream, line) || line.empty()) {
         throw runtime_error("Invalid request line");
     }
-    
-    //Get message
+
+    parseRequestLine(line);
+    parseHeaders(request_stream);
+    parseBody(request_stream);
+}
+
+void Request::parseRequestLine(const string &line) {
     istringstream line_stream(line);
     if (!(line_stream >> method_ >> path_ >> version_)) {
         throw runtime_error("Invalid request line format");
     }
     transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
-    
-    //Get headers
+}
+
+void Request::parseHeaders(istringstream &request_stream) {
+    string line;
     while (getline(request_stream, line) && line != "\r") {
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string key = line.substr(0, colon_pos);
             string value = line.substr(colon_pos + 2, line.length() - colon_pos - 3);
             transform(key.begin(), key.end(), key.begin(), ::tolower);
-            transform(value.begin(), value.end(), value.begin(), ::tolower);
             headers_[key] = value;
         } else {
             throw runtime_error("Invalid header format");
         }
     }
+}
 
-    //Get body
+void Request::parseBody(istringstream &request_stream) {
     getline(request_stream, body_, '\0');
 }
 
@@ -111,12 +123,11 @@ bool Request::validateVersion() const {
 
 string generateErrorResponse(int statusCode) {
     
-    map<int, string> statusMessages = {
-        {400, "Bad Request"},
-        {404, "Not Found"},
-        {500, "Internal Server Error"},
-        // Add more status codes and messages as needed
-    };
+    map<int, string> statusMessages;
+    statusMessages.insert(std::make_pair(400, "Bad Request"));
+    statusMessages.insert(std::make_pair(404, "Not Found"));
+    statusMessages.insert(std::make_pair(500, "Internal Server Error"));
+
     string statusMessage = statusMessages[statusCode];
     string response = "HTTP/1.1 " + to_string(statusCode) + " " + statusMessage + "\r\n";
     response += "Content-Type: text/plain\r\n";
@@ -126,7 +137,6 @@ string generateErrorResponse(int statusCode) {
     return response;
 }
 
-// Implement later
 bool Request::validateRequest(string& errorResponse) const {
     if (!validateMethod()) {
         errorResponse = generateErrorResponse(400);
@@ -144,8 +154,6 @@ bool Request::validateRequest(string& errorResponse) const {
 }
 
 //-----------UTILS-------------
-
-
 
 void Request::printRequest() const {
     cout << method_ << " " << path_ << " " << version_ << endl;

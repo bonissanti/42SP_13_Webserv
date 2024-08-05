@@ -15,21 +15,26 @@ class Request {
 		string  getVersion() const;
         string  getHeader(const string &field) const;
         string  getBody() const;
+
         void    printRequest() const;
         bool    validateRequest(string& errorResponse) const;
+        void    parseRequest(const string &raw_request);
 
     private:
-
 		bool    validateMethod() const;
         bool    validateHeaders() const;
         bool    validateVersion() const;
 
-        void    parseRequest(const string &raw_request);
+        void parseRequestLine(const string &line);
+        void parseHeaders(istringstream &request_stream);
+        void parseBody(istringstream &request_stream);
 
+        string generateErrorResponse(int statusCode) const;
+
+        map<string, string> headers_;
         string  method_;
         string  path_;
         string  version_;
-        map<string, string> headers_;
         string  body_;
 };
 
