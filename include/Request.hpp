@@ -45,6 +45,4 @@ class Request {
         int     statusCode_;
 };
 
-void handle_request(int client_socket);
-
 #endif  // REQUEST_HPP
