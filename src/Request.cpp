@@ -10,10 +10,11 @@
 //-------CONSTRUCTORS---------
 
 Request::Request(const string &raw_request) {
+    isCgi_ = false;
     parseRequest(raw_request);
 }
 
-Request::Request() {}
+Request::Request() : isCgi_(false) {}
 
 //---------DESTRUCTOR---------
 
@@ -43,6 +44,10 @@ string Request::getHeader(const string &field) const {
         return it->second;
     }
     return "";
+}
+
+bool Request::getIsCgi() const {
+    return isCgi_;
 }
 
 //---------MEMBER FUNCTIONS----------
@@ -87,6 +92,11 @@ void Request::parseHeaders(istringstream &request_stream) {
 
 void Request::parseBody(istringstream &request_stream) {
     getline(request_stream, body_, '\0');
+}
+
+void Request::isCgiRequest() {
+    if (path_.find("/cgi-bin/") != std::string::npos)
+        isCgi_ = true;
 }
 
 //---------VALIDATION FUNCTIONS----------
