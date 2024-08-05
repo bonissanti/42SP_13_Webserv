@@ -22,12 +22,13 @@ class Request {
         bool    validateRequest() const;
         void    parseRequest(const string &raw_request);
 
+        void    isCgiRequest();
+
     private:
 		bool    validateMethod() const;
         bool    validateHeaders() const;
         bool    validateVersion() const;
 
-        void    isCgiRequest();
 
         void    parseRequestLine(const string &line);
         void    parseHeaders(istringstream &request_stream);
@@ -43,7 +44,5 @@ class Request {
         bool    isCgi_;
         int     statusCode_;
 };
-
-void handle_request(int client_socket);
 
 #endif  // REQUEST_HPP
