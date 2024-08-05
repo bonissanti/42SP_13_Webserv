@@ -24,11 +24,7 @@ void Route::create(const string& line, ifstream& file)
     currentLine = Utils::trim(currentLine);
 
     pos = currentLine.find(' ');
-    if (pos != string::npos and currentLine.find("redirect{") == string::npos) {
-        int pos_col = currentLine.find('{') - 1;
-        _route = Utils::trim(currentLine.substr(6, pos_col - 6));
-    }
-    else if (pos != string::npos) {
+    if (pos != string::npos) {
         int pos_col = currentLine.find('{');
         _route = Utils::trim(currentLine.substr(6, pos_col - 6));
     }
@@ -46,11 +42,8 @@ void Route::create(const string& line, ifstream& file)
         if (currentLine[0] == '#' or currentLine.empty())
             continue;
         if (pos != string::npos) {
-            key = currentLine.substr(0, pos);
-            value = currentLine.substr(pos + 1);
-
-            key = Utils::trim(key);
-            value = Utils::trim(value);
+            key = Utils::trim(currentLine.substr(0, pos));
+            value = Utils::trim(currentLine.substr(pos + 1));
 
             if (key == "allow_methods")
                 setAllowMethods(value);
@@ -74,6 +67,7 @@ void Route::create(const string& line, ifstream& file)
         else
             throw Route::exception("Error: Invalid configuration line: " + currentLine);
     }
+
 }
 
 string Route::getRoute() const
@@ -167,10 +161,7 @@ void Route::setAllowMethods(const string& allowMethods)
 
 void Route::setIndex(string& index)
 {
-    if (index[0] == '/')
-        index.erase(index.begin());
-    if (index.substr(index.length() - 1) == "/")
-        index.erase(index.length() - 1);
+    _index = index;
 }
 
 void Route::setRedirect(const string& redirect)
