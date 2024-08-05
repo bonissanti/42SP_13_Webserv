@@ -21,16 +21,10 @@ typedef enum {
     MOVED_PERMANENTLY = 301,
 } status_request;
 
-typedef struct s_timeval {
-        long tvSec;
-        long tvuSec;
-} t_timeval;
-
-
 class Server {
     private:
 
-        int _listen;
+		int _listen;
         int _socketFd;
         int _pollFd;
         string _server_name;

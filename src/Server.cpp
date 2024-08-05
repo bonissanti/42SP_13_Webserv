@@ -1,4 +1,5 @@
 #include "../include/Server.hpp"
+
 #include "../include/Route.hpp"
 #include "../include/Request.hpp"
 #include <map>
@@ -23,14 +24,20 @@ const char* Server::Server::exception::what() const throw()
 
 void Server::create(ifstream& file)
 {
+    bool routeFound = false;
+
     string line;
     while (getline(file, line)) {
+        // test if last line is a last route
+        if (routeFound and line.substr(0, 1) == "}" and line.length() == 1)
+            break;
+
         line = Utils::trim(line);
         if (line.empty() or line[0] == '#') {
             continue;
         }
 
-        if (line.substr(0, 2) == "}," and line.length() == 2)
+        if ((line.substr(0, 2) == "}," and line.length() == 2) or (line.substr(0, 1) == "}" and line.length() == 1))
             break;
 
         string key, value;
@@ -54,17 +61,14 @@ void Server::create(ifstream& file)
         }
         else if (line.find("route") == 0) {
             Route new_route;
-
             new_route.create(line, file);
             _routes.push_back(new_route);
+            routeFound = true;
         }
     }
 
     if (_listen == 100)
         throw Server::exception(RED "Error: listen is not set" RESET);
-    if (file.good()) {
-        file.seekg(-line.length(), ios_base::cur);
-    }
 }
 
 void Server::setListen(int port)
@@ -144,7 +148,7 @@ void Server::startServer(vector<Server>& servers)
     int inUse = 1;
     struct sockaddr_in serverAddr;
 
-    bzero(&serverAddr, sizeof(serverAddr));
+    bzero(&serverAddr, sizeof(serverAddr)); // Não pode usar, função C.
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 

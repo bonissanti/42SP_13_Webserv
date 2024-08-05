@@ -24,7 +24,7 @@ class Response {
         map<string, string> headers_;
         string body_;
 
-        string getStatusMessage(int code) const;
+        // string getStatusMessage(int code) const;
 };
 
 #endif  // RESPONSE_HPP
