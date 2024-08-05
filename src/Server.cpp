@@ -200,12 +200,15 @@ static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-    if (bytesReceived > 0)
+    if (bytesReceived > 0) {
         requests[pollFds[i].fd] = Request(buffer);
-    else if (bytesReceived == 0)
+    } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-    else
+        requests.erase(pollFds[i].fd);
+    } else {
         perror("Error: recv failed");
+        requests.erase(pollFds[i].fd);
+    }
 
     close(pollFds[i].fd);
     pollFds.erase(pollFds.begin() + i);

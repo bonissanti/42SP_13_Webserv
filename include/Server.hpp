@@ -30,12 +30,14 @@ typedef struct s_timeval {
 class Server {
     private:
 
+        int _listen;
         int _socketFd;
         int _pollFd;
         string _server_name;
         string _root;
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
+        vector<Route> _routes;
 
     public:
         friend class Response;
@@ -49,7 +51,6 @@ class Server {
         void setListen(int port);
         static void startServer(vector<Server>& servers);
         static void setupPolls(vector<Server> servers);
-        static void startServer(vector<Server> servers);
         void setRoute(vector<string> routeLines, size_t& i);
 
         class exception : public std::exception {
