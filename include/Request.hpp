@@ -15,6 +15,7 @@ class Request {
 		string  getVersion() const;
         string  getHeader(const string &field) const;
         string  getBody() const;
+        bool    getIsCgi() const;
 
         void    printRequest() const;
         bool    validateRequest(string& errorResponse) const;
@@ -25,17 +26,20 @@ class Request {
         bool    validateHeaders() const;
         bool    validateVersion() const;
 
-        void parseRequestLine(const string &line);
-        void parseHeaders(istringstream &request_stream);
-        void parseBody(istringstream &request_stream);
+        void    isCgiRequest();
 
-        string generateErrorResponse(int statusCode) const;
+        void    parseRequestLine(const string &line);
+        void    parseHeaders(istringstream &request_stream);
+        void    parseBody(istringstream &request_stream);
+
+        string  generateErrorResponse(int statusCode) const;
 
         map<string, string> headers_;
         string  method_;
         string  path_;
         string  version_;
         string  body_;
+        bool    isCgi_;
 };
 
 void handle_request(int client_socket);
