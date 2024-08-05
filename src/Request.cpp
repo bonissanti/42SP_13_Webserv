@@ -121,7 +121,7 @@ bool Request::validateMethod() const {
     valid_methods.push_back("DELETE");
 
     if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
-        cout << "Error: invalid method" << endl;
+        // cout << "Error: invalid method" << endl;
         return false;
     }
     return true;
@@ -129,20 +129,20 @@ bool Request::validateMethod() const {
 
 bool Request::validateHeaders() const {
     if (headers_.find("host") == headers_.end()) {
-        cout << "Error: missing Host" << endl;
+        // cout << "Error: missing Host" << endl;
         return false;
     }
 
     if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
-        cout << "Error: missing Content-Length" << endl;
+        // cout << "Error: missing Content-Length" << endl;
         return false;
     }
     return true;
 }
 
 bool Request::validateVersion() const {
-    if (version_ != "HTTP/1.1") {
-        cout << "Error: invalid HTTP version" << endl;
+    if (version_ != "HTTP/1.1" && version_ != "HTTP/1.0") {
+        // cout << "Error: invalid HTTP version" << endl;
         return false;
     }
     return true;
