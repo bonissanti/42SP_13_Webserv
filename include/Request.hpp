@@ -25,7 +25,7 @@ class Request {
         void    isCgiRequest();
 
     private:
-		bool    validateMethod() const;
+	bool    validateMethod() const;
         bool    validateHeaders() const;
         bool    validateVersion() const;
 
