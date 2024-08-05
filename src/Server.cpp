@@ -1,5 +1,4 @@
 #include "../include/Server.hpp"
-
 #include "../include/Route.hpp"
 
 Server::Server()
@@ -198,27 +197,11 @@ static void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds
     pollFds.push_back(commFd);
 }
 
-static void readRequest(vector<struct pollfd>& pollFds, int i)
-{
-    char buffer[65535];
-    static int a;  // deletar
-    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-    if (bytesReceived > 0)
-        cout << ++a << endl;  // deletar
-                              // cout << "Received from client: " << string(buffer, bytesReceived) << endl;
-    else if (bytesReceived == 0)
-        cout << "Connection closed" << endl;
-    else
-        perror("Error: recv failed");
 
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
-}
 
 static void sendResponse(vector<struct pollfd>& pollFds, int i)
 {
     string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
-
     send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
 
@@ -239,24 +222,24 @@ void Server::setupPolls(vector<Server> servers)
         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
         switch (returnValue) {
             case 0:
-                cout << "Error: poll Timeout" << endl;
-                break;
+            cout << "Error: poll Timeout" << endl;
+            break;
 
             case -1:
-                cout << "Error: poll failed" << endl;
-                break;
+            cout << "Error: poll failed" << endl;
+            break;
 
             default:
-                for (size_t i = 0; i < pollFds.size(); i++) {
-                    if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                        acceptNewConnection(pollFds[i].fd, pollFds);
-                    }
-                    else if (pollFds[i].revents & POLLIN)
-                        readRequest(pollFds, i);
-                    else if (pollFds[i].revents & POLLOUT)
-                        sendResponse(pollFds, i);
+            for (size_t i = 0; i < pollFds.size(); i++) {
+                if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
+                    acceptNewConnection(pollFds[i].fd, pollFds);
                 }
-                break;
+                else if (pollFds[i].revents & POLLIN)
+                    Request::readRequest(pollFds, i);
+                else if (pollFds[i].revents & POLLOUT)
+                    sendResponse(pollFds, i);
+            }
+            break;
         }
     }
 }

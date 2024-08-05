@@ -37,6 +37,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <wait.h>
 
 #include <cstring>
 #include <exception>
@@ -47,6 +48,8 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <cstdlib>
+#include <sstream>
 
 using namespace std;
 

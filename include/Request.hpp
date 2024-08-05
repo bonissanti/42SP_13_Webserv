@@ -7,18 +7,20 @@
 class Request {
     public:
         Request(const string &raw_request);
-        string getMethod() const;
-        string getPath() const;
-        string getHeader(const string &field) const;
-        string getBody() const;
-
+        string	getMethod() const;
+        string	getPath() const;
+        string	getHeader(const string &field) const;
+        string	getBody() const;
+        static void	executeCGI(void);
+        static void	readRequest(vector<struct pollfd>& pollFds, int i);
+        void	parseRequest(char buffer[], ssize_t bytesReceived);
+        
     private:
-        void parseRequest(const string &raw_request);
-
-        string method_;
-        string path_;
-        map<string, string> headers_;
-        string body_;
+        string _method;
+        string _path;
+        string _protocol;
+        map<string, string> _headers;
+        string _body;
 };
 
 #endif  // REQUEST_HPP
