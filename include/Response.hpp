@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+
 class Response {
     private:
         int _statusCode;
@@ -10,7 +11,7 @@ class Response {
         map<string, string> _headers;
         string _body;
 
-        string getStatusMessage(int code) const;
+        // string getStatusMessage(int code) const;
 
     public:
         Response();

@@ -16,9 +16,10 @@ class Request {
         string  getHeader(const string &field) const;
         string  getBody() const;
         bool    getIsCgi() const;
+        int     getStatusCode() const;
 
         void    printRequest() const;
-        bool    validateRequest(string& errorResponse) const;
+        bool    validateRequest() const;
         void    parseRequest(const string &raw_request);
 
     private:
@@ -40,6 +41,7 @@ class Request {
         string  version_;
         string  body_;
         bool    isCgi_;
+        int     statusCode_;
 };
 
 void handle_request(int client_socket);

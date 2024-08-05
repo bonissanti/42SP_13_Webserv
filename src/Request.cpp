@@ -3,7 +3,6 @@
 #include <set>
 #include <string>
 #include <sstream> // Add this line to include the <sstream> header
-#include <string> // Add this line to include the <string> header
 
 // ...
 
@@ -11,10 +10,13 @@
 
 Request::Request(const string &raw_request) {
     isCgi_ = false;
+    statusCode_ = 200;
     parseRequest(raw_request);
 }
 
-Request::Request() : isCgi_(false) {}
+Request::Request() : isCgi_(false) {
+    statusCode_ = 200;
+}
 
 //---------DESTRUCTOR---------
 
@@ -50,6 +52,10 @@ bool Request::getIsCgi() const {
     return isCgi_;
 }
 
+int Request::getStatusCode() const {
+    return statusCode_;
+}
+
 //---------MEMBER FUNCTIONS----------
 //---------PARSER FUNCTIONS----------
 
@@ -59,17 +65,23 @@ void Request::parseRequest(const string &raw_request) {
     string line;
 
     if (!getline(request_stream, line) || line.empty()) {
+        statusCode_ = 400;
         throw runtime_error("Invalid request line");
     }
 
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
+    
+    if (!validateRequest()) {
+        statusCode_ = 400;
+    }
 }
 
 void Request::parseRequestLine(const string &line) {
     istringstream line_stream(line);
     if (!(line_stream >> method_ >> path_ >> version_)) {
+        statusCode_ = 400;
         throw runtime_error("Invalid request line format");
     }
     transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
@@ -85,6 +97,7 @@ void Request::parseHeaders(istringstream &request_stream) {
             transform(key.begin(), key.end(), key.begin(), ::tolower);
             headers_[key] = value;
         } else {
+            statusCode_ = 400;
             throw runtime_error("Invalid header format");
         }
     }
@@ -102,8 +115,12 @@ void Request::isCgiRequest() {
 //---------VALIDATION FUNCTIONS----------
 
 bool Request::validateMethod() const {
-    static const set<string> valid_methods = {"GET", "POST", "DELETE"};
-    if (valid_methods.find(method_) == valid_methods.end()) {
+    static vector<string> valid_methods;
+    valid_methods.push_back("GET");
+    valid_methods.push_back("POST");
+    valid_methods.push_back("DELETE");
+
+    if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
         cout << "Error: invalid method" << endl;
         return false;
     }
@@ -131,37 +148,36 @@ bool Request::validateVersion() const {
     return true;
 }
 
-string generateErrorResponse(int statusCode) {
+// string generateErrorResponse(int statusCode) {
     
-    map<int, string> statusMessages;
-    statusMessages.insert(std::make_pair(400, "Bad Request"));
-    statusMessages.insert(std::make_pair(404, "Not Found"));
-    statusMessages.insert(std::make_pair(500, "Internal Server Error"));
+//     map<int, string> statusMessages;
+//     statusMessages.insert(std::make_pair(400, "Bad Request"));
+//     statusMessages.insert(std::make_pair(404, "Not Found"));
+//     statusMessages.insert(std::make_pair(500, "Internal Server Error"));
 
-    string statusMessage = statusMessages[statusCode];
-    string response = "HTTP/1.1 " + to_string(statusCode) + " " + statusMessage + "\r\n";
-    response += "Content-Type: text/plain\r\n";
-    response += "Content-Length: " + to_string(statusMessage.length()) + "\r\n";
-    response += "\r\n";
-    response += statusMessage;
-    return response;
-}
+//     string statusMessage = statusMessages[statusCode];
+//     string response = "HTTP/1.1 " + string::to_string(statusCode) + " " + statusMessage + "\r\n";
+//     response += "Content-Type: text/plain\r\n";
+//     response += "Content-Length: " + string::to_string(statusMessage.length()) + "\r\n";
+//     response += "\r\n";
+//     response += statusMessage;
+//     return response;
+// }
 
-bool Request::validateRequest(string& errorResponse) const {
-    if (!validateMethod()) {
-        errorResponse = generateErrorResponse(400);
-        return false;
-    }
-    if (!validateVersion()) {
-        errorResponse = generateErrorResponse(400);
-        return false;
-    }
-    if (!validateHeaders()) {
-        errorResponse = generateErrorResponse(400);
+bool Request::validateRequest() const {
+    if (!validateMethod() || !validateVersion() || !validateHeaders()) {
         return false;
     }
     return true;
 }
+
+// bool Request::validateRequest(string& errorResponse) const {
+//     if (!validateMethod() || !validateVersion() || !validateHeaders()) {
+//         errorResponse = generateErrorResponse(400);
+//         return false;
+//     }
+//     return true;
+// }
 
 //-----------UTILS-------------
 
