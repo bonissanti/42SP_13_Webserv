@@ -220,7 +220,7 @@ static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>
 
 static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
 {
-    string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
+    string hello = "HTTP/1.1 200/OK\r\nConnection: keep-alive\r\nHello from server";
 
     send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
@@ -257,7 +257,8 @@ void Server::setupPolls(vector<Server> servers)
                         acceptNewConnection(pollFds[i].fd, pollFds);
                     } else if (pollFds[i].revents & POLLIN) {
                         readRequest(pollFds, i, requests);
-                    } else if (pollFds[i].revents & POLLOUT) {
+                    } else if (pollFds[i].revents & POLLOUT && (requests.find(pollFds[i].fd) != requests.end()
+                        && requests[pollFds[i].fd].isReadyForResponse())) {
                         sendResponse(pollFds, i, requests);
                     }
                 }

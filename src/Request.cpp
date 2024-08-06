@@ -9,6 +9,7 @@
 
 Request::Request(const string &raw_request) {
     isCgi_ = false;
+    readyForResponse = false;
     statusCode_ = 200;
     parseRequest(raw_request);
 }
@@ -45,6 +46,10 @@ string Request::getHeader(const string &field) const {
         return it->second;
     }
     return "";
+}
+
+map<string, string> Request::getHeaders() const {
+    return headers_;
 }
 
 bool Request::getIsCgi() const {
@@ -170,14 +175,6 @@ bool Request::validateRequest() const {
     return true;
 }
 
-// bool Request::validateRequest(string& errorResponse) const {
-//     if (!validateMethod() || !validateVersion() || !validateHeaders()) {
-//         errorResponse = generateErrorResponse(400);
-//         return false;
-//     }
-//     return true;
-// }
-
 //-----------UTILS-------------
 
 void Request::printRequest() const {
@@ -189,4 +186,12 @@ void Request::printRequest() const {
     }
 
     cout << body_ << endl;
+}
+
+bool Request::isReadyForResponse() const {
+    return readyForResponse;
+}
+
+void Request::setReadyForResponse(bool ready) {
+    readyForResponse = ready;
 }

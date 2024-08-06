@@ -8,11 +8,12 @@ class Request {
     public:
         Request(const string &raw_request);
         ~Request();
-		Request();
+	Request();
 
+        map<string, string>  getHeaders() const;
         string  getMethod() const;
         string  getPath() const;
-		string  getVersion() const;
+	string  getVersion() const;
         string  getHeader(const string &field) const;
         string  getBody() const;
         bool    getIsCgi() const;
@@ -23,6 +24,8 @@ class Request {
         void    parseRequest(const string &raw_request);
 
         void    isCgiRequest();
+        bool    isReadyForResponse() const;
+        void    setReadyForResponse(bool ready);
 
     private:
 	bool    validateMethod() const;
@@ -42,6 +45,7 @@ class Request {
         string  version_;
         string  body_;
         bool    isCgi_;
+        bool    readyForResponse;
         int     statusCode_;
 };
 
