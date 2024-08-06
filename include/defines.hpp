@@ -37,6 +37,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/wait.h>
 
 #include <cstring>
 #include <exception>
