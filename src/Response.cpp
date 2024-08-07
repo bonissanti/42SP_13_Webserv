@@ -6,7 +6,7 @@ Response::Response(const Request& request) {
     status_code_ = request.getStatusCode();
     status_message_ = getStatusMessage(status_code_);
 
-    body_ = "Response to the request";
+    body_ = "<html><body><h2>Response to the request<h2><body><html>";
     headers_["Content-Type"] = "text/plain";
     
     stringstream ss;
