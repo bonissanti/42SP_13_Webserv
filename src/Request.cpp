@@ -11,11 +11,15 @@ Request::Request(const string &raw_request) {
     isCgi_ = false;
     readyForResponse = false;
     statusCode_ = 200;
+    buffer_ = "";
     parseRequest(raw_request);
 }
 
-Request::Request() : isCgi_(false) {
+Request::Request() {
+    isCgi_ = false;
+    readyForResponse = false;
     statusCode_ = 200;
+    buffer_ = "";
 }
 
 //---------DESTRUCTOR---------
@@ -65,12 +69,23 @@ int Request::getStatusCode() const {
 
 // Member functions
 void Request::parseRequest(const string &raw_request) {
-    istringstream request_stream(raw_request);
+    buffer_ .append(raw_request);
+    cout<< buffer_;
+
+    if (buffer_.find("\r\n\r\n") == string::npos) {
+        return;
+    }
+
+    cout << "Processing request..." << endl;
+
+    istringstream request_stream(buffer_);
     string line;
 
     if (!getline(request_stream, line) || line.empty()) {
         statusCode_ = 400;
-        throw runtime_error("Invalid request line");
+        std::cout << "Invalid request line";
+        buffer_.clear();
+        return;
     }
 
     parseRequestLine(line);
@@ -78,15 +93,21 @@ void Request::parseRequest(const string &raw_request) {
     parseBody(request_stream);
     
     if (!validateRequest()) {
+        std::cout << "Invalid request";
+        buffer_.clear();
         statusCode_ = 400;
+        return;
     }
+
+    setReadyForResponse(true);
+    buffer_.clear();
 }
 
 void Request::parseRequestLine(const string &line) {
     istringstream line_stream(line);
     if (!(line_stream >> method_ >> path_ >> version_)) {
         statusCode_ = 400;
-        throw runtime_error("Invalid request line format");
+        std::cout << "Invalid request line format";
     }
     transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
 }
@@ -102,7 +123,7 @@ void Request::parseHeaders(istringstream &request_stream) {
             headers_[key] = value;
         } else {
             statusCode_ = 400;
-            throw runtime_error("Invalid header format");
+            std::cout << "Invalid header format";
         }
     }
 }
@@ -114,6 +135,10 @@ void Request::parseBody(istringstream &request_stream) {
 void Request::isCgiRequest() {
     if (path_.find("/cgi-bin/") != std::string::npos)
         isCgi_ = true;
+}
+
+void Request::appendMessage(const string &raw_request) {
+    buffer_ += raw_request;
 }
 
 //---------VALIDATION FUNCTIONS----------

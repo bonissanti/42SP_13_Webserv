@@ -10,6 +10,8 @@ class Request {
         ~Request();
 	Request();
 
+        void    appendMessage(const string &raw_request);
+        
         map<string, string>  getHeaders() const;
         string  getMethod() const;
         string  getPath() const;
@@ -44,9 +46,11 @@ class Request {
         string  path_;
         string  version_;
         string  body_;
+        string  buffer_;
         bool    isCgi_;
         bool    readyForResponse;
         int     statusCode_;
+
 };
 
 #endif  // REQUEST_HPP
