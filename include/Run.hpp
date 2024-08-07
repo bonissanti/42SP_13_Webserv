@@ -12,7 +12,6 @@ class Run{
 	public:
 	vector<struct pollfd> loadPolls(vector<Server> servers);
 	void startServer(vector<Server>& servers);
-
 };
 
 #endif

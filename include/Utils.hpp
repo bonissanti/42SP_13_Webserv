@@ -9,7 +9,7 @@ class Utils {
         static int strtoi(string number);
         static int getServersNumber(string filePath);
         static bool validateFile(string file);
-        static char *strdup(const string str);
+        static void bzero(void *ptr, size_t size);
 };
 
 #endif

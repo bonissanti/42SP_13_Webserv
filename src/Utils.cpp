@@ -25,6 +25,16 @@ int Utils::strtoi(string number)
     return (result);
 }
 
+void    Utils::bzero(void *ptr, size_t size)
+{
+    size_t i = -1;
+    char *str = static_cast<char *>(ptr);
+
+    while (++i < size){
+        str[i] = 0;
+    }
+}
+
 bool Utils::validateFile(string file_name)
 {
     if (file_name.find(".conf") == string::npos)
@@ -80,16 +90,4 @@ int Utils::getServersNumber(string filePath)
     if (serverCount == -1 && serverCount > 1024)
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
-}
-
-char* Utils::strdup(const string str)
-{
-	size_t i = 0;
-	char *dest;
-
-	dest = new char[str.size() + 1];
-	for (; i < str.size(); i++)
-		dest[i] = str[i];
-	dest[i] = '\0';
-	return (dest);
 }
