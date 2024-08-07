@@ -200,30 +200,49 @@ static void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds
     pollFds.push_back(commFd);
 }
 
-static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
+static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     char buffer[65535];
+    memset(buffer, 0, sizeof(buffer));
+
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
-        requests[pollFds[i].fd] = Request(buffer);
+        int fd = pollFds[i].fd;
+        if (requests.find(fd) == requests.end())
+            requests[fd] = Request("");
+        requests[fd].parseRequest(string(buffer, bytesReceived));
     } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     } else {
         perror("Error: recv failed");
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     }
-
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
 }
 
-static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
+static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
-    string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
+    string message = "";
+    cout << requests[pollFds[i].fd].getStatusCode() << endl;
+    if (requests[pollFds[i].fd].getStatusCode() == 400) {
+        string body = "<html><body><h2>Bad Request</h2></body></html>\r\n";
+        message = "HTTP/1.0 400 Bad Request\r\n"
+            "Content-Type: text/html; charset=UTF-8\r\n"
+            "Content-Length: 50\r\n"
+            "\r\n" +
+            body;
+    } else {
+        message = "HTTP/1.1 200/OK\r\n"
+            "Connection: keep-alive\r\n"
+            "Hello from server\r\n"
+            "\r\n";
+    }
 
-    send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
-    cout << "Message sent" << endl;
+    send(pollFds[i].fd, message.c_str(), message.size(), 0);
 
     requests.erase(pollFds[i].fd);
     close(pollFds[i].fd);
@@ -258,7 +277,9 @@ void Server::setupPolls(vector<Server> servers)
                     } else if (pollFds[i].revents & POLLIN) {
                         readRequest(pollFds, i, requests);
                     } else if (pollFds[i].revents & POLLOUT) {
-                        sendResponse(pollFds, i, requests);
+                        if (requests.find(pollFds[i].fd) != requests.end() && requests[pollFds[i].fd].isReadyForResponse()) {
+                            sendResponse(pollFds, i, requests);
+                        }
                     }
                 }
                 break;

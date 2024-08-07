@@ -9,12 +9,17 @@
 
 Request::Request(const string &raw_request) {
     isCgi_ = false;
+    readyForResponse = false;
     statusCode_ = 200;
+    buffer_ = "";
     parseRequest(raw_request);
 }
 
-Request::Request() : isCgi_(false) {
+Request::Request() {
+    isCgi_ = false;
+    readyForResponse = false;
     statusCode_ = 200;
+    buffer_ = "";
 }
 
 //---------DESTRUCTOR---------
@@ -47,11 +52,15 @@ string Request::getHeader(const string &field) const {
     return "";
 }
 
+map<string, string> Request::getHeaders() const {
+    return headers_;
+}
+
 bool Request::getIsCgi() const {
     return isCgi_;
 }
 
-int Request::getStatusCode() const {
+int Request::getStatusCode() {
     return statusCode_;
 }
 
@@ -60,12 +69,23 @@ int Request::getStatusCode() const {
 
 // Member functions
 void Request::parseRequest(const string &raw_request) {
-    istringstream request_stream(raw_request);
+    buffer_ .append(raw_request);
+    cout<< buffer_;
+
+    if (buffer_.find("\r\n\r\n") == string::npos) {
+        return;
+    }
+
+    cout << "Processing request..." << endl;
+
+    istringstream request_stream(buffer_);
     string line;
 
     if (!getline(request_stream, line) || line.empty()) {
         statusCode_ = 400;
-        throw runtime_error("Invalid request line");
+        std::cout << "Invalid request line" << endl;
+        buffer_.clear();
+        return;
     }
 
     parseRequestLine(line);
@@ -73,15 +93,19 @@ void Request::parseRequest(const string &raw_request) {
     parseBody(request_stream);
     
     if (!validateRequest()) {
+        std::cout << "Invalid request" << endl;
         statusCode_ = 400;
     }
+
+    setReadyForResponse(true);
+    buffer_.clear();
 }
 
 void Request::parseRequestLine(const string &line) {
     istringstream line_stream(line);
     if (!(line_stream >> method_ >> path_ >> version_)) {
         statusCode_ = 400;
-        throw runtime_error("Invalid request line format");
+        std::cout << "Invalid request line format" << endl;
     }
     transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
 }
@@ -97,7 +121,7 @@ void Request::parseHeaders(istringstream &request_stream) {
             headers_[key] = value;
         } else {
             statusCode_ = 400;
-            throw runtime_error("Invalid header format");
+            std::cout << "Invalid header format";
         }
     }
 }
@@ -109,6 +133,10 @@ void Request::parseBody(istringstream &request_stream) {
 void Request::isCgiRequest() {
     if (path_.find("/cgi-bin/") != std::string::npos)
         isCgi_ = true;
+}
+
+void Request::appendMessage(const string &raw_request) {
+    buffer_ += raw_request;
 }
 
 //---------VALIDATION FUNCTIONS----------
@@ -170,14 +198,6 @@ bool Request::validateRequest() const {
     return true;
 }
 
-// bool Request::validateRequest(string& errorResponse) const {
-//     if (!validateMethod() || !validateVersion() || !validateHeaders()) {
-//         errorResponse = generateErrorResponse(400);
-//         return false;
-//     }
-//     return true;
-// }
-
 //-----------UTILS-------------
 
 void Request::printRequest() const {
@@ -189,4 +209,12 @@ void Request::printRequest() const {
     }
 
     cout << body_ << endl;
+}
+
+bool Request::isReadyForResponse() const {
+    return readyForResponse;
+}
+
+void Request::setReadyForResponse(bool ready) {
+    readyForResponse = ready;
 }

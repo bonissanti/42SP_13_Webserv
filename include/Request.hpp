@@ -8,15 +8,18 @@ class Request {
     public:
         Request(const string &raw_request);
         ~Request();
-		Request();
+	Request();
 
+        void    appendMessage(const string &raw_request);
+        
+        map<string, string>  getHeaders() const;
         string  getMethod() const;
         string  getPath() const;
-		string  getVersion() const;
+	string  getVersion() const;
         string  getHeader(const string &field) const;
         string  getBody() const;
         bool    getIsCgi() const;
-        int     getStatusCode() const;
+        int     getStatusCode();
 
         void    printRequest() const;
         bool    validateRequest() const;
@@ -25,6 +28,8 @@ class Request {
         void    parseRequest(const string &raw_request);
 
         void    isCgiRequest();
+        bool    isReadyForResponse() const;
+        void    setReadyForResponse(bool ready);
 
 
     private:
@@ -44,8 +49,11 @@ class Request {
         string  path_;
         string  version_;
         string  body_;
+        string  buffer_;
         bool    isCgi_;
+        bool    readyForResponse;
         int     statusCode_;
+
 };
 
 #endif  // REQUEST_HPP
