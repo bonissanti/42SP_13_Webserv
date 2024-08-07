@@ -81,3 +81,15 @@ int Utils::getServersNumber(string filePath)
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }
+
+char* Utils::strdup(const string str)
+{
+	size_t i = 0;
+	char *dest;
+
+	dest = new char[str.size() + 1];
+	for (; i < str.size(); i++)
+		dest[i] = str[i];
+	dest[i] = '\0';
+	return (dest);
+}

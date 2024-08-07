@@ -28,8 +28,10 @@ DEBUG_FLAG	= -D DEBUG
 DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp \
 			Server.cpp \
+			Client.cpp \
 			Route.cpp \
-			Request.cpp
+			Request.cpp \
+			CGI.cpp
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

@@ -12,7 +12,9 @@ Request::Request(const string &raw_request) {
     statusCode_ = 200;
     parseRequest(raw_request);
 }
-
+    // if (isCgi_)
+    // 	handleCGI();
+    
 Request::Request() : isCgi_(false) {
     statusCode_ = 200;
 }
@@ -53,6 +55,10 @@ bool Request::getIsCgi() const {
 
 int Request::getStatusCode() const {
     return statusCode_;
+}
+
+map<int, Request> Request::getRequest() const {
+	return requests_;
 }
 
 //---------MEMBER FUNCTIONS----------

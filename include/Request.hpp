@@ -17,15 +17,16 @@ class Request {
         string  getBody() const;
         bool    getIsCgi() const;
         int     getStatusCode() const;
-
+        map<int, Request> getRequest() const;
+        
         void    printRequest() const;
         bool    validateRequest() const;
+        static void	handleCGI(void);
         static void	executeCGI(void);
-        static void	readRequest(vector<struct pollfd>& pollFds, int i); 
+        void	readRequest(vector<struct pollfd>& pollFds, int i); 
         void    parseRequest(const string &raw_request);
 
         void    isCgiRequest();
-
 
     private:
 	bool    validateMethod() const;
@@ -38,7 +39,8 @@ class Request {
         void    parseBody(istringstream &request_stream);
 
         string  generateErrorResponse(int statusCode) const;
-
+        
+        map<int, Request> requests_; 
         map<string, string> headers_;
         string  method_;
         string  path_;

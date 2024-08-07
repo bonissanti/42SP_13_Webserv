@@ -8,8 +8,10 @@
 class Client {
     public:
         Client(int socket);
+        Client();
+        ~Client();
         Request receiveRequest();
-        void    sendResponse(const Response& response);
+        void sendResponse(pollfd & pollFd, Request client);
 
     private:
         int socket_;
