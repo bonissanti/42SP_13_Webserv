@@ -60,7 +60,7 @@ bool Request::getIsCgi() const {
     return isCgi_;
 }
 
-int Request::getStatusCode() const {
+int Request::getStatusCode() {
     return statusCode_;
 }
 
@@ -83,7 +83,7 @@ void Request::parseRequest(const string &raw_request) {
 
     if (!getline(request_stream, line) || line.empty()) {
         statusCode_ = 400;
-        std::cout << "Invalid request line";
+        std::cout << "Invalid request line" << endl;
         buffer_.clear();
         return;
     }
@@ -93,10 +93,8 @@ void Request::parseRequest(const string &raw_request) {
     parseBody(request_stream);
     
     if (!validateRequest()) {
-        std::cout << "Invalid request";
-        buffer_.clear();
+        std::cout << "Invalid request" << endl;
         statusCode_ = 400;
-        return;
     }
 
     setReadyForResponse(true);
@@ -107,7 +105,7 @@ void Request::parseRequestLine(const string &line) {
     istringstream line_stream(line);
     if (!(line_stream >> method_ >> path_ >> version_)) {
         statusCode_ = 400;
-        std::cout << "Invalid request line format";
+        std::cout << "Invalid request line format" << endl;
     }
     transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
 }

@@ -204,6 +204,7 @@ static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>
 {
     char buffer[65535];
     memset(buffer, 0, sizeof(buffer));
+
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
         int fd = pollFds[i].fd;
@@ -226,24 +227,22 @@ static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>
 static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     string message = "";
-
-
+    cout << requests[pollFds[i].fd].getStatusCode() << endl;
     if (requests[pollFds[i].fd].getStatusCode() == 400) {
-        message = "HTTP/1.0 400 Bad Request\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: 11\r\nBad Request\r\n\r\n";
+        string body = "<html><body><h2>Bad Request</h2></body></html>\r\n";
+        message = "HTTP/1.0 400 Bad Request\r\n"
+            "Content-Type: text/html; charset=UTF-8\r\n"
+            "Content-Length: 50\r\n"
+            "\r\n" +
+            body;
     } else {
-        message = "HTTP/1.1 200/OK\r\nConnection: keep-alive\r\nHello from server\r\n\r\n";
+        message = "HTTP/1.1 200/OK\r\n"
+            "Connection: keep-alive\r\n"
+            "Hello from server\r\n"
+            "\r\n";
     }
 
     send(pollFds[i].fd, message.c_str(), message.size(), 0);
-
-    // Response response(requests[pollFds[i].fd]);
-
-
-
-    // string hello = "HTTP/1.1 200/OK\r\nConnection: keep-alive\r\nHello from server";
-
-    // send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
-    // cout << "Message sent" << endl;
 
     requests.erase(pollFds[i].fd);
     close(pollFds[i].fd);

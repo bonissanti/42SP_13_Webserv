@@ -19,7 +19,7 @@ class Request {
         string  getHeader(const string &field) const;
         string  getBody() const;
         bool    getIsCgi() const;
-        int     getStatusCode() const;
+        int     getStatusCode();
 
         void    printRequest() const;
         bool    validateRequest() const;
