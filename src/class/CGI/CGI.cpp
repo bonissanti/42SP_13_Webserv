@@ -6,12 +6,12 @@
 /*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/31 13:50:43 by brunrodr          #+#    #+#             */
-/*   Updated: 2024/07/31 18:38:39 by brunrodr         ###   ########.fr       */
+/*   Updated: 2024/08/07 17:15:18 by brunrodr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstring>
-#include "../include/Server.hpp"
+#include "../Server/Server.hpp"
 
 void	Request::handleCGI(void)
 {

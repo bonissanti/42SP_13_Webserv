@@ -1,29 +1,16 @@
-#include "../include/Request.hpp"
-#include <algorithm>
-#include <string>
-#include <sstream> // Add this line to include the <sstream> header
-
-// ...
-
-//-------CONSTRUCTORS---------
+#include "Request.hpp"
 
 Request::Request(const string &raw_request) {
     isCgi_ = false;
     statusCode_ = 200;
     parseRequest(raw_request);
 }
-    // if (isCgi_)
-    // 	handleCGI();
     
 Request::Request() : isCgi_(false) {
     statusCode_ = 200;
 }
 
-//---------DESTRUCTOR---------
-
 Request::~Request() {}
-
-//----------GETTERS-----------
 
 string Request::getMethod() const {
     return method_;
@@ -61,10 +48,6 @@ map<int, Request> Request::getRequest() const {
 	return requests_;
 }
 
-//---------MEMBER FUNCTIONS----------
-//---------PARSER FUNCTIONS----------
-
-// Member functions
 void Request::parseRequest(const string &raw_request) {
     istringstream request_stream(raw_request);
     string line;
@@ -117,42 +100,6 @@ void Request::isCgiRequest() {
         isCgi_ = true;
 }
 
-//---------VALIDATION FUNCTIONS----------
-
-bool Request::validateMethod() const {
-    static vector<string> valid_methods;
-    valid_methods.push_back("GET");
-    valid_methods.push_back("POST");
-    valid_methods.push_back("DELETE");
-
-    if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
-        // cout << "Error: invalid method" << endl;
-        return false;
-    }
-    return true;
-}
-
-bool Request::validateHeaders() const {
-    if (headers_.find("host") == headers_.end()) {
-        // cout << "Error: missing Host" << endl;
-        return false;
-    }
-
-    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
-        // cout << "Error: missing Content-Length" << endl;
-        return false;
-    }
-    return true;
-}
-
-bool Request::validateVersion() const {
-    if (version_ != "HTTP/1.1" && version_ != "HTTP/1.0") {
-        // cout << "Error: invalid HTTP version" << endl;
-        return false;
-    }
-    return true;
-}
-
 // string generateErrorResponse(int statusCode) {
     
 //     map<int, string> statusMessages;
@@ -170,7 +117,36 @@ bool Request::validateVersion() const {
 // }
 
 bool Request::validateRequest() const {
-    if (!validateMethod() || !validateVersion() || !validateHeaders()) {
+    static vector<string> valid_methods;
+    valid_methods.push_back("GET");
+    valid_methods.push_back("POST");
+    valid_methods.push_back("DELETE");
+
+    if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
+        // cout << "Error: invalid method" << endl;
+        return false;
+    }
+    if (version_ != "HTTP/1.1") {
+        // cout << "Error: invalid HTTP version" << endl;
+        return false;
+    }
+        if (headers_.find("host") == headers_.end()) {
+        // cout << "Error: missing Host" << endl;
+        return false;
+    }
+
+    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
+        // cout << "Error: missing Content-Length" << endl;
+        return false;
+    }
+
+    if (headers_.find("host") == headers_.end()) {
+        // cout << "Error: missing Host" << endl;
+        return false;
+    }
+
+    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
+        // cout << "Error: missing Content-Length" << endl;
         return false;
     }
     return true;
@@ -193,6 +169,79 @@ void Request::printRequest() const {
     for (map<string, string>::const_iterator it = headers_.begin(); it != headers_.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
     }
-
     cout << body_ << endl;
+}
+
+void Request::readRequest(vector<struct pollfd>& pollFds, int i)
+{
+    char buffer[65535];
+    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
+
+
+    if (bytesReceived > 0) {
+        // Concatena a nova parte da requisição à existente
+        requests_[pollFds[i].fd].append(buffer, bytesReceived);
+        
+        // Verifica se a requisição está completa (isso depende do protocolo usado, por exemplo, verificar headers HTTP)
+        if (isRequestComplete(requests_[pollFds[i].fd])) {
+            // Processa a requisição completa
+            processRequest(requests_[pollFds[i].fd]);
+            
+            // Remove a requisição do mapa após o processamento
+            requests_.erase(pollFds[i].fd);
+            
+            // Fecha o socket
+            close(pollFds[i].fd);
+            pollFds.erase(pollFds.begin() + i);
+        }
+    } else if (bytesReceived == 0) {
+        cout << "Connection closed" << endl;
+        requests_.erase(pollFds[i].fd);
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
+    } else {
+        perror("Error: recv failed");
+        requests_.erase(pollFds[i].fd);
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
+    }
+}
+
+bool Request::isRequestComplete(const std::string& request) {
+    size_t headerEnd = request.find("\r\n\r\n");
+    if (headerEnd == std::string::npos) {
+        // Cabeçalho ainda não está completo
+        return false;
+    }
+
+    // Se não há corpo na requisição, ela está completa
+    if (headerEnd + 4 == request.size()) {
+        return true;
+    }
+
+    // Procura pelo cabeçalho Content-Length para determinar o tamanho do corpo esperado
+    size_t contentLengthPos = request.find("Content-Length:");
+    if (contentLengthPos != std::string::npos) {
+        // Extrai o valor de Content-Length
+        size_t valueStart = contentLengthPos + 15; // 15 é o comprimento de "Content-Length:"
+        size_t valueEnd = request.find("\r\n", valueStart);
+        std::string contentLengthStr = request.substr(valueStart, valueEnd - valueStart);
+        int contentLength = std::atoi(contentLengthStr.c_str());
+
+        // Verifica se o corpo completo foi recebido
+        size_t totalLength = headerEnd + 4 + contentLength;
+        if (request.size() >= totalLength) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Caso não tenha Content-Length, verifica se há chunked transfer encoding
+    size_t transferEncodingPos = request.find("Transfer-Encoding: chunked");
+    if (transferEncodingPos != std::string::npos) {
+        return true;
+    }
+
+    return true;
 }

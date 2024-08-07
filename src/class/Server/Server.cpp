@@ -1,8 +1,7 @@
-#include "../include/Server.hpp"
-#include "../include/Route.hpp"
-#include "../include/Request.hpp"
-#include "../include/Client.hpp"
-#include <map>
+#include "Server.hpp"
+#include "Client/Client.hpp"
+#include "Request/Request.hpp"
+#include "Route.hpp"
 
 Server::Server()
 {
@@ -143,18 +142,18 @@ void Server::setErrorPage(string error_page)
     _error_page.push_back(mapErrorPage);
 }
 
-void Server::startServer(vector<Server>& servers)
+void Server::configServer(vector<Server>& servers)
 {
     int inUse = 1;
     struct sockaddr_in serverAddr;
 
-    bzero(&serverAddr, sizeof(serverAddr)); // Não pode usar, função C.
+    bzero(&serverAddr, sizeof(serverAddr));  // Não pode usar, função C.
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     for (size_t i = 0; i < servers.size(); i++) {
         serverAddr.sin_port = htons(servers[i]._listen);
-        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0);
+        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); // AF_INET = ipv4, SOCK_STREAM = TCP/IP
 
         if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
             throw Server::exception(RED "Error: setsockopt failed" RESET);
@@ -172,102 +171,5 @@ void Server::startServer(vector<Server>& servers)
         }
         if (listen(servers[i]._socketFd, 10) < 0)
             throw Server::exception(RED "Error: listen failed" RESET);
-    }
-}
-
-static void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
-{
-    int clientFd;
-    socklen_t addrlen;
-    struct sockaddr_in clientAddr;
-
-    addrlen = sizeof(clientAddr);
-    clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
-    if (clientFd == -1) {
-        if (errno == EWOULDBLOCK)
-            cout << "No pending connections for now" << endl;
-        else
-            perror("Error: accept failed");
-    }
-    else
-        cout << "New communication established!" << endl;  // log message
-
-    struct pollfd commFd;
-
-    commFd.fd = clientFd;
-    commFd.events = POLLIN | POLLOUT;
-    commFd.revents = 0;
-    pollFds.push_back(commFd);
-}
-
-void Request::readRequest(vector<struct pollfd>& pollFds, int i)
-{
-    char buffer[65535];
-    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-    
-    if (bytesReceived > 0) {
-        // Concatena a nova parte da requisição à existente
-        requests_[pollFds[i].fd].append(buffer, bytesReceived);
-        
-        // Verifica se a requisição está completa (isso depende do protocolo usado, por exemplo, verificar headers HTTP)
-        if (isRequestComplete(requests_[pollFds[i].fd])) {
-            // Processa a requisição completa
-            processRequest(requests_[pollFds[i].fd]);
-            
-            // Remove a requisição do mapa após o processamento
-            requests_.erase(pollFds[i].fd);
-            
-            // Fecha o socket
-            close(pollFds[i].fd);
-            pollFds.erase(pollFds.begin() + i);
-        }
-    } else if (bytesReceived == 0) {
-        cout << "Connection closed" << endl;
-        requests_.erase(pollFds[i].fd);
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-    } else {
-        perror("Error: recv failed");
-        requests_.erase(pollFds[i].fd);
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-    }
-}
-
-void Server::setupPolls(vector<Server> servers) // client::
-{
-    int returnValue;
-    vector<struct pollfd> pollFds(servers.size());
-    Request request;
-    Client client;
-
-    for (size_t i = 0; i < servers.size(); i++) {
-        pollFds[i].fd = servers[i]._socketFd;
-        pollFds[i].events = POLLIN | POLLOUT;
-    }
-    while (true) {
-        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-        switch (returnValue) {
-            case 0:
-                cout << "Error: poll Timeout" << endl;
-                break;
-
-            case -1:
-                cout << "Error: poll failed" << endl;
-                break;
-
-            default:
-                for (size_t i = 0; i < pollFds.size(); i++) {
-                    if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                        acceptNewConnection(pollFds[i].fd, pollFds);
-                    } else if (pollFds[i].revents & POLLIN) {
-                        request.readRequest(pollFds, i);}
-                    else if (pollFds[i].revents & POLLOUT){
-                        client.sendResponse(pollFds[i], request);
-                        pollFds.erase(pollFds.begin() + i);
-                    }
-                }
-                break;
-        }
     }
 }

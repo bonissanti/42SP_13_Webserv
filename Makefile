@@ -15,7 +15,7 @@ RESET	= \033[0m
 
 NAME 	= webserv
 TEST_N 	= webservTESTER
-HEADER	= ./include/
+HEADER	= ./src/
 
 ################################# Flags #####################################
 
@@ -26,12 +26,14 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
-FILES		= Utils.cpp \
-			Server.cpp \
-			Client.cpp \
-			Route.cpp \
-			Request.cpp \
-			CGI.cpp
+FILES		= Utils.cpp		 			\
+			class/CGI/CGI.cpp			\
+			class/Client/Client.cpp 	\
+			class/Request/Request.cpp 	\
+			class/Response/Response.cpp	\
+			class/Route/Route.cpp 		\
+			class/Run/Run.cpp 			\
+			class/Server/Server.cpp		\
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

@@ -48,6 +48,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
 
 using namespace std;
 

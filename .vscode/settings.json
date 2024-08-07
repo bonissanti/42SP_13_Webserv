@@ -56,6 +56,14 @@
 		"map": "cpp",
 		"cstring": "cpp",
 		"set": "cpp",
-		"unordered_map": "cpp"
+		"unordered_map": "cpp",
+    	"liveshare.joinDebugSessionOption": "Prompt",
+    	"liveshare.allowGuestTaskControl": true,
+    	"liveshare.alwaysFollowHost": true,
+    	"liveshare.featureSet": "insiders",
+    	"liveshare.languages.allowGuestCommandControl": true,
+    	"liveshare.showReadOnlyUsersInEditor": "always",
+    	"liveshare.autoShareTerminals": true,
+    	"liveshare.allowGuestDebugControl": true,
 	}
 }

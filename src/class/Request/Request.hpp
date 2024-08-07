@@ -2,7 +2,8 @@
 #define REQUEST_HPP
 
 #include <map>
-#include "defines.hpp"
+#include "../../../include/defines.hpp"
+
 
 class Request {
     public:
@@ -23,21 +24,15 @@ class Request {
         bool    validateRequest() const;
         static void	handleCGI(void);
         static void	executeCGI(void);
-        void	readRequest(vector<struct pollfd>& pollFds, int i); 
+        void	readRequest(vector<struct pollfd>& pollFds, int i);
+        bool    isRequestComplete(const std::string& request);
         void    parseRequest(const string &raw_request);
-
         void    isCgiRequest();
 
     private:
-	bool    validateMethod() const;
-        bool    validateHeaders() const;
-        bool    validateVersion() const;
-
-
         void    parseRequestLine(const string &line);
         void    parseHeaders(istringstream &request_stream);
         void    parseBody(istringstream &request_stream);
-
         string  generateErrorResponse(int statusCode) const;
         
         map<int, Request> requests_; 
@@ -48,6 +43,16 @@ class Request {
         string  body_;
         bool    isCgi_;
         int     statusCode_;
+
+    class exception : public std::exception {
+        private:
+            string msg;
+
+        public:
+            exception(const string& msg);
+            virtual ~exception() throw();
+            virtual const char* what() const throw();
+    };
 };
 
 #endif  // REQUEST_HPP

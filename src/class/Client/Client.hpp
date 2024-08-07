@@ -1,9 +1,9 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Request.hpp"
-#include "Response.hpp"
-#include "defines.hpp"
+#include "../Request/Request.hpp"
+#include "../Response/Response.hpp"
+#include "../../../include/defines.hpp"
 
 class Client {
     public:
@@ -11,10 +11,20 @@ class Client {
         Client();
         ~Client();
         Request receiveRequest();
-        void sendResponse(pollfd & pollFd, Request client);
+        void sendResponse(Request client);
 
     private:
-        int socket_;
+        int _socket;
+
+    class exception : public std::exception {
+        private:
+            string msg;
+
+        public:
+            exception(const string& msg);
+            virtual ~exception() throw();
+            virtual const char* what() const throw();
+    };
 };
 
 #endif  // CLIENT_HPP
