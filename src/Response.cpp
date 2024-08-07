@@ -2,16 +2,45 @@
 
 Response::Response() : _statusCode(200), _statusMessage("OK"), _body("") {}
 
-Response::Response(const Request& request) {
+Response::~Response() {}
+
+Response::Response(Request& request) {
     status_code_ = request.getStatusCode();
     status_message_ = getStatusMessage(status_code_);
 
-    body_ = "<html><body><h2>Response to the request<h2><body><html>";
-    headers_["Content-Type"] = "text/plain";
+    string filePath = request.getPath();
+    headers_["Content-Type"] = getMimeType(filePath);
+    body_ = readFileContent(filePath);
     
     stringstream ss;
     ss << body_.size();
     headers_["Content-Length"] = ss.str();
+}
+
+bool ends_with(const std::string& str, const std::string& suffix) {
+    if (suffix.size() > str.size()) return false;
+    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
+string Response::getMimeType(const string& path) const {
+    if (ends_with(path, ".html")) return "text/html";
+    if (ends_with(path, ".css")) return "text/css";
+    if (ends_with(path, ".js")) return "application/javascript";
+    if (ends_with(path, ".jpg")) return "image/jpeg";
+    if (ends_with(path, ".txt")) return "text/plain";
+    return "application/octet-stream";
+}
+
+string Response::readFileContent(const string& path) {
+    ifstream file(path.c_str());
+
+    if (!file.is_open()) {
+        setStatusCode(404);
+        return "<html><body><h2>404 Not Found</h2></body></html>";
+    }
+    ostringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
 }
 
 void Response::setStatusCode(int code) {
