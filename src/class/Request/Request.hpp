@@ -1,9 +1,10 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include <cstddef>
 #include <map>
+#include <string>
 #include "../../../include/defines.hpp"
-
 
 class Request {
     public:
@@ -28,6 +29,7 @@ class Request {
         bool    isRequestComplete(const std::string& request);
         void    parseRequest(const string &raw_request);
         void    isCgiRequest();
+        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests);
 
     private:
         void    parseRequestLine(const string &line);
@@ -35,14 +37,14 @@ class Request {
         void    parseBody(istringstream &request_stream);
         string  generateErrorResponse(int statusCode) const;
         
-        map<int, Request> requests_; 
-        map<string, string> headers_;
-        string  method_;
-        string  path_;
-        string  version_;
-        string  body_;
-        bool    isCgi_;
-        int     statusCode_;
+        map<int, Request> _requests; 
+        map<string, string> _headers;
+        string  	_method;
+        string  	_path;
+        string  	_version;
+        string  	_body;
+        bool    	_isCgi;
+        HttpStatus  _statusCode;
 
     class exception : public std::exception {
         private:

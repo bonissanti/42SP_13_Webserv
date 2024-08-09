@@ -1,3 +1,4 @@
+#include <sys/poll.h>
 #include "class/Run/Run.hpp"
 #include "class/Server/Server.hpp"
 #include "../include/Utils.hpp"
@@ -21,7 +22,7 @@ int main(int argc, char** argv)
             servers[i].create(file);
         }
         Server::configServer(servers); // loadPolls
-        run.loadPolls(servers);
+        run.startServer(servers);
     }
     catch (const Server::exception& e) {
         cerr << e.what() << '\n';

@@ -1,78 +1,102 @@
 #include "Request.hpp"
 
+// Request::Request(){
+
+// }
+
+// Request::Request(string buffer, int commFd){
+// 	_fd = commFd;
+// 	_statusCode = DEFAULT;
+// 	_isCgi = false;
+// 	_contentLength = 0;
+	
+// 	parseRequest(buffer);
+// }
+
 Request::Request(const string &raw_request) {
-    isCgi_ = false;
-    statusCode_ = 200;
+    _isCgi = false;
+    _statusCode = OK;
     parseRequest(raw_request);
 }
     
-Request::Request() : isCgi_(false) {
-    statusCode_ = 200;
+Request::Request() : _isCgi(false) {
+    _statusCode = OK;
 }
 
 Request::~Request() {}
 
 string Request::getMethod() const {
-    return method_;
+    return _method;
 }
 
 string Request::getPath() const {
-    return path_;
+    return _path;
 }
 
 string Request::getVersion() const {
-    return version_;
+    return _version;
 }
 
 string Request::getBody() const {
-    return body_;
+    return _body;
 }
 
 string Request::getHeader(const string &field) const {
-    map<string, string>::const_iterator it = headers_.find(field);
-    if (it != headers_.end()) {
+    map<string, string>::const_iterator it = _headers.find(field);
+    if (it != _headers.end()) {
         return it->second;
     }
     return "";
 }
 
 bool Request::getIsCgi() const {
-    return isCgi_;
+    return _isCgi;
 }
 
 int Request::getStatusCode() const {
-    return statusCode_;
+    return _statusCode;
 }
 
 map<int, Request> Request::getRequest() const {
-	return requests_;
+	return _requests;
 }
+
+// void	Request::parseRequest(const string& buffer){
+//     istringstream request_stream(buffer);
+//     string line;
+
+//     if (!getline(request_stream, line) || line.empty()) {
+//     	_statusCode = BAD_REQUEST;
+//     	// throw runtime_error("Invalid request line"); Precisa deixar seguir o fluxo para o response
+//      // jogar a pagina de erro equivalente ao 400 - BAD REQUEST
+//     }
+//     parseRequestLine(line);
+// }
 
 void Request::parseRequest(const string &raw_request) {
     istringstream request_stream(raw_request);
     string line;
 
     if (!getline(request_stream, line) || line.empty()) {
-        statusCode_ = 400;
+        _statusCode = BAD_REQUEST;
         throw runtime_error("Invalid request line");
     }
 
-    parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
     
     if (!validateRequest()) {
-        statusCode_ = 400;
+    	_statusCode = BAD_REQUEST;
     }
 }
 
-void Request::parseRequestLine(const string &line) {
-    istringstream line_stream(line);
-    if (!(line_stream >> method_ >> path_ >> version_)) {
-        statusCode_ = 400;
-        throw runtime_error("Invalid request line format");
+void Request::parseRequestLine(const string &firstLine) {
+    istringstream line_stream(firstLine);
+    if (!(line_stream >> _method >> _path >> _version)) {
+        _statusCode = BAD_REQUEST;
+        // throw runtime_error("Invalid request line format");
     }
-    transform(method_.begin(), method_.end(), method_.begin(), ::toupper);
+    // transform(_method.begin(), _method.end(), _method.begin(), ::toupper);
 }
 
 void Request::parseHeaders(istringstream &request_stream) {
@@ -83,21 +107,21 @@ void Request::parseHeaders(istringstream &request_stream) {
             string key = line.substr(0, colon_pos);
             string value = line.substr(colon_pos + 2, line.length() - colon_pos - 3);
             transform(key.begin(), key.end(), key.begin(), ::tolower);
-            headers_[key] = value;
+            _headers[key] = value;
         } else {
-            statusCode_ = 400;
-            throw runtime_error("Invalid header format");
+        	_statusCode = BAD_REQUEST;
+            // throw runtime_error("Invalid header format");
         }
     }
 }
 
 void Request::parseBody(istringstream &request_stream) {
-    getline(request_stream, body_, '\0');
+    getline(request_stream, _body, '\0');
 }
 
 void Request::isCgiRequest() {
-    if (path_.find("/cgi-bin/") != std::string::npos)
-        isCgi_ = true;
+    if (_path.find("/cgi-bin/") != std::string::npos)
+        _isCgi = true;
 }
 
 // string generateErrorResponse(int statusCode) {
@@ -122,30 +146,30 @@ bool Request::validateRequest() const {
     valid_methods.push_back("POST");
     valid_methods.push_back("DELETE");
 
-    if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
+    if (find(valid_methods.begin(), valid_methods.end(), _method) == valid_methods.end()) {
         // cout << "Error: invalid method" << endl;
         return false;
     }
-    if (version_ != "HTTP/1.1") {
+    if (_version != "HTTP/1.1") {
         // cout << "Error: invalid HTTP version" << endl;
         return false;
     }
-        if (headers_.find("host") == headers_.end()) {
+        if (_headers.find("host") == _headers.end()) {
         // cout << "Error: missing Host" << endl;
         return false;
     }
 
-    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
+    if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
         // cout << "Error: missing Content-Length" << endl;
         return false;
     }
 
-    if (headers_.find("host") == headers_.end()) {
+    if (_headers.find("host") == _headers.end()) {
         // cout << "Error: missing Host" << endl;
         return false;
     }
 
-    if (method_.compare("POST") == 0 && headers_.find("content-length") == headers_.end()) {
+    if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
         // cout << "Error: missing Content-Length" << endl;
         return false;
     }
@@ -163,85 +187,32 @@ bool Request::validateRequest() const {
 //-----------UTILS-------------
 
 void Request::printRequest() const {
-    cout << method_ << " " << path_ << " " << version_ << endl;
+    cout << _method << " " << _path << " " << _version << endl;
 
     vector<string> key, value;
-    for (map<string, string>::const_iterator it = headers_.begin(); it != headers_.end(); ++it) {
+    for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
     }
-    cout << body_ << endl;
+    cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i)
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-
-
     if (bytesReceived > 0) {
-        // Concatena a nova parte da requisição à existente
-        requests_[pollFds[i].fd].append(buffer, bytesReceived);
-        
-        // Verifica se a requisição está completa (isso depende do protocolo usado, por exemplo, verificar headers HTTP)
-        if (isRequestComplete(requests_[pollFds[i].fd])) {
-            // Processa a requisição completa
-            processRequest(requests_[pollFds[i].fd]);
-            
-            // Remove a requisição do mapa após o processamento
-            requests_.erase(pollFds[i].fd);
-            
-            // Fecha o socket
-            close(pollFds[i].fd);
-            pollFds.erase(pollFds.begin() + i);
-        }
-    } else if (bytesReceived == 0) {
+      	requests[pollFds[i].fd] = Request(buffer);
+    } 
+    else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-        requests_.erase(pollFds[i].fd);
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
-    } else {
-        perror("Error: recv failed");
-        requests_.erase(pollFds[i].fd);
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
+        requests.erase(pollFds[i].fd);
+    } 
+    else {
+    	cerr << "Error: recv failed" << endl;
+        requests.erase(pollFds[i].fd);
     }
-}
-
-bool Request::isRequestComplete(const std::string& request) {
-    size_t headerEnd = request.find("\r\n\r\n");
-    if (headerEnd == std::string::npos) {
-        // Cabeçalho ainda não está completo
-        return false;
-    }
-
-    // Se não há corpo na requisição, ela está completa
-    if (headerEnd + 4 == request.size()) {
-        return true;
-    }
-
-    // Procura pelo cabeçalho Content-Length para determinar o tamanho do corpo esperado
-    size_t contentLengthPos = request.find("Content-Length:");
-    if (contentLengthPos != std::string::npos) {
-        // Extrai o valor de Content-Length
-        size_t valueStart = contentLengthPos + 15; // 15 é o comprimento de "Content-Length:"
-        size_t valueEnd = request.find("\r\n", valueStart);
-        std::string contentLengthStr = request.substr(valueStart, valueEnd - valueStart);
-        int contentLength = std::atoi(contentLengthStr.c_str());
-
-        // Verifica se o corpo completo foi recebido
-        size_t totalLength = headerEnd + 4 + contentLength;
-        if (request.size() >= totalLength) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // Caso não tenha Content-Length, verifica se há chunked transfer encoding
-    size_t transferEncodingPos = request.find("Transfer-Encoding: chunked");
-    if (transferEncodingPos != std::string::npos) {
-        return true;
-    }
-
-    return true;
+    close(pollFds[i].fd);
+    pollFds.erase(pollFds.begin() + i);
 }

@@ -6,15 +6,18 @@
 #include "../../../include/defines.hpp"
 
 class Client {
+    private:
+        int _fd;
+        Request _request;
+        
     public:
         Client(int socket);
         Client();
         ~Client();
-        Request receiveRequest();
-        void sendResponse(Request client);
+        void setFd(int newFd);
+        void setRequest(Request newRequest);
+        
 
-    private:
-        int _socket;
 
     class exception : public std::exception {
         private:
