@@ -29,7 +29,16 @@ static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request
     	"Connection: close\r\n"
     	"\r\n"
     	"Hello from server";
-
+    
+    //  switch(runMethod(req.getMethod()))
+    // {
+    // 	case GET:
+     		// Response runGet();
+    //	case POST:
+    		// Response runPost();
+    //	case DELETE:
+    		// Response runDelete();
+    // }
     send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
     
