@@ -41,6 +41,11 @@ typedef enum {
 #define CGI 4
 #define REDIRECT 5
 
+// Methods
+#define GET 0
+#define POST 1
+#define DELETE 2
+
 #define MB 1024
 #define GB 1048576
 

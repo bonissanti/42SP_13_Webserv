@@ -1,7 +1,6 @@
 #include "Run.hpp"
 #include <sys/poll.h>
 #include "../Request/Request.hpp"
-#include "../Client/Client.hpp"
 
 Run::Run(){}
 Run::~Run(){}
@@ -29,19 +28,21 @@ static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request
     	"Connection: close\r\n"
     	"\r\n"
     	"Hello from server";
-    
+
+
+    Response resp(req);
     //  switch(runMethod(req.getMethod()))
     // {
     // 	case GET:
-     		// Response runGet();
-    //	case POST:
-    		// Response runPost();
-    //	case DELETE:
-    		// Response runDelete();
+    //  		Response runGet();
+    // 	case POST:
+    // 		Response runPost();
+    // 	case DELETE:
+    // 		Response runDelete();
     // }
     send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
-    
+   
     requests.erase(pollFds[i].fd);
     close(pollFds[i].fd);
     pollFds.erase(pollFds.begin() + i);

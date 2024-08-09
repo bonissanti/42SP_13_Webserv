@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include "../../../include/defines.hpp"
+#include "../Response/Response.hpp"
 
 class Request {
     public:
@@ -30,6 +31,7 @@ class Request {
         void    parseRequest(const string &raw_request);
         void    isCgiRequest();
         static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests);
+        friend class Response;
 
     private:
         void    parseRequestLine(const string &line);

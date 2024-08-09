@@ -21,7 +21,7 @@ int main(int argc, char** argv)
         for (int i = 0; i < numbersOfServers; i++) {
             servers[i].create(file);
         }
-        Server::configServer(servers); // loadPolls
+        Server::configServer(servers);
         run.startServer(servers);
     }
     catch (const Server::exception& e) {
