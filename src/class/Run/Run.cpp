@@ -19,19 +19,27 @@ vector<struct pollfd> Run::loadPolls(vector<Server> servers)
 }
 
 
-static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
+static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
-    string hello = "HTTP/1.1 200/OK\r\n\r\nHello from server";
+	Request &req = requests[pollFds[i].fd];
+	string hello =
+    	"HTTP/1.1 200 OK\r\n"
+    	"Content-Type: text/plain\r\n"
+    	"Content-Length: 17\r\n"
+    	"Connection: close\r\n"
+    	"\r\n"
+    	"Hello from server";
 
     send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
-
+    
     requests.erase(pollFds[i].fd);
     close(pollFds[i].fd);
     pollFds.erase(pollFds.begin() + i);
+    (void)req;
 }
 
-void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
+void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
@@ -103,7 +111,8 @@ void Run::startServer(vector<Server>& servers)
                     readRequest(pollFds, i, requests);
                 }
                 else if (pollFds[i].revents & POLLOUT) {
-                    sendResponse(pollFds, i, requests);
+                	if (requests.find(pollFds[i].fd) != requests.end()) 
+                    	sendResponse(pollFds, i, requests);
                 }
             }
         }
