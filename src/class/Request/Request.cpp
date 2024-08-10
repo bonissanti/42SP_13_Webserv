@@ -81,7 +81,8 @@ void Request::parseRequest(const string &raw_request) {
         _statusCode = BAD_REQUEST;
         throw runtime_error("Invalid request line");
     }
-
+    
+    parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
     
@@ -96,7 +97,7 @@ void Request::parseRequestLine(const string &firstLine) {
         _statusCode = BAD_REQUEST;
         // throw runtime_error("Invalid request line format");
     }
-    // transform(_method.begin(), _method.end(), _method.begin(), ::toupper);
+    transform(_method.begin(), _method.end(), _method.begin(), ::toupper);
 }
 
 void Request::parseHeaders(istringstream &request_stream) {

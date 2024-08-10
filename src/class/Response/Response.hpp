@@ -18,18 +18,18 @@ class Response {
         // string getStatusMessage(int code) const;
 
     public:
-        Response();
+        Response(Request& req);
 		~Response();
 
         int getMethodIndex(string method);
-        void callMethod(Request req);
-        void runGetMethod(Request req);
+        void callMethod(Request& req);
+        void runGetMethod(Request& req);
         // void setStatusCode(int code);
         // void setBody(const string& body);
         // void setHeader(const string& field, const string& value);
         // string toString() const;
-        
-        void sendResponse(Request client);
+
+        static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
 
 };
 

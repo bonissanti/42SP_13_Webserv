@@ -8,45 +8,12 @@ Run::~Run(){}
 vector<struct pollfd> Run::loadPolls(vector<Server> servers)
 {
     vector<struct pollfd> pollFds(servers.size());
-    Client client;
 
     for (size_t i = 0; i < servers.size(); i++) {
         pollFds[i].fd = servers[i].getSocket();
         pollFds[i].events = POLLIN | POLLOUT;
     }
     return (pollFds);
-}
-
-
-static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
-{
-	Request &req = requests[pollFds[i].fd];
-	string hello =
-    	"HTTP/1.1 200 OK\r\n"
-    	"Content-Type: text/plain\r\n"
-    	"Content-Length: 17\r\n"
-    	"Connection: close\r\n"
-    	"\r\n"
-    	"Hello from server";
-
-
-    Response resp(req);
-    //  switch(runMethod(req.getMethod()))
-    // {
-    // 	case GET:
-    //  		Response runGet();
-    // 	case POST:
-    // 		Response runPost();
-    // 	case DELETE:
-    // 		Response runDelete();
-    // }
-    send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
-    cout << "Message sent" << endl;
-   
-    requests.erase(pollFds[i].fd);
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
-    (void)req;
 }
 
 void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
@@ -122,7 +89,7 @@ void Run::startServer(vector<Server>& servers)
                 }
                 else if (pollFds[i].revents & POLLOUT) {
                 	if (requests.find(pollFds[i].fd) != requests.end()) 
-                    	sendResponse(pollFds, i, requests);
+                    	Response::sendResponse(pollFds, i, requests);
                 }
             }
         }

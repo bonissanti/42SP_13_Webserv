@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include "../../../include/defines.hpp"
-#include "../Response/Response.hpp"
 
 class Request {
     public:
