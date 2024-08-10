@@ -1,5 +1,4 @@
 #include "../include/Server.hpp"
-
 #include "../include/Route.hpp"
 #include "../include/Request.hpp"
 #include <map>
@@ -95,6 +94,10 @@ string setRoot(string root)
     if (root.substr(root.length() - 1) != "/")
         root.insert(root.end(), '/');
     return (root);
+}
+
+string Server::getRoot() const {
+    return _root;
 }
 
 void Server::setClientMaxBodySize(string size)
@@ -203,7 +206,7 @@ static void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds
 static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     char buffer[65535];
-    memset(buffer, 0, sizeof(buffer));
+    std::memset(buffer, 0, sizeof(buffer));
 
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
@@ -224,24 +227,25 @@ static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>
     }
 }
 
-static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
+static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, string root)
 {
-    string message = "";
-    cout << requests[pollFds[i].fd].getStatusCode() << endl;
-    if (requests[pollFds[i].fd].getStatusCode() == 400) {
+    Response response(requests[pollFds[i].fd]);
+    int statusCode = requests[pollFds[i].fd].getStatusCode();
+    cout << statusCode << endl;
+
+    response.setRoot(root);
+
+    if (statusCode == 400) {
         string body = "<html><body><h2>Bad Request</h2></body></html>\r\n";
-        message = "HTTP/1.0 400 Bad Request\r\n"
-            "Content-Type: text/html; charset=UTF-8\r\n"
-            "Content-Length: 50\r\n"
-            "\r\n" +
-            body;
+        response.setHeader("Content-Type", "text/html; charset=UTF-8");
+        response.setHeader("Content-Length", "50");
+        response.setBody(body);
     } else {
-        message = "HTTP/1.1 200/OK\r\n"
-            "Connection: keep-alive\r\n"
-            "Hello from server\r\n"
-            "\r\n";
+        // response.setHeader("Connection", "keep-alive");
+        // response.setBody("Hello from server\r\n");
     }
 
+    string message = response.generateResponse();
     send(pollFds[i].fd, message.c_str(), message.size(), 0);
 
     requests.erase(pollFds[i].fd);
@@ -278,7 +282,8 @@ void Server::setupPolls(vector<Server> servers)
                         readRequest(pollFds, i, requests);
                     } else if (pollFds[i].revents & POLLOUT) {
                         if (requests.find(pollFds[i].fd) != requests.end() && requests[pollFds[i].fd].isReadyForResponse()) {
-                            sendResponse(pollFds, i, requests);
+                            cout << "here" << endl;
+                            sendResponse(pollFds, i, requests, servers[0].getRoot());
                         }
                     }
                 }

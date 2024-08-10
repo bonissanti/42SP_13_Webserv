@@ -13,13 +13,16 @@ class Response {
         string _statusMessage;
         map<string, string> _headers;
         string _body;
+        string root_;
 
     public:
         Response();
+        ~Response();
         Response(Request& request);
         void setStatusCode(int code);
         void setBody(const string& body);
         void setHeader(const string& field, const string& value);
+        void setRoot(string& root);
         string toString() const;
 
         int     status_code_;
@@ -30,6 +33,7 @@ class Response {
         string getStatusMessage(int code) const;
         string getMimeType(const string& path) const;
         string readFileContent(const string& filePath);
+        string generateResponse() const;
 };
 
 #endif  // RESPONSE_HPP

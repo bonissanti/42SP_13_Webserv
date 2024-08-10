@@ -29,7 +29,8 @@ DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp \
 			Server.cpp \
 			Route.cpp \
-			Request.cpp 
+			Request.cpp \
+			Response.cpp
 			
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

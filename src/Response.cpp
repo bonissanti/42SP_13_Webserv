@@ -9,7 +9,9 @@ Response::Response(Request& request) {
     status_message_ = getStatusMessage(status_code_);
 
     string filePath = request.getPath();
+    cout << filePath << endl;
     headers_["Content-Type"] = getMimeType(filePath);
+    cout << headers_["Content-Type"] << endl;
     body_ = readFileContent(filePath);
     
     stringstream ss;
@@ -17,9 +19,9 @@ Response::Response(Request& request) {
     headers_["Content-Length"] = ss.str();
 }
 
-bool ends_with(const std::string& str, const std::string& suffix) {
+bool ends_with(const string& str, const string& suffix) {
     if (suffix.size() > str.size()) return false;
-    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+    return equal(suffix.rbegin(), suffix.rend(), str.rbegin());
 }
 
 string Response::getMimeType(const string& path) const {
@@ -27,14 +29,20 @@ string Response::getMimeType(const string& path) const {
     if (ends_with(path, ".css")) return "text/css";
     if (ends_with(path, ".js")) return "application/javascript";
     if (ends_with(path, ".jpg")) return "image/jpeg";
+    if (ends_with(path, ".ico")) return "image/x-icon";
     if (ends_with(path, ".txt")) return "text/plain";
     return "application/octet-stream";
 }
 
 string Response::readFileContent(const string& path) {
-    ifstream file(path.c_str());
+    cout << "Here" << endl;
+    string filePath = root_;
+    filePath.append(path);
+    ifstream file(filePath.c_str());
 
+    cout << "Here again" << endl;
     if (!file.is_open()) {
+        cout << "File isn't open" << endl;
         setStatusCode(404);
         return "<html><body><h2>404 Not Found</h2></body></html>";
     }
@@ -48,7 +56,7 @@ void Response::setStatusCode(int code) {
     _statusMessage = getStatusMessage(code);
 }
 
-void Response::setBody(const std::string& body) {
+void Response::setBody(const string& body) {
     body_ = body;
     
     stringstream ss;
@@ -56,12 +64,42 @@ void Response::setBody(const std::string& body) {
     headers_["Content-Length"] = ss.str();
 }
 
-void Response::setHeader(const std::string& field, const std::string& value) {
+void Response::setHeader(const string& field, const string& value) {
     headers_[field] = value;
 }
 
-std::string Response::toString() const {
-    std::string response;
+ void Response::setRoot(string& root) {
+    root_ = root;
+ }
+
+string Response::generateResponse() const {
+    ostringstream response;
+
+    // Start with the status line
+    if (status_code_ == 400) {
+        response << "HTTP/1.0 400 Bad Request\r\n";
+    } else if (status_code_ == 404) {
+        response << "HTTP/1.0 404 Not Found\r\n";
+    } else {
+        response << "HTTP/1.1 200 OK\r\n";
+    }
+
+    // Add headers
+    for (map<string, string>::const_iterator header = headers_.begin(); header != headers_.end(); ++header) {
+        response << header->first << ": " << header->second << "\r\n";
+    }
+
+    // Add a blank line to separate headers from the body
+    response << "\r\n";
+
+    // Add the body
+    response << body_;
+
+    return response.str();
+}
+
+string Response::toString() const {
+    string response;
 
     stringstream code;
     code << status_code_;

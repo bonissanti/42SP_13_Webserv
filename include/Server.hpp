@@ -47,6 +47,8 @@ class Server {
         static void setupPolls(vector<Server> servers);
         void setRoute(vector<string> routeLines, size_t& i);
 
+        string getRoot() const;
+
         class exception : public std::exception {
             private:
                 string msg;
