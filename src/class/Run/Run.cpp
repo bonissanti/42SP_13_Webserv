@@ -19,9 +19,14 @@ vector<struct pollfd> Run::loadPolls(vector<Server> servers)
 void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     char buffer[65535];
+    std::memset(buffer, 0, sizeof(buffer));
+    
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
-      	requests[pollFds[i].fd] = Request(buffer);
+        int fd = pollFds[i].fd;
+        if (requests.find(fd) == requests.end())
+            requests[fd] = Request("");
+        requests[fd].parseRequest(string(buffer, bytesReceived));
     } 
     else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
@@ -31,10 +36,10 @@ void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& reque
     } 
     else {
     	cerr << "Error: recv failed" << endl;
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     }
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
 }
 
 void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
@@ -88,7 +93,8 @@ void Run::startServer(vector<Server>& servers)
                     readRequest(pollFds, i, requests);
                 }
                 else if (pollFds[i].revents & POLLOUT) {
-                	if (requests.find(pollFds[i].fd) != requests.end()) 
+                	if (requests.find(pollFds[i].fd) != requests.end()
+                        && requests[pollFds[i].fd].isReadyForResponse()) 
                     	Response::sendResponse(pollFds, i, requests);
                 }
             }

@@ -20,19 +20,25 @@ class Request {
         bool    getIsCgi() const;
         int     getStatusCode() const;
         map<int, Request> getRequest() const;
+        bool    isRequestComplete(const std::string& request);
         
         void    printRequest() const;
         bool    validateRequest() const;
         static void	handleCGI(void);
         static void	executeCGI(void);
-        void	readRequest(vector<struct pollfd>& pollFds, int i);
-        bool    isRequestComplete(const std::string& request);
         void    parseRequest(const string &raw_request);
-        void    isCgiRequest();
         static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests);
+
+        void    isCgiRequest();
+        bool    isReadyForResponse() const;
+        void    setReadyForResponse(bool ready);
         friend class Response;
 
     private:
+    	bool    validateMethod() const;
+        bool    validateHeaders() const;
+        bool    validateVersion() const;
+
         void    parseRequestLine(const string &line);
         void    parseHeaders(istringstream &request_stream);
         void    parseBody(istringstream &request_stream);
@@ -44,7 +50,9 @@ class Request {
         string  	_path;
         string  	_version;
         string  	_body;
+        string      _buffer;
         bool    	_isCgi;
+        bool        _readyForResponse;
         HttpStatus  _statusCode;
 
     class exception : public std::exception {

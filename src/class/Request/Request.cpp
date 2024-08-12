@@ -74,21 +74,35 @@ map<int, Request> Request::getRequest() const {
 // }
 
 void Request::parseRequest(const string &raw_request) {
-    istringstream request_stream(raw_request);
+    _buffer .append(raw_request);
+
+    if (_buffer.find("\r\n\r\n") == string::npos) {
+        return;
+    }
+
+    cout << "Processing request..." << endl;
+
+    istringstream request_stream(_buffer);
     string line;
 
     if (!getline(request_stream, line) || line.empty()) {
         _statusCode = BAD_REQUEST;
-        throw runtime_error("Invalid request line");
+        std::cout << "Invalid request line" << endl;
+        _buffer.clear();
+        return;
     }
-    
+
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
     
     if (!validateRequest()) {
-    	_statusCode = BAD_REQUEST;
+        std::cout << "Invalid request" << endl;
+        _statusCode = BAD_REQUEST;
     }
+
+    setReadyForResponse(true);
+    _buffer.clear();
 }
 
 void Request::parseRequestLine(const string &firstLine) {
@@ -141,6 +155,42 @@ void Request::isCgiRequest() {
 //     return response;
 // }
 
+//---------VALIDATION FUNCTIONS----------
+
+// bool Request::validateMethod() const {
+//     static vector<string> valid_methods;
+//     valid_methods.push_back("GET");
+//     valid_methods.push_back("POST");
+//     valid_methods.push_back("DELETE");
+
+//     if (find(valid_methods.begin(), valid_methods.end(), method_) == valid_methods.end()) {
+//         // cout << "Error: invalid method" << endl;
+//         return false;
+//     }
+//     return true;
+// }
+
+// bool Request::validateHeaders() const {
+//     if (_headers.find("host") == _headers.end()) {
+//         // cout << "Error: missing Host" << endl;
+//         return false;
+//     }
+
+//     if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
+//         // cout << "Error: missing Content-Length" << endl;
+//         return false;
+//     }
+//     return true;
+// }
+
+// bool Request::validateVersion() const {
+//     if (_version != "HTTP/1.1" && _version != "HTTP/1.0") {
+//         // cout << "Error: invalid HTTP version" << endl;
+//         return false;
+//     }
+//     return true;
+// }
+
 bool Request::validateRequest() const {
     static vector<string> valid_methods;
     valid_methods.push_back("GET");
@@ -155,7 +205,7 @@ bool Request::validateRequest() const {
         // cout << "Error: invalid HTTP version" << endl;
         return false;
     }
-        if (_headers.find("host") == _headers.end()) {
+    if (_headers.find("host") == _headers.end()) {
         // cout << "Error: missing Host" << endl;
         return false;
     }
@@ -197,23 +247,34 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
-{
-    char buffer[65535];
-    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-    if (bytesReceived > 0) {
-      	requests[pollFds[i].fd] = Request(buffer);
-    } 
-    else if (bytesReceived == 0) {
-        cout << "Connection closed" << endl;
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-        requests.erase(pollFds[i].fd);
-    } 
-    else {
-    	cerr << "Error: recv failed" << endl;
-        requests.erase(pollFds[i].fd);
-    }
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
+// static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
+// {
+//     char buffer[65535];
+//     std::memset(buffer, 0, sizeof(buffer));
+
+//     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
+//     if (bytesReceived > 0) {
+//         int fd = pollFds[i].fd;
+//         if (requests.find(fd) == requests.end())
+//             requests[fd] = Request("");
+//         requests[fd].parseRequest(string(buffer, bytesReceived));
+//     } else if (bytesReceived == 0) {
+//         cout << "Connection closed" << endl;
+//         close(pollFds[i].fd);
+//         pollFds.erase(pollFds.begin() + i);
+//         requests.erase(pollFds[i].fd);
+//     } else {
+//         perror("Error: recv failed");
+//         close(pollFds[i].fd);
+//         pollFds.erase(pollFds.begin() + i);
+//         requests.erase(pollFds[i].fd);
+//     }
+// }
+
+bool Request::isReadyForResponse() const {
+    return _readyForResponse;
+}
+
+void Request::setReadyForResponse(bool ready) {
+    _readyForResponse = ready;
 }
