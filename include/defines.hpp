@@ -1,6 +1,18 @@
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
+typedef enum {
+    DEFAULT = 0,
+    OK = 200,
+    MOVED_PERMANENTLY = 301,
+    BAD_REQUEST = 400,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    METHOD_NOT_ALLOWED = 405,
+    INTERNAL_SERVER_ERROR = 500,
+    BAD_GATEWAY = 502,
+} 	HttpStatus;
+
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
 #define YELLOW "\033[0;33m"
@@ -29,6 +41,11 @@
 #define CGI 4
 #define REDIRECT 5
 
+// Methods
+#define GET 0
+#define POST 1
+#define DELETE 2
+
 #define MB 1024
 #define GB 1048576
 
@@ -48,6 +65,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
 
 using namespace std;
 

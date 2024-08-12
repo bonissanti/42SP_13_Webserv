@@ -1,4 +1,4 @@
-#include "../include/Route.hpp"
+#include "Route.hpp"
 
 Route::Route()
     : _route("")
@@ -67,7 +67,6 @@ void Route::create(const string& line, ifstream& file)
         else
             throw Route::exception("Error: Invalid configuration line: " + currentLine);
     }
-
 }
 
 string Route::getRoute() const

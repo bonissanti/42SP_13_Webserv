@@ -1,5 +1,5 @@
 #include "../include/Utils.hpp"
-#include "../include/Server.hpp"
+#include "class/Server/Server.hpp"
 
 #include <stack>
 
@@ -23,6 +23,16 @@ int Utils::strtoi(string number)
     ss << number;
     ss >> result;
     return (result);
+}
+
+void    Utils::bzero(void *ptr, size_t size)
+{
+    size_t i = -1;
+    char *str = static_cast<char *>(ptr);
+
+    while (++i < size){
+        str[i] = 0;
+    }
 }
 
 bool Utils::validateFile(string file_name)

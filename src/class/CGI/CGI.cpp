@@ -1,31 +1,37 @@
-#include "../include/Server.hpp"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   CGI.cpp                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: brunrodr <brunrodr@student.42sp.org.br>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/31 13:50:43 by brunrodr          #+#    #+#             */
+/*   Updated: 2024/08/07 17:15:18 by brunrodr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-char *strdup(const string str)
+#include <cstring>
+#include "../Server/Server.hpp"
+
+void	Request::handleCGI(void)
 {
-	size_t i = 0;
-	char *dest;
-
-	dest = new char[str.size() + 1];
-	for (; i < str.size(); i++)
-		dest[i] = str[i];
-	dest[i] = '\0';
-	return (dest);
+	std::cout << "has CGI" << std::endl;
 }
 
-
-char **configEnviron(void)
-{
 	// string requestMethod = "REQUEST_METHOD" += Request.getMethod(); GET / POST / DELETE
 	// string contentLength = "CONTENT_LENGTH" += Request.contentSize(); ou .size();
 	// string scriptName = "SCRIPT_NAME" += uri completa
 	// string serverName = "SERVER_NAME" += Request.getName();
 	// string serverPort = "SERVER_PORT" += Request.getPort();
 	//string protocol = "SERVER_PROTOCOL=HTTP/1.1";
+
+char **configEnviron(void)
+{
 	char **envp = new char*[3];
 	string requestMethod = "REQUEST_METHOD=GET";
 	string queryString = "QUERY_STRING=username=Random&emailaddress=random@example.com";
-	envp[0] = strdup(requestMethod);
-	envp[1] = strdup(queryString);
+	envp[0] = strdup(requestMethod.c_str());
+	envp[1] = strdup(queryString.c_str());
 	envp[2] = NULL;
 	return (envp);
 }
@@ -53,6 +59,11 @@ inline bool	checkFile(const std::string& file){
 	ifstream f(file.c_str());
 	return (f.good());
 }
+
+// para teste, serão substituidos pela estrutura do request
+	// string tempPath = "current_time.py";
+	// string tempRootCGI = "/cgi/";
+	// string execPath;
 
 void	Request::executeCGI(void)
 {

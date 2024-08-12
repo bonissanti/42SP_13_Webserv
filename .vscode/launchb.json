@@ -1,25 +1,19 @@
 {
 	"configurations": [
 		{
-			"name": "Python Debugger: Current File",
-			"type": "debugpy",
-			"request": "launch",
-			"program": "${file}",
-			"console": "integratedTerminal"
-		},
-		{
-			"name": "(gdb) Launch",
+			"name": "Launch with GDB",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/webserv",
 			"args": [
-				"./config/basic.conf"
+				"config/basic.conf"
 			],
-			"stopAtEntry": false,
+			"preLaunchTask": "make re",
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
+			"miDebuggerPath": "/usr/bin/gdb",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
@@ -27,46 +21,16 @@
 					"ignoreFailures": true
 				},
 				{
-					"description": "Set Disassembly Flavor to Intel",
-					"text": "-gdb-set disassembly-flavor intel",
-					"ignoreFailures": true
+					"description": "Disable loading of shared library symbols",
+					"text": "set auto-solib-add off"
 				}
-			]
+			],
+			"logging": {
+				"engineLogging": true,
+				// "trace": true,
+				"traceResponse": true
+			},
+			// "internalConsoleOptions": "openOnSessionStart"
 		}
 	]
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch with GDB",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/webserv",
-            "args": [
-                "config/basic.conf"
-            ],
-            "preLaunchTask": "make re",
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Disable loading of shared library symbols",
-                    "text": "set auto-solib-add off"
-                }
-            ],
-            "logging": {
-                "engineLogging": true,
-                // "trace": true,
-                "traceResponse": true
-            },
-            "internalConsoleOptions": "openOnSessionStart"
-        }
-    ]
 }
