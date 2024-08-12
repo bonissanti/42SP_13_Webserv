@@ -70,6 +70,7 @@ void Response::runGetMethod(Request& req){
 	
 	string contentType = setContentType(filePath);
 	contentType += "; charset=UTF-8";
+	
 }
 
 void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)

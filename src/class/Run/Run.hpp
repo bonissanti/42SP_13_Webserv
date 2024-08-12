@@ -14,9 +14,6 @@ class Run {
         vector<struct pollfd> loadPolls(vector<Server> servers);
         void startServer(vector<Server>& servers);
         
-        
-
-
         class exception : public std::exception {
             private:
                 string msg;

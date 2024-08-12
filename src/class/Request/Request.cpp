@@ -1,4 +1,6 @@
 #include "Request.hpp"
+#include "../Server/Server.hpp"
+#include "../../../include/defines.hpp"
 
 // Request::Request(){
 
@@ -16,6 +18,7 @@
 Request::Request(const string &raw_request) {
     _isCgi = false;
     _statusCode = OK;
+   // _svConnection = SvConnection; 
     parseRequest(raw_request);
 }
     
@@ -197,7 +200,7 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests)
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);

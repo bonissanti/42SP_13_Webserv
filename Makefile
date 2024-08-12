@@ -28,7 +28,6 @@ DEBUG_FLAG	= -D DEBUG
 DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp		 			\
 			class/CGI/CGI.cpp			\
-			class/Client/Client.cpp 	\
 			class/Request/Request.cpp 	\
 			class/Response/Response.cpp	\
 			class/Route/Route.cpp 		\

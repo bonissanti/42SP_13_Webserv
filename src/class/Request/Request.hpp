@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include "../../../include/defines.hpp"
+#include "../Server/Server.hpp"
 
 class Request {
     public:
@@ -29,7 +30,7 @@ class Request {
         bool    isRequestComplete(const std::string& request);
         void    parseRequest(const string &raw_request);
         void    isCgiRequest();
-        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests);
+        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
         friend class Response;
 
     private:
@@ -46,6 +47,7 @@ class Request {
         string  	_body;
         bool    	_isCgi;
         HttpStatus  _statusCode;
+        Server		_svConnection;
 
     class exception : public std::exception {
         private:

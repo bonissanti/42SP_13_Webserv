@@ -1,6 +1,7 @@
 #include "Run.hpp"
 #include <sys/poll.h>
 #include "../Request/Request.hpp"
+#include "../Response/Response.hpp"
 
 Run::Run(){}
 Run::~Run(){}
@@ -14,27 +15,6 @@ vector<struct pollfd> Run::loadPolls(vector<Server> servers)
         pollFds[i].events = POLLIN | POLLOUT;
     }
     return (pollFds);
-}
-
-void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
-{
-    char buffer[65535];
-    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
-    if (bytesReceived > 0) {
-      	requests[pollFds[i].fd] = Request(buffer);
-    } 
-    else if (bytesReceived == 0) {
-        cout << "Connection closed" << endl;
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-        requests.erase(pollFds[i].fd);
-    } 
-    else {
-    	cerr << "Error: recv failed" << endl;
-        requests.erase(pollFds[i].fd);
-    }
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
 }
 
 void acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
@@ -67,10 +47,11 @@ void Run::startServer(vector<Server>& servers)
     int returnValue;
     map<int, Request> requests;
     vector <struct pollfd> pollFds = loadPolls(servers);
-
+    
+    Server svConnection = servers[0];
     while (true) {
         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-
+        
         if (returnValue == 0){
             cout << "Error: poll Timeout" << endl;
             //Jogar pagine de timeout
@@ -85,7 +66,7 @@ void Run::startServer(vector<Server>& servers)
                 	acceptNewConnection(pollFds[i].fd, pollFds);
                 }
                 else if (pollFds[i].revents & POLLIN) {
-                    readRequest(pollFds, i, requests);
+                    Request::readRequest(pollFds, i, requests);
                 }
                 else if (pollFds[i].revents & POLLOUT) {
                 	if (requests.find(pollFds[i].fd) != requests.end()) 
