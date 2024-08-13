@@ -16,6 +16,7 @@ class Request {
         string  getPath() const;
 		string  getVersion() const;
         string  getHeader(const string &field) const;
+        map<string, string> getHeaders() const;
         string  getBody() const;
         bool    getIsCgi() const;
         int     getStatusCode() const;

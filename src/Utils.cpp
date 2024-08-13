@@ -91,3 +91,15 @@ int Utils::getServersNumber(string filePath)
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }
+
+string to_string(int value) {
+    ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+string to_string(double value) {
+    ostringstream oss;
+    oss << value;
+    return oss.str();
+}

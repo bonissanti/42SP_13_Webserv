@@ -61,6 +61,10 @@ map<int, Request> Request::getRequest() const {
 	return _requests;
 }
 
+map<string, string> Request::getHeaders() const {
+    return _headers;
+}
+
 // void	Request::parseRequest(const string& buffer){
 //     istringstream request_stream(buffer);
 //     string line;
