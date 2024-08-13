@@ -2,23 +2,10 @@
 #include "../Server/Server.hpp"
 #include "../../../include/defines.hpp"
 
-// Request::Request(){
-
-// }
-
-// Request::Request(string buffer, int commFd){
-// 	_fd = commFd;
-// 	_statusCode = DEFAULT;
-// 	_isCgi = false;
-// 	_contentLength = 0;
-	
-// 	parseRequest(buffer);
-// }
-
-Request::Request(const string &raw_request) {
+Request::Request(const string &raw_request, Server& server) {
     _isCgi = false;
     _statusCode = OK;
-   // _svConnection = SvConnection; 
+   _server = server; 
     parseRequest(raw_request);
 }
     
@@ -64,17 +51,9 @@ map<int, Request> Request::getRequest() const {
 	return _requests;
 }
 
-// void	Request::parseRequest(const string& buffer){
-//     istringstream request_stream(buffer);
-//     string line;
-
-//     if (!getline(request_stream, line) || line.empty()) {
-//     	_statusCode = BAD_REQUEST;
-//     	// throw runtime_error("Invalid request line"); Precisa deixar seguir o fluxo para o response
-//      // jogar a pagina de erro equivalente ao 400 - BAD REQUEST
-//     }
-//     parseRequestLine(line);
-// }
+Server Request::getServer() const{
+	return _server;
+}
 
 void Request::parseRequest(const string &raw_request) {
     istringstream request_stream(raw_request);
@@ -128,8 +107,7 @@ void Request::isCgiRequest() {
         _isCgi = true;
 }
 
-// string generateErrorResponse(int statusCode) {
-    
+// string generateErrorResponse(int statusCode)     
 //     map<int, string> statusMessages;
 //     statusMessages.insert(std::make_pair(400, "Bad Request"));
 //     statusMessages.insert(std::make_pair(404, "Not Found"));
@@ -180,14 +158,6 @@ bool Request::validateRequest() const {
     return true;
 }
 
-// bool Request::validateRequest(string& errorResponse) const {
-//     if (!validateMethod() || !validateVersion() || !validateHeaders()) {
-//         errorResponse = generateErrorResponse(400);
-//         return false;
-//     }
-//     return true;
-// }
-
 //-----------UTILS-------------
 
 void Request::printRequest() const {
@@ -200,12 +170,12 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
-      	requests[pollFds[i].fd] = Request(buffer);
+      	requests[pollFds[i].fd] = Request(buffer, server);
     } 
     else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
@@ -217,6 +187,7 @@ void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Reques
     	cerr << "Error: recv failed" << endl;
         requests.erase(pollFds[i].fd);
     }
+    (void)server;
     close(pollFds[i].fd);
     pollFds.erase(pollFds.begin() + i);
 }

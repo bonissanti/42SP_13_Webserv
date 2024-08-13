@@ -6,14 +6,17 @@
 #include "../Request/Request.hpp"
 #include "../../../include/defines.hpp"
 
-
-
 class Response {
     private:
-        int _statusCode;
-        string _statusMessage;
+        int 				_statusCode;
+        string				_index;
+        string				_executor;
+        string				_statusMessage;
+        string 				_body;
+        string				_filePath;
+        string				_contentType;
+        size_t				_contentLength;
         map<string, string> _headers;
-        string _body;
 
         // string getStatusMessage(int code) const;
 
@@ -24,12 +27,15 @@ class Response {
         int getMethodIndex(string method);
         void callMethod(Request& req);
         void runGetMethod(Request& req);
+        string	executeCGI(Request& req);
+        string	setResponseBody(Request& req); 
+        char **configEnviron(Request& req);
+        
         // void setStatusCode(int code);
         // void setBody(const string& body);
         // void setHeader(const string& field, const string& value);
-        // string toString() const;
 
-        static void sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
+        static void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
 
 };
 

@@ -9,7 +9,7 @@
 
 class Request {
     public:
-        Request(const string &raw_request);
+        Request(const string &raw_request, Server& server);
         ~Request();
 		Request();
 
@@ -21,16 +21,15 @@ class Request {
         bool    getIsCgi() const;
         int     getStatusCode() const;
         map<int, Request> getRequest() const;
+        Server	getServer() const;
         
         void    printRequest() const;
         bool    validateRequest() const;
-        static void	handleCGI(void);
-        static void	executeCGI(void);
         void	readRequest(vector<struct pollfd>& pollFds, int i);
         bool    isRequestComplete(const std::string& request);
         void    parseRequest(const string &raw_request);
         void    isCgiRequest();
-        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
+        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server);
         friend class Response;
 
     private:
@@ -47,7 +46,7 @@ class Request {
         string  	_body;
         bool    	_isCgi;
         HttpStatus  _statusCode;
-        Server		_svConnection;
+        Server		_server;
 
     class exception : public std::exception {
         private:

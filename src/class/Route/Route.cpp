@@ -1,4 +1,7 @@
 #include "Route.hpp"
+#include <string>
+
+// CONSTRUCTOR & DESTRUCTOR
 
 Route::Route()
     : _route("")
@@ -14,6 +17,8 @@ Route::Route()
 }
 
 Route::~Route() {}
+
+// ROUTE FUNCTIONS
 
 void Route::create(const string& line, ifstream& file)
 {
@@ -69,6 +74,8 @@ void Route::create(const string& line, ifstream& file)
     }
 }
 
+// GETTERS
+
 string Route::getRoute() const
 {
     return _route;
@@ -113,6 +120,8 @@ string Route::getCgi() const
 {
     return _cgi;
 }
+
+// SETTERS
 
 void Route::setRoute(const string& route)
 {
@@ -187,9 +196,9 @@ void Route::setCgi(string& cgi)
     _cgi = cgi;
 }
 
+// EXCEPTIONS
 
 Route::exception::exception(const string& msg) : msg(msg) {}
-
 Route::exception::~exception() throw() {}
 
 const char* Route::exception::what() const throw()

@@ -2,6 +2,8 @@
 #include "../Request/Request.hpp"
 #include "../Route/Route.hpp"
 
+// CONSTRUCTOR & DESTRUCTOR
+
 Server::Server()
 {
     _listen = 100;
@@ -12,13 +14,7 @@ Server::Server()
 
 Server::~Server() {}
 
-Server::Server::exception::exception(const string& msg) : msg(msg) {}
-Server::Server::exception::~exception() throw() {}
-
-const char* Server::Server::exception::what() const throw()
-{
-    return (this->msg.c_str());
-}
+// SERVER FUNCTIONS
 
 void Server::create(ifstream& file)
 {
@@ -34,7 +30,6 @@ void Server::create(ifstream& file)
         if (line.empty() or line[0] == '#') {
             continue;
         }
-
         if ((line.substr(0, 2) == "}," and line.length() == 2) or (line.substr(0, 1) == "}" and line.length() == 1))
             break;
 
@@ -64,15 +59,64 @@ void Server::create(ifstream& file)
             routeFound = true;
         }
     }
-
     if (_listen == 100)
         throw Server::exception(RED "Error: listen is not set" RESET);
 }
 
-int Server::getSocket(void)
+void Server::configServer(vector<Server>& servers)
 {
+    int inUse = 1;
+    struct sockaddr_in serverAddr;
+
+    Utils::bzero(&serverAddr, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY especifica que o endereço podera ser acessado por ETHERNET, WIFI e etc
+    // htonl converte a macro de big endian para little endian
+
+    for (size_t i = 0; i < servers.size(); i++) {
+        serverAddr.sin_port = htons(servers[i]._listen); // convert a porta (little endian) para big endian (padrão web)
+        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); // AF_INET = ipv4, SOCK_STREAM = TCP/IP
+
+        if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
+            throw Server::exception(RED "Error: setsockopt failed" RESET);
+
+        int flags = fcntl(servers[i]._socketFd, F_GETFL); // Pega o socket
+        if (flags < 0)
+            throw Server::exception(RED "Error: fcntl failed" RESET);
+
+        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0) // e seta o socket para não bloequeante
+            throw Server::exception(RED "Error: fcntl failed" RESET);
+
+        if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+            if (errno == EADDRINUSE)
+                throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
+        }
+        if (listen(servers[i]._socketFd, 10) < 0)
+            throw Server::exception(RED "Error: listen failed" RESET);
+    }
+}
+
+// EXCEPTION
+
+Server::Server::exception::exception(const string& msg) : msg(msg) {}
+Server::Server::exception::~exception() throw() {}
+
+const char* Server::Server::exception::what() const throw()
+{
+    return (this->msg.c_str());
+}
+
+// GETTERS
+
+int Server::getSocket(void){
 	return (_socketFd);
 }
+
+vector<Route> Server::getRoute(void){
+	return (_routes);
+}
+
+// SETTERS
 
 void Server::setListen(int port)
 {
@@ -145,74 +189,3 @@ void Server::setErrorPage(string error_page)
     mapErrorPage[key] = value;
     _error_page.push_back(mapErrorPage);
 }
-
-void Server::configServer(vector<Server>& servers)
-{
-    int inUse = 1;
-    struct sockaddr_in serverAddr;
-
-    Utils::bzero(&serverAddr, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY especifica que o endereço podera ser acessado por ETHERNET, WIFI e etc
-    // htonl converte a macro de big endian para little endian
-
-    for (size_t i = 0; i < servers.size(); i++) {
-        serverAddr.sin_port = htons(servers[i]._listen); // convert a porta (little endian) para big endian (padrão web)
-        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); // AF_INET = ipv4, SOCK_STREAM = TCP/IP
-
-        if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
-            throw Server::exception(RED "Error: setsockopt failed" RESET);
-
-        int flags = fcntl(servers[i]._socketFd, F_GETFL); // Pega o socket
-        if (flags < 0)
-            throw Server::exception(RED "Error: fcntl failed" RESET);
-
-        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0) // e seta o socket para não bloequeante
-            throw Server::exception(RED "Error: fcntl failed" RESET);
-
-        if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            if (errno == EADDRINUSE)
-                throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
-        }
-        if (listen(servers[i]._socketFd, 10) < 0)
-            throw Server::exception(RED "Error: listen failed" RESET);
-    }
-}
-
-
-
-// void Server::setupPolls(vector<Server> servers)
-// {
-//     int returnValue;
-//     vector<struct pollfd> pollFds(servers.size());
-//     map<int, Request> requests;
-
-//     for (size_t i = 0; i < servers.size(); i++) {
-//         pollFds[i].fd = servers[i]._socketFd;
-//         pollFds[i].events = POLLIN | POLLOUT;
-//     }
-//     while (true) {
-//         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-//         switch (returnValue) {
-//             case 0:
-//                 cout << "Error: poll Timeout" << endl;
-//                 break;
-
-//             case -1:
-//                 cout << "Error: poll failed" << endl;
-//                 break;
-
-//             default:
-//                 for (size_t i = 0; i < pollFds.size(); i++) {
-//                     if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-//                         acceptNewConnection(pollFds[i].fd, pollFds);
-//                     } else if (pollFds[i].revents & POLLIN) {
-//                         readRequest(pollFds, i, requests);
-//                     } else if (pollFds[i].revents & POLLOUT) {
-//                         sendResponse(pollFds, i, requests);
-//                     }
-//                 }
-//                 break;
-//         }
-//     }
-// }

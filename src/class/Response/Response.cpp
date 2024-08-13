@@ -1,4 +1,6 @@
 #include "Response.hpp"
+#include <sstream>
+#include <string>
 
 Response::Response(Request& req){
 	// runRedirect ou..
@@ -56,6 +58,49 @@ string setContentType(string filePath)
 	return ("text/plain");
 }
 
+static bool verifyPermission(const string& file){
+	if (access(file.c_str(), F_OK) != 0)
+		return (false);
+	else if (access(file.c_str(), F_OK) != 0) 
+		return (false);
+	return (true);
+}
+
+string	Response::setResponseBody(Request& req){
+	if (req._isCgi){
+		_index = req.getServer().getRoute()[0].getIndex();
+
+		if (_index.find(".py") != string::npos || _index.find(".php") != string::npos)
+			return (executeCGI(req));	
+	}
+		
+	ifstream file(_filePath.c_str());
+	if (!file.is_open()){
+		_statusCode = NOT_FOUND;
+		return ("");
+	}
+	else if (file.fail()){
+		_statusCode = INTERNAL_SERVER_ERROR;
+		return ("");
+	}
+	stringstream buffer;
+	buffer << file.rdbuf();
+	
+	if (verifyPermission(buffer.str())){
+		_statusCode = FORBIDDEN;
+		return ("");
+	}
+	file.close();
+	return (buffer.str());	
+}
+
+size_t setContentLength(const string& body){
+	ostringstream oss;
+	
+	oss << body;
+	return (oss.str().size());
+}
+
 /*  */
 
 void Response::runGetMethod(Request& req){
@@ -63,20 +108,22 @@ void Response::runGetMethod(Request& req){
 		_statusCode = BAD_REQUEST;
 		return ;
 	}
+	_filePath = req._path;
+	if (_filePath.length() - 1 == '/')
+		_filePath += "index.html";
 	
-	string filePath = req._path;
-	if (filePath.length() - 1 == '/')
-		filePath += "index.html";
-	
-	string contentType = setContentType(filePath);
-	contentType += "; charset=UTF-8";
-	
+	_contentType = setContentType(_filePath);
+	_contentType += "; charset=UTF-8";
+	_body = setResponseBody(req);
+	_contentLength = setContentLength(_body);
 }
 
-void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
+void Response::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 {
-	Request &req = requests[pollFds[i].fd];
-	string hello =
+	Request &req = requests[pollFds.fd];
+    Response resp(req);
+    
+    string hello =
     	"HTTP/1.1 200 OK\r\n"
     	"Content-Type: text/plain\r\n"
     	"Content-Length: 17\r\n"
@@ -84,24 +131,11 @@ void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Requ
     	"\r\n"
     	"Hello from server";
 
-
-    Response resp(req);
-    //  switch(runMethod(req.getMethod()))
-    // {
-    // 	case GET:
-    //  		Response runGet();
-    // 	case POST:
-    // 		Response runPost();
-    // 	case DELETE:
-    // 		Response runDelete();
-    // }
-    send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
+    send(pollFds.fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
    
-    requests.erase(pollFds[i].fd);
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
-    (void)req;
+    requests.erase(pollFds.fd);
+    close(pollFds.fd);
 }
 
 // void Response::setStatusCode(int code)
