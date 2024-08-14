@@ -79,8 +79,8 @@ void Response::runGetMethod(Request& req){
 //-----------------POST FUNCTIONS----------------------
 
 void Response::runPostMethod(Request& req) {
-    string contentType = req.getHeader("Content-Type");
-
+    string contentType = req.getHeader("content-type");
+	cout << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
         map<string, string> formData = parseMultipartData(req.getBody(), boundary);
@@ -91,26 +91,27 @@ void Response::runPostMethod(Request& req) {
             }
         }
 
-        _statusCode = 200;
+        _statusCode = OK;
         _statusMessage = "OK";
         _body = "File uploaded successfully";
     } else if (contentType == "application/json") {
         // Handle JSON data
         string jsonData = req.getBody();
         // Process JSON data (e.g., parse and validate)
-        _statusCode = 200;
+		saveUploadedFile("test", jsonData);
+        _statusCode = OK;
         _statusMessage = "OK";
         _body = "JSON data processed successfully";
     } else if (contentType == "application/x-www-form-urlencoded") {
         // Handle URL-encoded form data
         map<string, string> formData = parseUrlEncodedData(req.getBody());
         // Process form data
-        _statusCode = 200;
+        _statusCode = OK;
         _statusMessage = "OK";
         _body = "Form data processed successfully";
     } else {
         // Handle other POST data
-        _statusCode = 400;
+        _statusCode = BAD_REQUEST;
         _statusMessage = "Bad Request";
         _body = "Unsupported Content-Type";
     }
@@ -161,6 +162,8 @@ map<string, string> Response::parseMultipartData(const string& body, const strin
 }
 
 void Response::saveUploadedFile(const string& filename, const string& fileContent) {
+	cout << "Saving file" << endl;
+	string finalFilename = filename.empty() ? "default_filename.txt" : filename;
     ofstream outFile(filename.c_str(), ios::binary);
     outFile.write(fileContent.c_str(), fileContent.size());
     outFile.close();
@@ -196,26 +199,12 @@ void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Requ
 
 
     Response resp(req);
-    //  switch(runMethod(req.getMethod()))
-    // {
-    // 	case GET:
-    //  		Response runGet();
-    // 	case POST:
-    // 		Response runPost();
-    // 	case DELETE:
-    // 		Response runDelete();
-    // }
+
 	resp.setStatusCode(req.getStatusCode());
 	resp.setBody(req.getBody());
 	resp.setHeaders(req.getHeaders());
 
 	string response = resp.getResponse();
-
-	// string assembledResponse = "HTTP/1.1 " + to_string(resp.getStatusCode()) + " " + resp.getStatusMessage() + "\r\n";
-    // for (const std::pair<std::string, std::string>& header : resp.getHeaders()) {
-    //     assembledResponse += header.first + ": " + header.second + "\r\n";
-    // }
-	// assembledResponse += "\r\n" + resp.getBody();
 
 	send(pollFds[i].fd, response.c_str(), response.size(), 0);
 	cout << "Response sent" << endl;
