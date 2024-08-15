@@ -17,7 +17,7 @@ class Response {
 
         // string getStatusMessage(int code) const;
         map<string, string> parseMultipartData(const string& body, const string& boundary);
-        void saveUploadedFile(const string& filename, const string& fileContent);
+        void saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
         map<string, string> parseUrlEncodedData(const string& body);
 
     public:
