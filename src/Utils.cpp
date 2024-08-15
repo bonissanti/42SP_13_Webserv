@@ -85,7 +85,7 @@ int Utils::getServersNumber(string filePath)
             }
         }
     }
-    if (serverCount == -1 && serverCount > 1024)
+    if ((serverCount == -1) && (serverCount > 1024))
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }

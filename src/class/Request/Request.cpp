@@ -1,6 +1,4 @@
 #include "Request.hpp"
-#include "../Server/Server.hpp"
-#include "../../../include/defines.hpp"
 
 Request::Request(const string &raw_request, Server& server) {
     _isCgi = false;
@@ -15,44 +13,12 @@ Request::Request() : _isCgi(false) {
 
 Request::~Request() {}
 
-string Request::getMethod() const {
-    return _method;
-}
-
-string Request::getPath() const {
-    return _path;
-}
-
-string Request::getVersion() const {
-    return _version;
-}
-
-string Request::getBody() const {
-    return _body;
-}
-
 string Request::getHeader(const string &field) const {
     map<string, string>::const_iterator it = _headers.find(field);
     if (it != _headers.end()) {
         return it->second;
     }
     return "";
-}
-
-bool Request::getIsCgi() const {
-    return _isCgi;
-}
-
-int Request::getStatusCode() const {
-    return _statusCode;
-}
-
-map<int, Request> Request::getRequest() const {
-	return _requests;
-}
-
-Server Request::getServer() const{
-	return _server;
 }
 
 void Request::parseRequest(const string &raw_request) {

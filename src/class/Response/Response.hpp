@@ -3,40 +3,50 @@
 
 #include <map>
 #include <string>
-#include "../Request/Request.hpp"
+
 #include "../../../include/defines.hpp"
+#include "../Request/Request.hpp"
 
 class Response {
     private:
-        int 				_statusCode;
-        string				_index;
-        string				_executor;
-        string				_statusMessage;
-        string 				_body;
-        string				_filePath;
-        string				_contentType;
-        size_t				_contentLength;
+        int _statusCode;
+        string _index;
+        string _executor;
+        string _statusMessage;
+        string _responseBody;
+        string _filePath;
+        string _contentType;
+        size_t _contentLength;
         map<string, string> _headers;
 
         // string getStatusMessage(int code) const;
+        void freeEnviron(char** envp);
+        string readCGI(int fd_in);
+        inline bool checkFile(const std::string& file);
+        string getQueryString(string path);
 
     public:
-        Response(Request& req);
-		~Response();
+        Response();
+        ~Response();
 
         int getMethodIndex(string method);
-        void callMethod(Request& req);
         void runGetMethod(Request& req);
-        string	executeCGI(Request& req);
-        string	setResponseBody(Request& req); 
-        char **configEnviron(Request& req);
-        
-        // void setStatusCode(int code);
-        // void setBody(const string& body);
-        // void setHeader(const string& field, const string& value);
+        string executeCGI(Request& req);
+        string defineResponseBody(Request& req);
+        string defineContentType(string filePath);
+        size_t defineContentLength(const string& body);
 
-        static void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
+        char** configEnviron(Request& req);
 
+        void setStatusCode(int code);
+        void setFilePath(string filePath);
+        void setContentType(string contentType);
+        void setContentLength(size_t length);
+        void setHeaders(map<string, string> headers);
+        void setResponseBody(string responseBody);
+
+        string getFilePath(void) const;
+        void setHeader(const string& field, const string& value);
 };
 
 #endif  // RESPONSE_HPP
