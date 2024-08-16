@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client() {}
+Client::Client(){}
 
 Client::~Client() {}
 
@@ -41,15 +41,15 @@ int Client::getMethodIndex(string method)
 int Client::callMethod()
 {
     if (_request.getPath().empty())
-        return (_request.setStatusCode(BAD_REQUEST));
+    return (_request.setStatusCode(BAD_REQUEST));
 
-	switch (getMethodIndex(_request.getMethod()))
+    switch (getMethodIndex(_request.getMethod()))
     {
         case GET:
            return runGetMethod();
-        case POST:
-           return runPostMethod();
-        case DELETE:
+        // case POST:
+        //    return runPostMethod();
+        // case DELETE:
         //    return runDeleteMethod(req);
         default:
             return (_request.setStatusCode(NOT_FOUND));
@@ -65,12 +65,13 @@ int Client::runGetMethod()
         filePath += "index.html";
 
     string contentType = _response.defineContentType(filePath); 
-    string responseBody = defineResponseBody(this->_request);
+    string responseBody = _response.defineResponseBody(_request);
     size_t contentLength = _response.defineContentLength(responseBody); 
 
     _response.setContentType(contentType);
     _response.setResponseBody(responseBody);
     _response.setContentLength(contentLength);
+    return (OK);
 }
 
 void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
@@ -93,7 +94,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 
     send(pollFds.fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
-
+    (void)statusCode;
     requests.erase(pollFds.fd);
     close(pollFds.fd);
 }

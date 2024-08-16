@@ -129,7 +129,7 @@ void Run::startServer(vector<Server>& servers)
                 	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
                 	clientManager.addAssociation(clientFd, servers[i]);
                 }
-                if (pollFds[i].revents & POLLIN) {
+                else if (pollFds[i].revents & POLLIN) {
                 	Server aaa = clientManager.getServerFd(pollFds[i].fd);
                  	Request::readRequest(pollFds, i, requests, aaa);
                 }

@@ -12,19 +12,19 @@ class Client {
     private:
         map<int, Server> _fdsMap;
         Response _response;
-        Request& _request;
+        Request _request;
 
     public:
         Client();
         ~Client();
         void addAssociation(int clientFd, Server server);
         Server getServerFd(int clientFd);
-        int runGetMethod(void);
         int callMethod(void);
         int getMethodIndex(string method);
+        int runGetMethod(void);
         int runPostMethod(void);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
-        string defineResponseBody(Request& req);
+        
         class ClientException : public std::exception {
             private:
                 string msg;

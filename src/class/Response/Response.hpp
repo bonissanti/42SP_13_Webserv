@@ -21,8 +21,7 @@ class Response {
 
         // string getStatusMessage(int code) const;
         void freeEnviron(char** envp);
-        string readCGI(int fd_in);
-        inline bool checkFile(const std::string& file);
+        bool checkFile(const string& file);
         string getQueryString(string path);
 
     public:
@@ -35,8 +34,7 @@ class Response {
         string defineResponseBody(Request& req);
         string defineContentType(string filePath);
         size_t defineContentLength(const string& body);
-
-        char** configEnviron(Request& req);
+        char **configEnviron(Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);
