@@ -7,9 +7,9 @@ string Request::getMethod() const
     return _method;
 }
 
-string Request::getPath() const
+string Request::getURI() const
 {
-    return _path;
+    return _uri;
 }
 
 string Request::getVersion() const

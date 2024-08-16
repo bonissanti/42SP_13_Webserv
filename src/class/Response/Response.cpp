@@ -13,7 +13,16 @@ static bool verifyPermission(const string& file)
     return (true);
 }
 
-string Response::defineResponseBody(Request& req)
+string Response::defineFilePath(string& uri, Request& req){
+	string filePath;
+	(void)req;
+	
+	if (uri == "/")
+		filePath = "content/html/index.html";	
+	return (filePath);	
+}
+
+string Response::defineResponseBody(const string& filePath, Request& req)
 {
     if (req._isCgi) {
         _index = req.getServer().getRoute()[0].getIndex();
@@ -22,7 +31,7 @@ string Response::defineResponseBody(Request& req)
             return (this->executeCGI(req));
     }
 
-    ifstream file(_filePath.c_str());
+    ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _statusCode = NOT_FOUND;
         return ("");
@@ -34,7 +43,7 @@ string Response::defineResponseBody(Request& req)
     stringstream buffer;
     buffer << file.rdbuf();
 
-    if (verifyPermission(buffer.str())) {
+    if (!verifyPermission(filePath)) {
         _statusCode = FORBIDDEN;
         return ("");
     }

@@ -16,7 +16,7 @@ class Request {
 
         string getHeader(const string& field) const;
         string getMethod() const;
-        string getPath() const;
+        string getURI() const;
         string getVersion() const;
         string getBody() const;
         bool getIsCgi() const;
@@ -43,7 +43,7 @@ class Request {
         map<int, Request> _requests;
         map<string, string> _headers;
         string _method;
-        string _path;
+        string _uri;
         string _version;
         string _body;
         bool _isCgi;

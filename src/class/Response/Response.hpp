@@ -31,6 +31,8 @@ class Response {
         int getMethodIndex(string method);
         void runGetMethod(Request& req);
         string executeCGI(Request& req);
+        string defineFilePath(string& uri, Request& req); 
+        string defineResponseBody(const string& filePath, Request& req); 
         string defineResponseBody(Request& req);
         string defineContentType(string filePath);
         size_t defineContentLength(const string& body);

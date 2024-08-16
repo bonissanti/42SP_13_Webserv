@@ -40,8 +40,9 @@ void Request::parseRequest(const string &raw_request) {
 }
 
 void Request::parseRequestLine(const string &firstLine) {
-    istringstream line_stream(firstLine);
-    if (!(line_stream >> _method >> _path >> _version)) {
+	
+	istringstream line_stream(firstLine);
+    if (!(line_stream >> _method >> _uri >> _version)) {
         _statusCode = BAD_REQUEST;
         // throw runtime_error("Invalid request line format");
     }
@@ -69,7 +70,7 @@ void Request::parseBody(istringstream &request_stream) {
 }
 
 void Request::isCgiRequest() {
-    if (_path.find("/cgi-bin/") != std::string::npos)
+    if (_uri.find("/cgi-bin/") != std::string::npos)
         _isCgi = true;
 }
 
@@ -127,7 +128,7 @@ bool Request::validateRequest() const {
 //-----------UTILS-------------
 
 void Request::printRequest() const {
-    cout << _method << " " << _path << " " << _version << endl;
+    cout << _method << " " << _uri << " " << _version << endl;
 
     vector<string> key, value;
     for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {

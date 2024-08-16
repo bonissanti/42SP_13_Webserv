@@ -40,8 +40,8 @@ int Client::getMethodIndex(string method)
 
 int Client::callMethod()
 {
-    if (_request.getPath().empty())
-    return (_request.setStatusCode(BAD_REQUEST));
+    if (_request.getURI().empty())
+        return (_request.setStatusCode(BAD_REQUEST));
 
     switch (getMethodIndex(_request.getMethod()))
     {
@@ -58,16 +58,13 @@ int Client::callMethod()
 
 int Client::runGetMethod()
 {
-    string filePath = _request.getPath();
-    _response.setFilePath(filePath);
-
-    if (filePath.length() - 1 == '/')
-        filePath += "index.html";
-
+    string uri = _request.getURI();
+    string filePath = _response.defineFilePath(uri, _request);
     string contentType = _response.defineContentType(filePath); 
-    string responseBody = _response.defineResponseBody(_request);
+    string responseBody = _response.defineResponseBody(filePath, _request);
     size_t contentLength = _response.defineContentLength(responseBody); 
 
+    _response.setFilePath(filePath);
     _response.setContentType(contentType);
     _response.setResponseBody(responseBody);
     _response.setContentLength(contentLength);

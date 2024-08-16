@@ -2,6 +2,8 @@
 
 string Route::getRoute() const
 {
+	if (_route.empty())
+    	return "";
     return _route;
 }
 
@@ -91,8 +93,7 @@ void Route::setAllowMethods(const string& allowMethods)
     _allowMethods = allowMethods;
 }
 
-void Route::setIndex(string& index)
-{
+void Route::setIndex(string& index){
     _index = index;
 }
 
