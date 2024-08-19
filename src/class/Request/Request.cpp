@@ -3,7 +3,7 @@
 Request::Request(const string &raw_request, Server &server) {
     _isCgi = false;
     _statusCode = OK;
-    _server = server; 
+    _server = server;
     parseRequest(raw_request);
 }
 
@@ -12,30 +12,6 @@ Request::Request() : _isCgi(false) {
 }
 
 Request::~Request() {}
-
-string Request::getHeader(const string &field) const {
-    map<string, string>::const_iterator it = _headers.find(field);
-    if (it != _headers.end()) {
-        return it->second;
-    }
-    return "";
-}
-
-bool Request::getIsCgi() const {
-    return _isCgi;
-}
-
-int Request::getStatusCode() const {
-    return _statusCode;
-}
-
-map<int, Request> Request::getRequest() const {
-	return _requests;
-}
-
-map<string, string> Request::getHeaders() const {
-    return _headers;
-}
 
 void Request::parseRequest(const string &raw_request) {
     _buffer.append(raw_request);
@@ -169,13 +145,14 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server) {
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server) { //remover server
     char buffer[65535];
+    (void)server;
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
         int fd = pollFds[i].fd;
         if (requests.find(fd) == requests.end())
-            requests[fd] = Request("");
+            requests[fd] = Request();
         requests[fd].parseRequest(string(buffer, bytesReceived));
     } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;

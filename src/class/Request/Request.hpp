@@ -23,6 +23,8 @@ class Request {
         bool getIsCgi() const;
         int getStatusCode() const;
         map<int, Request> getRequest() const;
+        Server getServer() const;
+        bool isReadyForResponse() const;
 
         int setStatusCode(HttpStatus code);
 
