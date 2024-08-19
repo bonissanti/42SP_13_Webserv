@@ -10,7 +10,7 @@ class Utils {
         static int getServersNumber(string filePath);
         static bool validateFile(string file);
         static void bzero(void *ptr, size_t size);
-
+        static void debugMode(const string& msg);
 };
 
 string to_string(double value);

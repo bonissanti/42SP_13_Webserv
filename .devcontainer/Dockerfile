@@ -10,8 +10,27 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
     fi \
     && rm -f /tmp/reinstall-cmake.sh
 
+RUN sudo add-apt-repository main
+RUN sudo add-apt-repository universe
+RUN sudo add-apt-repository multiverse
+RUN sudo add-apt-repository restricted
+    
 # Instalar clang-format
-RUN apt-get update && apt-get install -y clang-format    
+RUN sudo apt-get update && apt-get install -y   
+
+RUN wget https://apt.llvm.org/llvm.sh
+
+RUN chmod +x llvm.sh
+
+RUN sudo apt update
+
+RUN sudo apt install lsb-release wget software-properties-common gnupg
+
+RUN sudo ./llvm.sh 18
+
+RUN sudo ln -s /usr/bin/clangd-18 /usr/bin/clangd
+
+RUN sudo apt install clang-format-18
 
 # [Optional] Uncomment this section to install additional vcpkg ports.
 # RUN su vscode -c "${VCPKG_ROOT}/vcpkg install <your-port-name-here>"

@@ -74,9 +74,7 @@ int Utils::getServersNumber(string filePath)
                 if (c == '{') {
                     brackets.push(c);
                 }
-                else if (c == '}') {
-                    if (brackets.empty()) {
-                        serverCount = -1;
+                else if (c == '}') { if (brackets.empty()) { serverCount = -1;
                     }
                     brackets.pop();
                     if (brackets.empty()) {
@@ -87,19 +85,18 @@ int Utils::getServersNumber(string filePath)
             }
         }
     }
-    if (serverCount == -1 && serverCount > 1024)
+    if ((serverCount == -1) && (serverCount > 1024))
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }
 
-string to_string(int value) {
-    ostringstream oss;
-    oss << value;
-    return oss.str();
-}
+void Utils::debugMode(const string& msg)
+{
+#ifndef DEBUG
+    (void)msg;
+#endif
 
-string to_string(double value) {
-    ostringstream oss;
-    oss << value;
-    return oss.str();
+#ifdef DEBUG
+    cerr << BBLUE << msg << RESET << endl;
+#endif
 }

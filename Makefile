@@ -27,13 +27,17 @@ DEBUG_FLAG	= -D DEBUG
 
 DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp		 			\
-			class/CGI/CGI.cpp			\
-			class/Client/Client.cpp 	\
+			class/Client/Client.cpp		\
 			class/Request/Request.cpp 	\
+			class/Request/SetGet.cpp 	\
+			class/Response/CGI.cpp		\
+			class/Response/SetGet.cpp	\
 			class/Response/Response.cpp	\
 			class/Route/Route.cpp 		\
+			class/Route/SetGet.cpp 		\
 			class/Run/Run.cpp 			\
 			class/Server/Server.cpp		\
+			class/Server/SetGet.cpp		\
 
 MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
 SRC_DIR		= ./src

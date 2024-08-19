@@ -1,33 +1,39 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
+#include <exception>
+
+#include "../../../include/defines.hpp"
 #include "../Request/Request.hpp"
 #include "../Response/Response.hpp"
-#include "../../../include/defines.hpp"
+#include "../Server/Server.hpp"
 
 class Client {
     private:
-        int _fd;
+        map<int, Server> _fdsMap;
+        Response _response;
         Request _request;
 
     public:
-        Client(int socket);
         Client();
         ~Client();
-        void setFd(int newFd);
-        void setRequest(Request newRequest);
+        void addAssociation(int clientFd, Server server);
+        Server getServerFd(int clientFd);
+        int callMethod(void);
+        int getMethodIndex(string method);
+        int runGetMethod(void);
+        int runPostMethod(void);
+        void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
+        
+        class ClientException : public std::exception {
+            private:
+                string msg;
 
-
-
-    class exception : public std::exception {
-        private:
-            string msg;
-
-        public:
-            exception(const string& msg);
-            virtual ~exception() throw();
-            virtual const char* what() const throw();
-    };
+            public:
+                ClientException(const string& message);
+                virtual ~ClientException() throw();
+                virtual const char* what() const throw();
+        };
 };
 
-#endif  // CLIENT_HPP
+#endif

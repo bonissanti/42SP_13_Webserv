@@ -4,67 +4,64 @@
 #include <cstddef>
 #include <map>
 #include <string>
+
 #include "../../../include/defines.hpp"
+#include "../Server/Server.hpp"
 
 class Request {
     public:
-        Request(const string &raw_request);
+        Request(const string& raw_request, Server& server);
         ~Request();
-		Request();
+        Request();
 
-        string  getMethod() const;
-        string  getPath() const;
-		string  getVersion() const;
-        string  getHeader(const string &field) const;
+        string getHeader(const string& field) const;
+        string getMethod() const;
+        string getURI() const;
+        string getVersion() const;
         map<string, string> getHeaders() const;
-        string  getBody() const;
-        bool    getIsCgi() const;
-        int     getStatusCode() const;
+        string getBody() const;
+        bool getIsCgi() const;
+        int getStatusCode() const;
         map<int, Request> getRequest() const;
-        bool    isRequestComplete(const std::string& request);
-        
-        void    printRequest() const;
-        bool    validateRequest() const;
-        static void	handleCGI(void);
-        static void	executeCGI(void);
-        void    parseRequest(const string &raw_request);
-        static void	readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request> requests);
 
-        void    isCgiRequest();
-        bool    isReadyForResponse() const;
-        void    setReadyForResponse(bool ready);
+        int setStatusCode(HttpStatus code);
+
+        void printRequest() const;
+        bool validateRequest() const;
+        // void readRequest(vector<struct pollfd>& pollFds, int i);
+        bool isRequestComplete(const std::string& request);
+        void parseRequest(const string& raw_request);
+        void isCgiRequest();
+        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server);
         friend class Response;
 
     private:
-    	bool    validateMethod() const;
-        bool    validateHeaders() const;
-        bool    validateVersion() const;
+        void parseRequestLine(const string& line);
+        void parseHeaders(istringstream& request_stream);
+        void parseBody(istringstream& request_stream);
+        string generateErrorResponse(int statusCode) const;
 
-        void    parseRequestLine(const string &line);
-        void    parseHeaders(istringstream &request_stream);
-        void    parseBody(istringstream &request_stream);
-        string  generateErrorResponse(int statusCode) const;
-        
-        map<int, Request> _requests; 
+        map<int, Request> _requests;
         map<string, string> _headers;
-        string  	_method;
-        string  	_path;
-        string  	_version;
-        string  	_body;
-        string      _buffer;
-        bool    	_isCgi;
-        bool        _readyForResponse;
-        HttpStatus  _statusCode;
+        string _method;
+        string _uri;
+        string _version;
+        string _body;
+        string _buffer;
+        Server _server;
+        bool   _isCgi;
+        bool   _readyForResponse;
+        HttpStatus _statusCode;
 
-    class exception : public std::exception {
-        private:
-            string msg;
+        class exception : public std::exception {
+            private:
+                string msg;
 
-        public:
-            exception(const string& msg);
-            virtual ~exception() throw();
-            virtual const char* what() const throw();
-    };
+            public:
+                exception(const string& msg);
+                virtual ~exception() throw();
+                virtual const char* what() const throw();
+        };
 };
 
 #endif  // REQUEST_HPP

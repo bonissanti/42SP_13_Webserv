@@ -38,7 +38,8 @@
 				"ms-vscode.hexeditor",
 				"kisstkondoros.vscode-gutter-preview",
 				"neptunedesign.vs-sequential-number",
-				"foxundermoon.shell-format"
+				"foxundermoon.shell-format",
+				"ritwickdey.LiveServer"
 			]
 		}
 	}

@@ -12,16 +12,7 @@
 
 #include "../../include/defines.hpp"
 
-void debugMode(const string& msg)
-{
-#ifndef DEBUG
-    (void)msg;
-#endif
 
-#ifdef DEBUG
-    cout << BBLUE << msg << RESET << endl;
-#endif
-}
 
 string binToHex(const char* digits)
 {

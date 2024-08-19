@@ -1,6 +1,4 @@
 #include "Server.hpp"
-#include "../Request/Request.hpp"
-#include "../Route/Route.hpp"
 
 Server::Server()
 {
@@ -11,14 +9,6 @@ Server::Server()
 }
 
 Server::~Server() {}
-
-Server::Server::exception::exception(const string& msg) : msg(msg) {}
-Server::Server::exception::~exception() throw() {}
-
-const char* Server::Server::exception::what() const throw()
-{
-    return (this->msg.c_str());
-}
 
 void Server::create(ifstream& file)
 {
@@ -34,7 +24,6 @@ void Server::create(ifstream& file)
         if (line.empty() or line[0] == '#') {
             continue;
         }
-
         if ((line.substr(0, 2) == "}," and line.length() == 2) or (line.substr(0, 1) == "}" and line.length() == 1))
             break;
 
@@ -64,86 +53,8 @@ void Server::create(ifstream& file)
             routeFound = true;
         }
     }
-
     if (_listen == 100)
         throw Server::exception(RED "Error: listen is not set" RESET);
-}
-
-int Server::getSocket(void)
-{
-	return (_socketFd);
-}
-
-void Server::setListen(int port)
-{
-    try {
-        if (port < 1024 || port > 49151)
-            throw Server::exception(RED "Error: port number outside of the range. e.g.: 1024 ~ 49151");
-    }
-    catch (const exception& e) {
-        cerr << e.what() << '\n';
-    }
-    _listen = port;
-}
-
-void Server::setServerName(string name)
-{
-    _server_name = name;
-}
-
-string setRoot(string root)
-{
-    if (root[0] != '/')
-        throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-    if (root.substr(root.length() - 1) != "/")
-        root.insert(root.end(), '/');
-    return (root);
-}
-
-void Server::setClientMaxBodySize(string size)
-{
-    string unit;
-    size_t pos = size.find_first_of("kbKBmbMBgbGB");
-
-    unit = size.substr(pos);
-    try {
-        switch (unit[0]) {
-            case 'k':
-            case 'K':
-                _client_max_body_size = Utils::strtoi(size.substr(0, pos));
-                break;
-
-            case 'm':
-            case 'M':
-                _client_max_body_size = Utils::strtoi(size.substr(0, pos)) * MB;
-                break;
-
-            case 'g':
-            case 'G':
-                _client_max_body_size = Utils::strtoi(size.substr(0, pos)) * GB;
-                break;
-
-            default:
-                throw Server::exception(RED "Error: unit not recognized" RESET);
-        }
-    }
-    catch (const exception& e) {
-        cout << e.what() << endl;
-    }
-}
-
-void Server::setErrorPage(string error_page)
-{
-    size_t pos = error_page.find_first_of(" ");
-    if (pos == string::npos) {
-        throw invalid_argument("Error: invalid error_page format");
-    }
-    int key = Utils::strtoi(Utils::trim(error_page.substr(0, pos)));
-    string value = Utils::trim(error_page.substr(pos + 1));
-
-    map<int, string> mapErrorPage;
-    mapErrorPage[key] = value;
-    _error_page.push_back(mapErrorPage);
 }
 
 void Server::configServer(vector<Server>& servers)
@@ -179,40 +90,19 @@ void Server::configServer(vector<Server>& servers)
     }
 }
 
+Server::Server::exception::exception(const string& msg) : msg(msg) {}
+Server::Server::exception::~exception() throw() {}
 
+const char* Server::Server::exception::what() const throw()
+{
+    return (this->msg.c_str());
+}
 
-// void Server::setupPolls(vector<Server> servers)
-// {
-//     int returnValue;
-//     vector<struct pollfd> pollFds(servers.size());
-//     map<int, Request> requests;
-
-//     for (size_t i = 0; i < servers.size(); i++) {
-//         pollFds[i].fd = servers[i]._socketFd;
-//         pollFds[i].events = POLLIN | POLLOUT;
-//     }
-//     while (true) {
-//         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-//         switch (returnValue) {
-//             case 0:
-//                 cout << "Error: poll Timeout" << endl;
-//                 break;
-
-//             case -1:
-//                 cout << "Error: poll failed" << endl;
-//                 break;
-
-//             default:
-//                 for (size_t i = 0; i < pollFds.size(); i++) {
-//                     if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-//                         acceptNewConnection(pollFds[i].fd, pollFds);
-//                     } else if (pollFds[i].revents & POLLIN) {
-//                         readRequest(pollFds, i, requests);
-//                     } else if (pollFds[i].revents & POLLOUT) {
-//                         sendResponse(pollFds, i, requests);
-//                     }
-//                 }
-//                 break;
-//         }
-//     }
-// }
+string setRoot(string root)
+{
+    if (root[0] != '/')
+        throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
+    if (root.substr(root.length() - 1) != "/")
+        root.insert(root.end(), '/');
+    return (root);
+}

@@ -5,37 +5,39 @@
 #include "../../../include/defines.hpp"
 #include "../../../include/Utils.hpp"
 #include "../../../include/Utils.hpp"
-#include "../Request/Request.hpp"
-#include "../Response/Response.hpp"
 #include "../Route/Route.hpp"
-
-
 
 class Server {
     private:
 		int _listen;
-        int _socketFd;
+        int _socketFd; //socket()
         int _pollFd;
         string _server_name;
         string _root;
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
         vector<Route> _routes;
+        // vector<int> _clientFd;
 
     public:
         Server(void);
         ~Server();
 
         int getSocket(void);
+        int getClientFd(void);
+       void addClient(int clientFd); 
         
         void create(ifstream& file);
         void setServerName(string name);
         void setClientMaxBodySize(string size);
         void setErrorPage(string error_page);
         void setListen(int port);
-        static void configServer(vector<Server>& servers);
-
+        void  setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
+        
+        vector<Route> getRoute(void); 
+        
+        static void configServer(vector<Server>& servers);
         vector<struct pollfd> loadPolls(vector<Server> servers);
 
         void startServer(vector<Server> servers);
