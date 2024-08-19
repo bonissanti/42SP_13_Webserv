@@ -81,6 +81,8 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 
     // }
 
+
+
     string hello =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/plain\r\n"

@@ -214,6 +214,14 @@ void Response::saveUploadedFile(const string& filename, const string& fileConten
 		mkdir(directory.c_str(), 0777);
 	}
 
+    if (!access(directory.c_str(), W_OK)) {
+        _statusCode = FORBIDDEN;
+        _statusMessage = "Forbidden";
+        _responseBody = "Directory is not writable";
+        _headers["Content-length"] = defineContentLength(_responseBody);
+        return;
+    }
+
 	string finalFilename = filename.empty() ? "default_filename.txt" : filename;
 	cout << "Final filename: " << finalFilename << endl;
 
