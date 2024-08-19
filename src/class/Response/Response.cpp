@@ -18,7 +18,7 @@ string Response::defineFilePath(string& uri, Request& req){
 	(void)req;
 	
 	if (uri == "/")
-		filePath = "content/html/index.html";	
+		filePath = "content/index.html";	
 	return (filePath);	
 }
 
@@ -51,12 +51,13 @@ string Response::defineResponseBody(const string& filePath, Request& req)
     return (buffer.str());
 }
 
-size_t Response::defineContentLength(const string& body)
+string Response::defineContentLength(const string& body)
 {
     ostringstream oss;
 
-    oss << body;
-    return (oss.str().size());
+    size_t len = body.size();
+    oss << len;
+    return (oss.str());
 }
 
 string Response::defineContentType(string filePath)
@@ -86,3 +87,24 @@ string Response::defineContentType(string filePath)
     return ("text/plain");
 }
 
+string Response::buildMessage(void)
+{
+
+    // string response =
+    //     "HTTP/1.1 200 OK\r\n"
+    //     "Content-Type: text/plain\r\n"
+    //     "Content-Length: 17\r\n"
+    //     "Connection: close\r\n"
+    //     "\r\n"
+    //     "Hello from server";
+
+    string response = 
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type:" + _contentType + "\r\n"
+    "Content-Length:" + _contentLength + "\r\n"
+    "Connection: close" + "\r\n"
+    "\r\n"
+    + _responseBody;
+
+    return (response);
+}

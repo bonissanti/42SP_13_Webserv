@@ -71,6 +71,12 @@ int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     else
         cout << "New communication established!" << endl;  // log message
 
+    int flags = fcntl(clientFd, F_GETFL);
+    if (flags < 0)
+        throw Server::exception(RED "Error: fcntl failed" RESET);
+    if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) < 0)
+            throw Server::exception(RED "Error: fcntl failed" RESET);
+
     struct pollfd commFd;
     
     commFd.fd = clientFd;

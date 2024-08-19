@@ -154,7 +154,7 @@ void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Reques
     	cerr << "Error: recv failed" << endl;
         requests.erase(pollFds[i].fd);
     }
-    (void)server;
     close(pollFds[i].fd);
     pollFds.erase(pollFds.begin() + i);
 }
+

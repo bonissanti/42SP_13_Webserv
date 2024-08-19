@@ -64,21 +64,20 @@ void Server::configServer(vector<Server>& servers)
 
     Utils::bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY especifica que o endereço podera ser acessado por ETHERNET, WIFI e etc
-    // htonl converte a macro de big endian para little endian
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); 
 
     for (size_t i = 0; i < servers.size(); i++) {
-        serverAddr.sin_port = htons(servers[i]._listen); // convert a porta (little endian) para big endian (padrão web)
-        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); // AF_INET = ipv4, SOCK_STREAM = TCP/IP
+        serverAddr.sin_port = htons(servers[i]._listen);  
+        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); 
 
         if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
             throw Server::exception(RED "Error: setsockopt failed" RESET);
 
-        int flags = fcntl(servers[i]._socketFd, F_GETFL); // Pega o socket
+        int flags = fcntl(servers[i]._socketFd, F_GETFL);
         if (flags < 0)
             throw Server::exception(RED "Error: fcntl failed" RESET);
 
-        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0) // e seta o socket para não bloequeante
+        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
             throw Server::exception(RED "Error: fcntl failed" RESET);
 
         if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {

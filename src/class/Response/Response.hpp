@@ -16,7 +16,7 @@ class Response {
         string _responseBody;
         string _filePath;
         string _contentType;
-        size_t _contentLength;
+        string _contentLength;
         map<string, string> _headers;
 
         // string getStatusMessage(int code) const;
@@ -35,18 +35,20 @@ class Response {
         string defineResponseBody(const string& filePath, Request& req); 
         string defineResponseBody(Request& req);
         string defineContentType(string filePath);
-        size_t defineContentLength(const string& body);
+        string defineContentLength(const string& body);
         char **configEnviron(Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);
         void setContentType(string contentType);
-        void setContentLength(size_t length);
+        void setContentLength(string length);
         void setHeaders(map<string, string> headers);
         void setResponseBody(string responseBody);
 
         string getFilePath(void) const;
         void setHeader(const string& field, const string& value);
+        string buildMessage(void);
+
 };
 
 #endif  // RESPONSE_HPP

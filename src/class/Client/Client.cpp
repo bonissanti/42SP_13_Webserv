@@ -62,7 +62,7 @@ int Client::runGetMethod()
     string filePath = _response.defineFilePath(uri, _request);
     string contentType = _response.defineContentType(filePath); 
     string responseBody = _response.defineResponseBody(filePath, _request);
-    size_t contentLength = _response.defineContentLength(responseBody); 
+    string contentLength = _response.defineContentLength(responseBody); 
 
     _response.setFilePath(filePath);
     _response.setContentType(contentType);
@@ -76,20 +76,9 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _request = requests[pollFds.fd];
 
     int statusCode = callMethod();
-    // if (statusCode == NOT_FOUND)
-    // {
+    string build = _response.buildMessage();
 
-    // }
-
-    string hello =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 17\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "Hello from server";
-
-    send(pollFds.fd, hello.c_str(), hello.size(), 0);
+    send(pollFds.fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
     (void)statusCode;
     requests.erase(pollFds.fd);
