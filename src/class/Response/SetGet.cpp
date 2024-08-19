@@ -1,7 +1,6 @@
 #include "Response.hpp"
 
-void Response::setStatusCode(int code)
-{
+void Response::setStatusCode(int code){
     _statusCode = code;
 }
 

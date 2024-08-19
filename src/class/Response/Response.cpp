@@ -17,8 +17,14 @@ static bool verifyPermission(const string& file)
 
 string Response::defineFilePath(string& uri, Request& req){
 	string filePath;
-	(void)req;
-	
+	// (void)req;
+
+    if (uri.find("..") != string::npos) {
+        _statusCode = FORBIDDEN;
+        return ("");
+    }
+    _filePath = req.getServer().getRoot() + uri;
+	filePath = _filePath; // refactor
 	if (uri == "/")
 		filePath = "content/html/index.html";	
 	return (filePath);	
@@ -90,19 +96,19 @@ string Response::defineContentType(string filePath)
 
 /*  */
 
-void Response::runGetMethod(Request& req){
-	if (req._path.empty()){
-		_statusCode = BAD_REQUEST;
-		return ;
-	}
+// void Response::runGetMethod(Request& req){
+// 	if (req._path.empty()){
+// 		_statusCode = BAD_REQUEST;
+// 		return ;
+// 	}
 	
-	string filePath = req._path;
-	if (filePath.length() - 1 == '/')
-		filePath += "index.html";
+// 	string filePath = req._path;
+// 	if (filePath.length() - 1 == '/')
+// 		filePath += "index.html";
 	
-	string contentType = setContentType(filePath);
-	contentType += "; charset=UTF-8";
-}
+// 	string contentType = defineContentType(filePath);
+// 	contentType += "; charset=UTF-8";
+// }
 
 //-----------------POST FUNCTIONS----------------------
 
@@ -119,6 +125,7 @@ string getFilename(const string& contentDisposition) {
 }
 
 void Response::runPostMethod(Request& req) {
+
     string contentType = req.getHeader("content-type");
 	cout << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
@@ -126,7 +133,7 @@ void Response::runPostMethod(Request& req) {
         map<string, string> formData = parseMultipartData(req.getBody(), boundary);
 
 		string filename = getFilename(formData["filename"]);
-		string directory = formData["directory"];
+		string directory = _filePath + formData["directory"]; //needs testing
         for (map<string, string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
             if (it->first == "file") {
                 saveUploadedFile(filename, it->second, directory);
@@ -135,12 +142,14 @@ void Response::runPostMethod(Request& req) {
 
         _statusCode = OK;
         _statusMessage = "OK";
-        _body = "File uploaded successfully";
+        _responseBody = "File uploaded successfully";
+        _headers["Content-length"] = defineContentLength(_responseBody);
     } else {
         // Handle other POST data
         _statusCode = BAD_REQUEST;
         _statusMessage = "Bad Request";
-        _body = "Unsupported Content-Type";
+        _responseBody = "Unsupported Content-Type";
+        _headers["Content-length"] = defineContentLength(_responseBody);
     }
 
     _headers["Content-Type"] = "text/plain";
@@ -214,79 +223,33 @@ void Response::saveUploadedFile(const string& filename, const string& fileConten
     outFile.close();
 }
 
-string Response::getResponse() const {
-	string response = "HTTP/1.1 " + to_string(_statusCode) + " " + _statusMessage + "\r\n";
-	for (map<string, string>::const_iterator it = getHeaders().begin(); it != getHeaders().end(); ++it) {
-		response += it->first + ": " + it->second + "\r\n";
-	}
-	response += "\r\n" + _body;
-	return response;
-}
-
-void Response::setHeaders(map<string, string> headers) {
-	_headers = headers;
-}
-
-void Response::setBody(const string& body) {
-	_body = body;
-}
-
-void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
-{
-	Request &req = requests[pollFds[i].fd];
-	string hello =
-    	"HTTP/1.1 200 OK\r\n"
-    	"Content-Type: text/plain\r\n"
-    	"Content-Length: 17\r\n"
-    	"Connection: close\r\n"
-    	"\r\n"
-    	"Hello from server";
+// void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
+// {
+// 	Request &req = requests[pollFds[i].fd];
+// 	string hello =
+//     	"HTTP/1.1 200 OK\r\n"
+//     	"Content-Type: text/plain\r\n"
+//     	"Content-Length: 17\r\n"
+//     	"Connection: close\r\n"
+//     	"\r\n"
+//     	"Hello from server";
 
 
-    Response resp(req);
+//     Response resp(req);
 
-	resp.setStatusCode(req.getStatusCode());
-	resp.setBody(req.getBody());
-	resp.setHeaders(req.getHeaders());
+// 	resp.setStatusCode(req.getStatusCode());
+// 	resp.setBody(req.getBody());
+// 	resp.setHeaders(req.getHeaders());
 
-	string response = resp.getResponse();
+// 	string response = resp.getResponse();
 
-	send(pollFds[i].fd, response.c_str(), response.size(), 0);
-	cout << "Response sent" << endl;
-    // send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
-    // cout << "Message sent" << endl;
+// 	send(pollFds[i].fd, response.c_str(), response.size(), 0);
+// 	cout << "Response sent" << endl;
+//     // send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
+//     // cout << "Message sent" << endl;
    
-    requests.erase(pollFds[i].fd);
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
-    (void)req;
-}
-
-void Response::setStatusCode(int code)
-{
-    _statusCode = code;
-    _statusMessage = getStatusMessage(code);
-}
-
-string Response::getStatusMessage(int code) const
-{
-    switch (code) {
-        // talvez tenha em excesso
-        case 200:
-            return ("OK");
-        case 400:
-            return ("Bad request");
-        case 403:
-            return ("Forbidden");
-        case 404:
-            return ("Not found");
-        case 405:
-            return ("Method not allowed");
-        case 500:
-            return ("Internal server error");
-        case 502:
-            return ("Bad gateway");
-        default:
-            return ("Unknown status");
-    }
-}
+//     requests.erase(pollFds[i].fd);
+//     close(pollFds[i].fd);
+//     pollFds.erase(pollFds.begin() + i);
+//     (void)req;
+// }
