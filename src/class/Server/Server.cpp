@@ -54,7 +54,7 @@ void Server::create(ifstream& file)
         }
     }
     if (_listen == 100)
-        throw Server::exception(RED "Error: listen is not set" RESET);
+        throw Server::exception(RED "Error: server or listen are not set" RESET);
 }
 
 void Server::configServer(vector<Server>& servers)

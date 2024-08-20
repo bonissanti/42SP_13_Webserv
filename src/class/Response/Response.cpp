@@ -17,9 +17,13 @@ string Response::defineFilePath(string& uri, Request& req){
 	string filePath;
 	(void)req;
 	
-	if (uri == "/")
-		filePath = "content/index.html";	
-	return (filePath);	
+	if (uri == "/"){
+		filePath = "content/index.html";
+	}
+    else{
+        filePath = "content" + uri;
+    }
+	return (filePath);
 }
 
 string Response::defineResponseBody(const string& filePath, Request& req)
@@ -81,10 +85,9 @@ string Response::defineContentType(string filePath)
 
         for (; it != mimeTypes.end(); ++it)
             if (it->first == extension)
-            	return (it->second + "; charset=UTF-8");
+            	return (it->second + ";charset=UTF-8");
     }
-    // string ret = + "; charset=UTF-8"; 
-    return ("text/plain");
+    return ("text/plain;charset=UTF-8");
 }
 
 string Response::buildMessage(void)
@@ -100,11 +103,15 @@ string Response::buildMessage(void)
 
     string response = 
     "HTTP/1.1 200 OK\r\n"
-    "Content-Type:" + _contentType + "\r\n"
+    "Access-Control-Allow-Credentials: true\r\n"
+    "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
+    "Access-Control-Allow-Methods: DELETE, GET, POST\r\n"
     "Content-Length:" + _contentLength + "\r\n"
+    "Content-Type:" + _contentType + "\r\n"
     "Connection: close" + "\r\n"
     "\r\n"
     + _responseBody;
 
     return (response);
 }
+

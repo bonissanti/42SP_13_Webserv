@@ -41,7 +41,7 @@ char **Response::configEnviron(Request& req)
 	// string contentLength = "CONTENT_LENGTH=" + _contentLength;
 	// string scriptName = "SCRIPT_NAME=" + /cgi/filename presente dentro do req.server.route
 	// string pathInfo = "PATH_INFO=" +
-	// string serverName = "SERVER_NAME=" + req.getServer().getServerName()
+	string serverName = "SERVER_NAME=" + req.getServer().getServerName();
 	// string serverPort = "SERVER_PORT=" + req.getServer().getListen()
 	string protocol = "SERVER_PROTOCOL=" + req._version;
 

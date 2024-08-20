@@ -8,7 +8,7 @@ RESET 	= "\033[0m"
 
 def	checkServer(port):
 	tcpSocket = socket.socket()
-	server_name = '127.0.0.1'
+	server_name = '127'
 	print(f"{YELLOW}Attempting to connect to 'localhost' on port %s{RESET}" % port)
 
 	try:

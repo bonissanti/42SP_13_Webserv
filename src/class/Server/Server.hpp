@@ -25,14 +25,16 @@ class Server {
 
         int getSocket(void);
         int getClientFd(void);
-       void addClient(int clientFd); 
+        int getListen(void);
+        string getServerName(void);
+        void addClient(int clientFd); 
         
         void create(ifstream& file);
         void setServerName(string name);
         void setClientMaxBodySize(string size);
         void setErrorPage(string error_page);
         void setListen(int port);
-        void  setClientFd(int clientFd);
+        void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
         
         vector<Route> getRoute(void); 

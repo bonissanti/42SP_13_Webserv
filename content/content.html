@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Arquivos</title>
+    <link rel="stylesheet" href="css/content.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciamento de Arquivos</h1>
+        <!-- <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data"> -->
+        <form id="uploadForm" action="/upload" method="GET">
+            <input type="file" name="file" id="fileInput" required>
+            <button type="submit">Upload</button>
+        </form>
+
+        <h2>Arquivos Disponíveis</h2>
+        <ul id="fileList">
+            <!-- Os arquivos serão listados aqui -->
+        </ul>
+    </div>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>

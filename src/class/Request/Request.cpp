@@ -137,24 +137,25 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server)
-{
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server) { //remover server
     char buffer[65535];
+    (void)server;
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
-      	requests[pollFds[i].fd] = Request(buffer, server);
-    } 
-    else if (bytesReceived == 0) {
+        int fd = pollFds[i].fd;
+        if (requests.find(fd) == requests.end())
+            requests[fd] = Request();
+        requests[fd].parseRequest(string(buffer, bytesReceived));
+    } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
-    } 
-    else {
-    	cerr << "Error: recv failed" << endl;
+    } else {
+        perror("Error: recv failed");
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     }
-    close(pollFds[i].fd);
-    pollFds.erase(pollFds.begin() + i);
 }
 
