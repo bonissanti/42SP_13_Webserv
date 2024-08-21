@@ -140,8 +140,6 @@ void Run::startServer(vector<Server>& servers)
                 else if (pollFds[i].revents & POLLIN) {
                 	Server actualServer = clientManager.getServerFd(pollFds[i].fd);
                  	Request::readRequest(pollFds, i, requests, actualServer);
-                    Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                    Request::readRequest(pollFds, i, requests, actualServer);
                 }
                 else if (pollFds[i].revents & POLLOUT) {
                     if (requests.find(pollFds[i].fd) != requests.end()) {
