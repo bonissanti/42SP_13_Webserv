@@ -11,9 +11,7 @@ class Utils {
         static bool validateFile(string file);
         static void bzero(void *ptr, size_t size);
         static void debugMode(const string& msg);
+        static string toString(size_t value);
 };
-
-string to_string(double value);
-string to_string(int value);
 
 #endif

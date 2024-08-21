@@ -68,7 +68,7 @@ bool directoryExists(const std::string& path) {
     return false;
 }
 
-void Client::saveUploadedFile(const string& filename, const string& fileContent, const string& directory) {
+bool Client::saveUploadedFile(const string& filename, const string& fileContent, const string& directory) {
 	cout << "Saving file" << endl;
 	if (!directoryExists(directory)) {
 		mkdir(directory.c_str(), 0777);
@@ -78,9 +78,10 @@ void Client::saveUploadedFile(const string& filename, const string& fileContent,
         _response.setStatusCode(FORBIDDEN);
         _response.setStatusMessage("Forbidden");
         _response.setResponseBody("Directory is not writable");
-        _response.setHeader("Content-length", _reponse.defineContentLength(_response._responseBody));
-        _response.setHeader("Content-Type", "text/plain");
-        return;
+        _response.setContentLength(_response.defineContentLength("Directory is not writable"));
+        _response.setHeader("Content-length", Utils::toString(_response.defineContentLength("Directory is not writable")));
+        _response.setHeader("Content-type", "text/plain");
+        return false;
     }
 
 	string finalFilename = filename.empty() ? "default_filename.txt" : filename;
@@ -90,34 +91,38 @@ void Client::saveUploadedFile(const string& filename, const string& fileContent,
     ofstream outFile(path.c_str(), ios::binary);
     outFile.write(fileContent.c_str(), fileContent.size());
     outFile.close();
+    return true;
 }
 
-void Client::runPostMethod() {
+int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
 	cout << contentType << endl;
+    _response.setHeader("Content-type", "text/plain");
     if (contentType.find("multipart/form-data") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
 
 		string filename = getFilename(formData["filename"]);
-		string directory = _response._filePath + formData["directory"]; //needs testing
+		string directory = _response.getFilePath() + formData["directory"];
         for (map<string, string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
-            if (it->first == "file") {
-                saveUploadedFile(filename, it->second, directory);
+            if (it->first == "file" && !saveUploadedFile(filename, it->second, directory)) {
+                return FORBIDDEN;
             }
         }
-
-        _response._statusCode = OK;
-        _response._statusMessage = "OK";
-        _response._responseBody = "File uploaded successfully";
-        _response._headers["Content-length"] = Response::defineContentLength(_responseBody);
     } else {
         // Handle other POST data
-        _response._statusCode = BAD_REQUEST;
-        _response._statusMessage = "Bad Request";
-        _response._responseBody = "Unsupported Content-Type";
-        _response._headers["Content-length"] = Response::defineContentLength(_responseBody);
+        string responseBody = "Unsupported Content-Type";
+        _response.setStatusCode(BAD_REQUEST);
+        _response.setStatusMessage("Bad Request");
+        _response.setResponseBody(responseBody);
+        _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+        return BAD_REQUEST;
     }
 
-    _response._headers["Content-Type"] = "text/plain";
+    string responseBody = "File uploaded successfully";
+    _response.setStatusCode(OK);
+    _response.setStatusMessage("OK");
+    _response.setResponseBody(responseBody);
+    _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+    return OK;
 }

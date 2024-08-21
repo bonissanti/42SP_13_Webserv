@@ -49,8 +49,8 @@ int Client::callMethod()
            return runGetMethod();
         case POST:
            return runPostMethod();
-        // case DELETE:
-        //    return runDeleteMethod(req);
+        case DELETE:
+           return runDeleteMethod();
         default:
             return (_request.setStatusCode(NOT_FOUND));
     }
@@ -73,25 +73,31 @@ int Client::runGetMethod()
 
 void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 {
-    _request = requests[pollFds.fd];
+    Client::_request = requests[pollFds.fd];
 
-    int statusCode = callMethod();
+    if (_request.getStatusCode() == BAD_REQUEST) {
+        string response = _response.assembleResponse();
+        send(pollFds.fd, response.c_str(), response.size(), 0);
+        return;
+    }
+
+    int statusCode = Client::callMethod();
     // if (statusCode == NOT_FOUND)
     // {
 
     // }
 
+    string response = _response.assembleResponse();
+    send(pollFds.fd, response.c_str(), response.size(), 0);
+    // string hello =
+    //     "HTTP/1.1 200 OK\r\n"
+    //     "Content-Type: text/plain\r\n"
+    //     "Content-Length: 17\r\n"
+    //     "Connection: close\r\n"
+    //     "\r\n"
+    //     "Hello from server";
 
-
-    string hello =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 17\r\n"
-        "Connection: close\r\n"
-        "\r\n"
-        "Hello from server";
-
-    send(pollFds.fd, hello.c_str(), hello.size(), 0);
+    // send(pollFds.fd, hello.c_str(), hello.size(), 0);
     cout << "Message sent" << endl;
     (void)statusCode;
     requests.erase(pollFds.fd);
