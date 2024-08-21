@@ -100,3 +100,9 @@ void Utils::debugMode(const string& msg)
     cerr << BBLUE << msg << RESET << endl;
 #endif
 }
+
+string Utils::toString(size_t value) {
+    ostringstream oss;
+    oss << value;
+    return oss.str();
+}

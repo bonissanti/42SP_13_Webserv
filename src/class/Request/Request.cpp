@@ -165,5 +165,8 @@ void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Reques
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     }
+}
 
+bool Request::isReadyForResponse() const {
+    return _readyForResponse;
 }

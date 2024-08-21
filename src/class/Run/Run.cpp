@@ -136,7 +136,7 @@ void Run::startServer(vector<Server>& servers)
                 else if (pollFds[i].revents & POLLOUT) {
                 	if (requests.find(pollFds[i].fd) != requests.end()
                         && requests[pollFds[i].fd].isReadyForResponse()) 
-                    	Client::sendResponse(pollFds, i, requests);
+                    	clientManager.sendResponse(pollFds[i], requests);
                 }
             }
         }
