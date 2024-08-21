@@ -137,9 +137,8 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server) { //remover server
+void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests) {
     char buffer[65535];
-    (void)server;
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
         int fd = pollFds[i].fd;

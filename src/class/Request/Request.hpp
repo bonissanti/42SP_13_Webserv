@@ -31,7 +31,7 @@ class Request {
         bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
         void isCgiRequest();
-        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server);
+        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
         friend class Response;
 
     private:
