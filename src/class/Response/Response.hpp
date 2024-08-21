@@ -23,9 +23,6 @@ class Response {
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
         string getQueryString(string path);
-        map<string, string> parseMultipartData(const string& body, const string& boundary);
-        void saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
-        map<string, string> parseUrlEncodedData(const string& body);
 
     public:
         Response();
@@ -49,7 +46,9 @@ class Response {
         void setStatusMessage(string statusMessage);
 
         string getFilePath(void) const;
+        string getBody(void) const;
         void setHeader(const string& field, const string& value);
+        string assembleResponse();
 };
 
 #endif  // RESPONSE_HPP

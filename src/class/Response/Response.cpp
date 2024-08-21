@@ -94,33 +94,14 @@ string Response::defineContentType(string filePath)
     return ("text/plain");
 }
 
-// void Response::sendResponse(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests)
-// {
-// 	Request &req = requests[pollFds[i].fd];
-// 	string hello =
-//     	"HTTP/1.1 200 OK\r\n"
-//     	"Content-Type: text/plain\r\n"
-//     	"Content-Length: 17\r\n"
-//     	"Connection: close\r\n"
-//     	"\r\n"
-//     	"Hello from server";
+string Response::assembleResponse() {
+    ostringstream oss;
+    oss << "HTTP/1.1 " << Utils::toString(_statusCode) << " " << _statusMessage << "\r\n";
+    oss << "Content-type: " << _headers["Content-type"] << "\r\n";
+    oss << "Content-Length: " << _contentLength << "\r\n";
+    oss << "Connection: close\r\n";
+    oss << "\r\n";
+    oss << _responseBody;
 
-
-//     Response resp(req);
-
-// 	resp.setStatusCode(req.getStatusCode());
-// 	resp.setBody(req.getBody());
-// 	resp.setHeaders(req.getHeaders());
-
-// 	string response = resp.getResponse();
-
-// 	send(pollFds[i].fd, response.c_str(), response.size(), 0);
-// 	cout << "Response sent" << endl;
-//     // send(pollFds[i].fd, hello.c_str(), hello.size(), 0);
-//     // cout << "Message sent" << endl;
-   
-//     requests.erase(pollFds[i].fd);
-//     close(pollFds[i].fd);
-//     pollFds.erase(pollFds.begin() + i);
-//     (void)req;
-// }
+    return oss.str();
+}
