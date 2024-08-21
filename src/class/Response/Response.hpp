@@ -32,8 +32,6 @@ class Response {
         ~Response();
 
         int getMethodIndex(string method);
-        void runGetMethod(Request& req);
-        void runPostMethod(Request& req);
         string executeCGI(Request& req);
         string defineFilePath(string& uri, Request& req); 
         string defineResponseBody(const string& filePath, Request& req); 
@@ -48,6 +46,7 @@ class Response {
         void setContentLength(size_t length);
         void setHeaders(map<string, string> headers);
         void setResponseBody(string responseBody);
+        void setStatusMessage(string statusMessage);
 
         string getFilePath(void) const;
         void setHeader(const string& field, const string& value);

@@ -23,6 +23,7 @@ class Client {
         int getMethodIndex(string method);
         int runGetMethod(void);
         int runPostMethod(void);
+        void saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
         
         class ClientException : public std::exception {

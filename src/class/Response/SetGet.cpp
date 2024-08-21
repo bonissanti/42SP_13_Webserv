@@ -24,6 +24,10 @@ void Response::setResponseBody(string responseBody){
     _responseBody = responseBody;
 }
 
+void Response::setStatusMessage(string statusMessage) {
+    _statusMessage = statusMessage;
+}
+
 string Response::getFilePath(void) const{
     return (_filePath);
 }

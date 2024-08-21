@@ -28,6 +28,7 @@ DEBUG_FLAG	= -D DEBUG
 DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp		 			\
 			class/Client/Client.cpp		\
+			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
 			class/Request/SetGet.cpp 	\
 			class/Response/CGI.cpp		\
