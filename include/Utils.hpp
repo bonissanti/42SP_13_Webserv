@@ -14,6 +14,7 @@ class Utils {
         static string toString(size_t value);
         static bool fileExists(const std::string& filePath);
         static bool hasDeletePermission(const std::string& filePath);
+        static string statusCodeToString(int code);
 };
 
 #endif
