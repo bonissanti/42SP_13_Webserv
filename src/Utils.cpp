@@ -85,7 +85,7 @@ int Utils::getServersNumber(string filePath)
             }
         }
     }
-    if ((serverCount == -1) && (serverCount > 1024))
+    if (serverCount == -1 || serverCount > 1024)
         throw Server::exception(RED "Error: invalid config file" RESET);
     return serverCount;
 }
@@ -99,6 +99,20 @@ void Utils::debugMode(const string& msg)
 #ifdef DEBUG
     cerr << BBLUE << msg << RESET << endl;
 #endif
+}
+
+// Verifica se o arquivo existe
+bool Utils::fileExists(const std::string& filePath) {
+    struct stat buffer;
+    return (stat(filePath.c_str(), &buffer) == 0);
+}
+
+// Verifica se o servidor tem permissão para excluir o arquivo
+bool Utils::hasDeletePermission(const std::string& filePath) {
+    if (access(filePath.c_str(), W_OK) != 0) {
+        return false;
+    }
+    return true;
 }
 
 string Utils::toString(size_t value) {

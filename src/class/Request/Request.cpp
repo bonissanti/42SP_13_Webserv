@@ -1,17 +1,22 @@
 #include "Request.hpp"
 
-Request::Request(const string &raw_request, Server &server) {
-    _isCgi = false;
-    _statusCode = OK;
-    _server = server;
+Request::Request(const string &raw_request, Server &server) : _server(server), _isCgi(false), _statusCode(OK)
+{
     parseRequest(raw_request);
 }
 
-Request::Request() : _isCgi(false) {
-    _statusCode = OK;
-}
+Request::Request() : _isCgi(false), _statusCode(OK) {}
 
 Request::~Request() {}
+
+string Request::getHeader(const string &field) const
+{
+    map<string, string>::const_iterator it = _headers.find(field);
+    if (it != _headers.end()) {
+        return it->second;
+    }
+    return "";
+}
 
 void Request::parseRequest(const string &raw_request) {
     _buffer.append(raw_request);
@@ -35,9 +40,8 @@ void Request::parseRequest(const string &raw_request) {
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
-    
+
     if (!validateRequest()) {
-        std::cout << "Invalid request" << endl;
         _statusCode = BAD_REQUEST;
     }
 
@@ -45,9 +49,9 @@ void Request::parseRequest(const string &raw_request) {
     _buffer.clear();
 }
 
-void Request::parseRequestLine(const string &firstLine) {
-	
-	istringstream line_stream(firstLine);
+void Request::parseRequestLine(const string &firstLine)
+{
+    istringstream line_stream(firstLine);
     if (!(line_stream >> _method >> _uri >> _version)) {
         _statusCode = BAD_REQUEST;
         // throw runtime_error("Invalid request line format");
@@ -55,7 +59,8 @@ void Request::parseRequestLine(const string &firstLine) {
     transform(_method.begin(), _method.end(), _method.begin(), ::toupper);
 }
 
-void Request::parseHeaders(istringstream &request_stream) {
+void Request::parseHeaders(istringstream &request_stream)
+{
     string line;
     while (getline(request_stream, line) && line != "\r") {
         size_t colon_pos = line.find(':');
@@ -64,23 +69,20 @@ void Request::parseHeaders(istringstream &request_stream) {
             string value = line.substr(colon_pos + 2, line.length() - colon_pos - 3);
             transform(key.begin(), key.end(), key.begin(), ::tolower);
             _headers[key] = value;
-        } else {
-        	_statusCode = BAD_REQUEST;
+        }
+        else {
+            _statusCode = BAD_REQUEST;
             // throw runtime_error("Invalid header format");
         }
     }
 }
 
-void Request::parseBody(istringstream &request_stream) {
+void Request::parseBody(istringstream &request_stream)
+{
     getline(request_stream, _body, '\0');
 }
 
-void Request::isCgiRequest() {
-    if (_uri.find("/cgi-bin/") != std::string::npos)
-        _isCgi = true;
-}
-
-// string generateErrorResponse(int statusCode)     
+// string generateErrorResponse(int statusCode)
 //     map<int, string> statusMessages;
 //     statusMessages.insert(std::make_pair(400, "Bad Request"));
 //     statusMessages.insert(std::make_pair(404, "Not Found"));
@@ -95,9 +97,8 @@ void Request::isCgiRequest() {
 //     return response;
 // }
 
-//---------VALIDATION FUNCTIONS----------
-
-bool Request::validateRequest() const {
+bool Request::validateRequest() const
+{
     static vector<string> valid_methods;
     valid_methods.push_back("GET");
     valid_methods.push_back("POST");
@@ -135,7 +136,8 @@ bool Request::validateRequest() const {
 
 //-----------UTILS-------------
 
-void Request::printRequest() const {
+void Request::printRequest() const
+{
     cout << _method << " " << _uri << " " << _version << endl;
 
     vector<string> key, value;
@@ -145,9 +147,9 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server& server) { //remover server
+void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests)
+{
     char buffer[65535];
-    (void)server;
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
         int fd = pollFds[i].fd;

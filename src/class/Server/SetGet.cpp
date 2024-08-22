@@ -10,6 +10,14 @@ vector<Route> Server::getRoute(void)
     return (_routes);
 }
 
+string	Server::getServerName(void){
+	return (_server_name);
+}
+
+int	Server::getListen(void){
+	return (_listen);
+}
+
 void Server::setListen(int port)
 {
     try {

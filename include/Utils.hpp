@@ -9,9 +9,11 @@ class Utils {
         static int strtoi(string number);
         static int getServersNumber(string filePath);
         static bool validateFile(string file);
-        static void bzero(void *ptr, size_t size);
+        static void bzero(void* ptr, size_t size);
         static void debugMode(const string& msg);
         static string toString(size_t value);
+        static bool fileExists(const std::string& filePath);
+        static bool hasDeletePermission(const std::string& filePath);
 };
 
 #endif

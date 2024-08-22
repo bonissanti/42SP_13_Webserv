@@ -4,3 +4,4 @@ objs
 ./CMakeList.txt
 ./test_request.cpp
 build
+webserv

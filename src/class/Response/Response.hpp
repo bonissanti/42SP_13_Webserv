@@ -16,31 +16,30 @@ class Response {
         string _responseBody;
         string _filePath;
         string _contentType;
-        size_t _contentLength;
+        string _contentLength;
         map<string, string> _headers;
 
         // string getStatusMessage(int code) const;
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
-        string getQueryString(string path);
-
+        string readCGI(int fd);
     public:
         Response();
         ~Response();
 
         int getMethodIndex(string method);
         string executeCGI(Request& req);
-        string defineFilePath(string& uri, Request& req); 
-        string defineResponseBody(const string& filePath, Request& req); 
+        string defineFilePath(string& uri, Request& req);
+        string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentType(string filePath);
-        size_t defineContentLength(const string& body);
-        char **configEnviron(Request& req);
+        string defineContentLength(const string& body);
+        char** configEnviron(Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);
         void setContentType(string contentType);
-        void setContentLength(size_t length);
+        void setContentLength(string length);
         void setHeaders(map<string, string> headers);
         void setResponseBody(string responseBody);
         void setStatusMessage(string statusMessage);
@@ -48,7 +47,7 @@ class Response {
         string getFilePath(void) const;
         string getBody(void) const;
         void setHeader(const string& field, const string& value);
-        string assembleResponse();
+        string buildMessage(void);
 };
 
 #endif  // RESPONSE_HPP

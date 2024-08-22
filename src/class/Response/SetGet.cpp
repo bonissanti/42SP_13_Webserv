@@ -12,7 +12,7 @@ void Response::setContentType(string contentType){
     _contentType = contentType;
 }
 
-void Response::setContentLength(size_t length){
+void Response::setContentLength(string length){
     _contentLength = length;
 }
 

@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(){}
+Client::Client() {}
 
 Client::~Client() {}
 
@@ -43,8 +43,7 @@ int Client::callMethod()
     if (_request.getURI().empty())
         return (_request.setStatusCode(BAD_REQUEST));
 
-    switch (getMethodIndex(_request.getMethod()))
-    {
+    switch (getMethodIndex(_request.getMethod())) {
         case GET:
            return runGetMethod();
         case POST:
@@ -56,13 +55,37 @@ int Client::callMethod()
     }
 }
 
+int Client::runDeleteMethod()
+{
+    string uri = _request.getURI();
+    string filePath = _response.defineFilePath(uri, _request);
+
+    if (!Utils::fileExists(filePath)) {
+        _request.setStatusCode(NOT_FOUND);
+        return NOT_FOUND;
+    }
+
+    if (!Utils::hasDeletePermission(filePath)) {
+        _request.setStatusCode(FORBIDDEN);
+        return FORBIDDEN;
+    }
+
+    if (remove(filePath.c_str()) != 0) {
+        _request.setStatusCode(INTERNAL_SERVER_ERROR);
+        return INTERNAL_SERVER_ERROR;
+    }
+
+    _response.setStatusCode(OK);
+    return OK;
+}
+
 int Client::runGetMethod()
 {
     string uri = _request.getURI();
     string filePath = _response.defineFilePath(uri, _request);
-    string contentType = _response.defineContentType(filePath); 
+    string contentType = _response.defineContentType(filePath);
     string responseBody = _response.defineResponseBody(filePath, _request);
-    size_t contentLength = _response.defineContentLength(responseBody); 
+    string contentLength = _response.defineContentLength(responseBody);
 
     _response.setFilePath(filePath);
     _response.setContentType(contentType);
@@ -81,23 +104,10 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
         return;
     }
 
-    int statusCode = Client::callMethod();
-    // if (statusCode == NOT_FOUND)
-    // {
+    int statusCode = callMethod();
+    string build = _response.buildMessage();
 
-    // }
-
-    string response = _response.assembleResponse();
-    send(pollFds.fd, response.c_str(), response.size(), 0);
-    // string hello =
-    //     "HTTP/1.1 200 OK\r\n"
-    //     "Content-Type: text/plain\r\n"
-    //     "Content-Length: 17\r\n"
-    //     "Connection: close\r\n"
-    //     "\r\n"
-    //     "Hello from server";
-
-    // send(pollFds.fd, hello.c_str(), hello.size(), 0);
+    send(pollFds.fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
     (void)statusCode;
     requests.erase(pollFds.fd);
