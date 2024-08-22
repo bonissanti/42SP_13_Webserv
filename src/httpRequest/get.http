@@ -1,6 +1,7 @@
+// GET
 GET http://localhost:1029
 
-# Access-Control-Allow-Credentials: true
-# Access-Control-Allow-Headers: Content-Type, Authorization
-# Access-Control-Allow-Methods: DELETE, GET, POST
-# Content-Length: 17810
+// POST
+
+// DELETE
+DELETE http://localhost:1028/teste_delete.del

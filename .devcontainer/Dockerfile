@@ -32,6 +32,8 @@ RUN sudo ln -s /usr/bin/clangd-18 /usr/bin/clangd
 
 RUN sudo apt install clang-format-18
 
+RUN echo "alias mf='make fclean'" >> ~/.zshrc
+
 # [Optional] Uncomment this section to install additional vcpkg ports.
 # RUN su vscode -c "${VCPKG_ROOT}/vcpkg install <your-port-name-here>"
 
