@@ -47,7 +47,10 @@ class Response {
         string getFilePath(void) const;
         string getBody(void) const;
         void setHeader(const string& field, const string& value);
+        string statusMessage(int code) const;
         string buildMessage(void);
+
+        void clear();
 };
 
 #endif  // RESPONSE_HPP

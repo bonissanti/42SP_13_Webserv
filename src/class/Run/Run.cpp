@@ -139,12 +139,20 @@ void Run::startServer(vector<Server>& servers)
                 }
                 else if (pollFds[i].revents & POLLIN) {
                     Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                    Request::readRequest(pollFds, i, requests);
+                    try {
+                        Request::readRequest(pollFds, i, requests);
+                    } catch (const std::exception &e) {
+                        cerr << "Error reading request: " << e.what() << endl;
+                    }
                 }
                 else if (pollFds[i].revents & POLLOUT) {
                 	if (requests.find(pollFds[i].fd) != requests.end()
                         && requests[pollFds[i].fd].isReadyForResponse()) 
-                    	clientManager.sendResponse(pollFds[i], requests);
+                        try {
+                            clientManager.sendResponse(pollFds[i], requests);
+                        } catch (const std::exception &e) {
+                            cerr << "Error sending response: " << e.what() << endl;
+                        }
                 }
             }
         }

@@ -91,7 +91,6 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
     }
 
 	string finalFilename = filename.empty() ? "default_filename.txt" : filename;
-	cout << "Final filename: " << finalFilename << endl; //remove later
 
 	string path = directory + "/" + finalFilename;
     ofstream outFile(path.c_str(), ios::binary);
