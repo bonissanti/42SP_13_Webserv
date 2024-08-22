@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(){}
+Client::Client() {}
 
 Client::~Client() {}
 
@@ -42,11 +42,11 @@ int Client::callMethod()
 {
     if (_request.getURI().empty())
         return (_request.setStatusCode(BAD_REQUEST));
-
-    switch (getMethodIndex(_request.getMethod()))
-    {
+    
+    switch (getMethodIndex(_request.getMethod())) {
         case GET:
-           return runGetMethod();
+            return runGetMethod();
+            break;
         // case POST:
         //    return runPostMethod();
         // case DELETE:
@@ -60,9 +60,9 @@ int Client::runGetMethod()
 {
     string uri = _request.getURI();
     string filePath = _response.defineFilePath(uri, _request);
-    string contentType = _response.defineContentType(filePath); 
+    string contentType = _response.defineContentType(filePath);
     string responseBody = _response.defineResponseBody(filePath, _request);
-    string contentLength = _response.defineContentLength(responseBody); 
+    string contentLength = _response.defineContentLength(responseBody);
 
     _response.setFilePath(filePath);
     _response.setContentType(contentType);

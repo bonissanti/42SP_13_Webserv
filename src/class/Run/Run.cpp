@@ -134,12 +134,12 @@ void Run::startServer(vector<Server>& servers)
         else {
             for (size_t i = 0; i < pollFds.size(); i++) {
                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-                	clientManager.addAssociation(clientFd, servers[i]);
+                    int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
+                    clientManager.addAssociation(clientFd, servers[i]);
                 }
                 else if (pollFds[i].revents & POLLIN) {
-                	Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                 	Request::readRequest(pollFds, i, requests);
+                    Server actualServer = clientManager.getServerFd(pollFds[i].fd);
+                    Request::readRequest(pollFds, i, requests);
                 }
                 else if (pollFds[i].revents & POLLOUT) {
                     if (requests.find(pollFds[i].fd) != requests.end()) {

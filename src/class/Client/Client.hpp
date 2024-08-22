@@ -24,7 +24,7 @@ class Client {
         int runGetMethod(void);
         int runPostMethod(void);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
-        
+
         class ClientException : public std::exception {
             private:
                 string msg;

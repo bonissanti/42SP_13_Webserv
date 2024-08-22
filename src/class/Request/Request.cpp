@@ -1,19 +1,16 @@
 #include "Request.hpp"
 
-Request::Request(const string &raw_request, Server& server) {
-    _isCgi = false;
-    _statusCode = OK;
-   _server = server; 
+Request::Request(const string &raw_request, Server &server) : _server(server), _isCgi(false), _statusCode(OK)
+{
     parseRequest(raw_request);
 }
-    
-Request::Request() : _isCgi(false) {
-    _statusCode = OK;
-}
+
+Request::Request() : _isCgi(false), _statusCode(OK) {}
 
 Request::~Request() {}
 
-string Request::getHeader(const string &field) const {
+string Request::getHeader(const string &field) const
+{
     map<string, string>::const_iterator it = _headers.find(field);
     if (it != _headers.end()) {
         return it->second;
@@ -21,7 +18,8 @@ string Request::getHeader(const string &field) const {
     return "";
 }
 
-void Request::parseRequest(const string &raw_request) {
+void Request::parseRequest(const string &raw_request)
+{
     istringstream request_stream(raw_request);
     string line;
 
@@ -29,19 +27,19 @@ void Request::parseRequest(const string &raw_request) {
         _statusCode = BAD_REQUEST;
         throw runtime_error("Invalid request line");
     }
-    
+
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
-    
+
     if (!validateRequest()) {
-    	_statusCode = BAD_REQUEST;
+        _statusCode = BAD_REQUEST;
     }
 }
 
-void Request::parseRequestLine(const string &firstLine) {
-	
-	istringstream line_stream(firstLine);
+void Request::parseRequestLine(const string &firstLine)
+{
+    istringstream line_stream(firstLine);
     if (!(line_stream >> _method >> _uri >> _version)) {
         _statusCode = BAD_REQUEST;
         // throw runtime_error("Invalid request line format");
@@ -49,7 +47,8 @@ void Request::parseRequestLine(const string &firstLine) {
     transform(_method.begin(), _method.end(), _method.begin(), ::toupper);
 }
 
-void Request::parseHeaders(istringstream &request_stream) {
+void Request::parseHeaders(istringstream &request_stream)
+{
     string line;
     while (getline(request_stream, line) && line != "\r") {
         size_t colon_pos = line.find(':');
@@ -58,23 +57,20 @@ void Request::parseHeaders(istringstream &request_stream) {
             string value = line.substr(colon_pos + 2, line.length() - colon_pos - 3);
             transform(key.begin(), key.end(), key.begin(), ::tolower);
             _headers[key] = value;
-        } else {
-        	_statusCode = BAD_REQUEST;
+        }
+        else {
+            _statusCode = BAD_REQUEST;
             // throw runtime_error("Invalid header format");
         }
     }
 }
 
-void Request::parseBody(istringstream &request_stream) {
+void Request::parseBody(istringstream &request_stream)
+{
     getline(request_stream, _body, '\0');
 }
 
-void Request::isCgiRequest() {
-    if (_uri.find("/cgi-bin/") != std::string::npos)
-        _isCgi = true;
-}
-
-// string generateErrorResponse(int statusCode)     
+// string generateErrorResponse(int statusCode)
 //     map<int, string> statusMessages;
 //     statusMessages.insert(std::make_pair(400, "Bad Request"));
 //     statusMessages.insert(std::make_pair(404, "Not Found"));
@@ -89,7 +85,8 @@ void Request::isCgiRequest() {
 //     return response;
 // }
 
-bool Request::validateRequest() const {
+bool Request::validateRequest() const
+{
     static vector<string> valid_methods;
     valid_methods.push_back("GET");
     valid_methods.push_back("POST");
@@ -103,7 +100,7 @@ bool Request::validateRequest() const {
         // cout << "Error: invalid HTTP version" << endl;
         return false;
     }
-        if (_headers.find("host") == _headers.end()) {
+    if (_headers.find("host") == _headers.end()) {
         // cout << "Error: missing Host" << endl;
         return false;
     }
@@ -127,7 +124,8 @@ bool Request::validateRequest() const {
 
 //-----------UTILS-------------
 
-void Request::printRequest() const {
+void Request::printRequest() const
+{
     cout << _method << " " << _uri << " " << _version << endl;
 
     vector<string> key, value;
@@ -137,7 +135,8 @@ void Request::printRequest() const {
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests) {
+void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests)
+{
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
@@ -145,16 +144,17 @@ void Request::readRequest(vector<struct pollfd>& pollFds, int i, map<int, Reques
         if (requests.find(fd) == requests.end())
             requests[fd] = Request();
         requests[fd].parseRequest(string(buffer, bytesReceived));
-    } else if (bytesReceived == 0) {
+    }
+    else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
-    } else {
+    }
+    else {
         perror("Error: recv failed");
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     }
 }
-

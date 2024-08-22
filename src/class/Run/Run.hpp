@@ -7,7 +7,8 @@
 
 class Run {
     private:
-		vector<Server> servers;
+        vector<Server> servers;
+
     public:
         Run(void);
         ~Run();

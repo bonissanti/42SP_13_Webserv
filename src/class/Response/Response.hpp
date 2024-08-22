@@ -22,8 +22,7 @@ class Response {
         // string getStatusMessage(int code) const;
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
-        string getQueryString(string path);
-
+        string readCGI(int fd);
     public:
         Response();
         ~Response();
@@ -31,12 +30,12 @@ class Response {
         int getMethodIndex(string method);
         void runGetMethod(Request& req);
         string executeCGI(Request& req);
-        string defineFilePath(string& uri, Request& req); 
-        string defineResponseBody(const string& filePath, Request& req); 
+        string defineFilePath(string& uri, Request& req);
+        string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentType(string filePath);
         string defineContentLength(const string& body);
-        char **configEnviron(Request& req);
+        char** configEnviron(Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);
@@ -48,7 +47,6 @@ class Response {
         string getFilePath(void) const;
         void setHeader(const string& field, const string& value);
         string buildMessage(void);
-
 };
 
 #endif  // RESPONSE_HPP
