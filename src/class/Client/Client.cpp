@@ -99,7 +99,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     Client::_request = requests[pollFds.fd];
 
     if (_request.getStatusCode() == BAD_REQUEST) {
-        string response = _response.assembleResponse();
+        string response = _response.buildMessage();
         send(pollFds.fd, response.c_str(), response.size(), 0);
         return;
     }

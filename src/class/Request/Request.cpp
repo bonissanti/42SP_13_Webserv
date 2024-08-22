@@ -1,22 +1,13 @@
 #include "Request.hpp"
 
-Request::Request(const string &raw_request, Server &server) : _server(server), _isCgi(false), _statusCode(OK)
+Request::Request(const string &raw_request, Server &server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK)
 {
     parseRequest(raw_request);
 }
 
-Request::Request() : _isCgi(false), _statusCode(OK) {}
+Request::Request() : _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
 
 Request::~Request() {}
-
-string Request::getHeader(const string &field) const
-{
-    map<string, string>::const_iterator it = _headers.find(field);
-    if (it != _headers.end()) {
-        return it->second;
-    }
-    return "";
-}
 
 void Request::parseRequest(const string &raw_request) {
     _buffer.append(raw_request);

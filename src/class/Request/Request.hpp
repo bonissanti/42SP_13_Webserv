@@ -16,9 +16,11 @@ class Request {
         string _uri;
         string _version;
         string _body;
-        bool _isCgi;
-        HttpStatus _statusCode;
+        string _buffer;
         Server _server;
+        bool _isCgi;
+        bool _readyForResponse;
+        HttpStatus _statusCode;
 
         void parseRequestLine(const string& line);
         void parseHeaders(istringstream& request_stream);

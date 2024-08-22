@@ -1,6 +1,7 @@
 #include "../include/Utils.hpp"
 #include "class/Server/Server.hpp"
 
+#include <sys/stat.h>
 #include <stack>
 
 string Utils::trim(string str)

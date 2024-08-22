@@ -29,7 +29,6 @@ DEBUG		= debug/debug.cpp
 FILES		= Utils.cpp		 			\
 			class/Client/Client.cpp		\
 			class/Client/postMethod.cpp	\
-			class/Client/deleteMethod.cpp\
 			class/Request/Request.cpp 	\
 			class/Request/SetGet.cpp 	\
 			class/Response/SetGet.cpp	\
