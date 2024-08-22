@@ -40,6 +40,7 @@ class Request {
         Request(const string& raw_request, Server& server);
         ~Request();
         Request();
+        Request& operator=(const Request &other);
 
         string getHeader(const string& field) const;
         string getMethod() const;
@@ -61,6 +62,8 @@ class Request {
         void parseRequest(const string& raw_request);
         static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
         friend class Response;
+
+        void clear();
 };
 
 #endif  // REQUEST_HPP
