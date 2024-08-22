@@ -46,3 +46,11 @@ int Request::setStatusCode(HttpStatus code)
 {
     return _statusCode = code;
 }
+
+string Request::getHeader(const string &field) const {
+    map<string, string>::const_iterator it = _headers.find(field);
+    if (it != _headers.end()) {
+        return it->second;
+    }
+    return "";
+}

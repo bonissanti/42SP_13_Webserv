@@ -1,6 +1,8 @@
 #include "../include/Utils.hpp"
+#include "../include/defines.hpp"
 #include "class/Server/Server.hpp"
 
+#include <sys/stat.h>
 #include <stack>
 
 string Utils::trim(string str)
@@ -113,4 +115,35 @@ bool Utils::hasDeletePermission(const std::string& filePath) {
         return false;
     }
     return true;
+}
+
+string Utils::toString(size_t value) {
+    ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+string Utils::statusCodeToString(int code) {
+    switch (code) {
+        case DEFAULT:
+            return "Default";
+        case OK:
+            return "200 OK";
+        case MOVED_PERMANENTLY:
+            return "301 Moved Permanently";
+        case BAD_REQUEST:
+            return "400 Bad Request";
+        case FORBIDDEN:
+            return "403 Forbidden";
+        case NOT_FOUND:
+            return "404 Not Found";
+        case METHOD_NOT_ALLOWED:
+            return "405 Method Not Allowed";
+        case INTERNAL_SERVER_ERROR:
+            return "500 Internal Server Error";
+        case BAD_GATEWAY:
+            return "502 Bad Gateway";
+        default:
+            return "Unknown Status Code";
+    }
 }

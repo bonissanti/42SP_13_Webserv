@@ -77,3 +77,7 @@ void Server::setErrorPage(string error_page)
     mapErrorPage[key] = value;
     _error_page.push_back(mapErrorPage);
 }
+
+string Server::getRoot() const {
+    return _root;
+}

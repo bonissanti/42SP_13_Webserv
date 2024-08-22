@@ -1,4 +1,6 @@
 #include "Response.hpp"
+#include "../../../include/Utils.hpp"
+#include <sys/stat.h>
 
 Response::Response() {}
 
@@ -13,12 +15,28 @@ static bool verifyPermission(const string &file)
     return (true);
 }
 
+// string Response::defineFilePath(string& uri, Request& req){
+//     string filePath;
+//     // (void)req;
+
+//     if (uri.find("..") != string::npos) {
+//         _statusCode = FORBIDDEN;
+//         return ("");
+//     }
+//     filePath = req.getServer().getRoot() + uri;
+//     cout << filePath << endl;
+//     if (uri == "/")
+//         filePath += "content/html/index.html";
+//     return (filePath);
+// }
+
 string Response::defineFilePath(string &uri, Request &req)
 {
     string filePath;
     (void)req;
 
     if (uri == "/") {
+        cout << "here" << endl;
         filePath = "content/index.html";
     }
     else {
@@ -99,18 +117,16 @@ string Response::buildMessage(void)
     //     "Content-Length: 17\r\n"
     //     "Connection: close\r\n"
     //     "\r\n"
-    //     "Hello from server";
+    //     "Hello from server";W
 
     string response =
-        "HTTP/1.1 200 OK\r\n"
+        "HTTP/1.1 " + Utils::statusCodeToString(_statusCode) + "\r\n"
         "Access-Control-Allow-Credentials: true\r\n"
         "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
         "Access-Control-Allow-Methods: DELETE, GET, POST\r\n"
-        "Content-Length:" +
-        _contentLength +
+        "Content-Length:" + _contentLength +
         "\r\n"
-        "Content-Type:" +
-        _contentType +
+        "Content-Type:" + _contentType +
         "\r\n"
         "Connection: close" +
         "\r\n"
@@ -219,4 +235,16 @@ string Response::readCGI(int fd_in)
         result += buffer;
     }
     return (result);
+}
+
+void Response::clear() {
+    _statusCode = 0;
+    _index.clear();
+    _executor.clear();
+    _statusMessage.clear();
+    _responseBody.clear();
+    _filePath.clear();
+    _contentType.clear();
+    _contentLength.clear();
+    _headers.clear();
 }

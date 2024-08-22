@@ -24,6 +24,7 @@ class Client {
         int runGetMethod(void);
         int runPostMethod(void);
         int runDeleteMethod(void);
+        bool saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
 
         class ClientException : public std::exception {

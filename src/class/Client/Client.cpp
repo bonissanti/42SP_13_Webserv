@@ -45,12 +45,11 @@ int Client::callMethod()
 
     switch (getMethodIndex(_request.getMethod())) {
         case GET:
-            return runGetMethod();
-            break;
-        // case POST:
-        //    return runPostMethod();
-        // case DELETE:
-        //     return runDeleteMethod();
+           return runGetMethod();
+        case POST:
+           return runPostMethod();
+        case DELETE:
+           return runDeleteMethod();
         default:
             return (_request.setStatusCode(NOT_FOUND));
     }
@@ -97,14 +96,21 @@ int Client::runGetMethod()
 
 void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 {
-    _request = requests[pollFds.fd];
+    Client::_request = requests[pollFds.fd];
+    string build;
 
-    int statusCode = callMethod();
-    string build = _response.buildMessage();
-
+    if (_request.getStatusCode() == BAD_REQUEST) {
+        build = _response.buildMessage();
+    } else {
+        callMethod();
+        build = _response.buildMessage();
+    }
     send(pollFds.fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
-    (void)statusCode;
+
     requests.erase(pollFds.fd);
     close(pollFds.fd);
+
+    _request.clear();
+    _response.clear();
 }

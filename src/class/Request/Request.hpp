@@ -16,9 +16,11 @@ class Request {
         string _uri;
         string _version;
         string _body;
-        bool _isCgi;
-        HttpStatus _statusCode;
+        string _buffer;
         Server _server;
+        bool _isCgi;
+        bool _readyForResponse;
+        HttpStatus _statusCode;
 
         void parseRequestLine(const string& line);
         void parseHeaders(istringstream& request_stream);
@@ -38,23 +40,30 @@ class Request {
         Request(const string& raw_request, Server& server);
         ~Request();
         Request();
+        Request& operator=(const Request &other);
 
         string getHeader(const string& field) const;
         string getMethod() const;
         string getURI() const;
         string getVersion() const;
+        map<string, string> getHeaders() const;
         string getBody() const;
         bool getIsCgi() const;
         int getStatusCode() const;
         map<int, Request> getRequest() const;
         Server getServer() const;
+        bool isReadyForResponse() const;
+
         int setStatusCode(HttpStatus code);
 
         void printRequest() const;
         bool validateRequest() const;
+        bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
         static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
         friend class Response;
+
+        void clear();
 };
 
 #endif  // REQUEST_HPP

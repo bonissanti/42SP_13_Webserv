@@ -45,6 +45,8 @@ class Server {
         void startServer(vector<Server> servers);
         static void setupPolls(vector<Server> servers);
 
+        string getRoot() const;
+
         class exception : public std::exception {
             private:
                 string msg;
