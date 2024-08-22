@@ -42,7 +42,7 @@ int Client::callMethod()
 {
     if (_request.getURI().empty())
         return (_request.setStatusCode(BAD_REQUEST));
-    
+
     switch (getMethodIndex(_request.getMethod())) {
         case GET:
             return runGetMethod();
@@ -50,10 +50,34 @@ int Client::callMethod()
         // case POST:
         //    return runPostMethod();
         // case DELETE:
-        //    return runDeleteMethod(req);
+        //     return runDeleteMethod();
         default:
             return (_request.setStatusCode(NOT_FOUND));
     }
+}
+
+int Client::runDeleteMethod()
+{
+    string uri = _request.getURI();
+    string filePath = _response.defineFilePath(uri, _request);
+
+    if (!Utils::fileExists(filePath)) {
+        _request.setStatusCode(NOT_FOUND);
+        return NOT_FOUND;
+    }
+
+    if (!Utils::hasDeletePermission(filePath)) {
+        _request.setStatusCode(FORBIDDEN);
+        return FORBIDDEN;
+    }
+
+    if (remove(filePath.c_str()) != 0) {
+        _request.setStatusCode(INTERNAL_SERVER_ERROR);
+        return INTERNAL_SERVER_ERROR;
+    }
+
+    _response.setStatusCode(OK);
+    return OK;
 }
 
 int Client::runGetMethod()

@@ -23,6 +23,7 @@ class Client {
         int getMethodIndex(string method);
         int runGetMethod(void);
         int runPostMethod(void);
+        int runDeleteMethod(void);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
 
         class ClientException : public std::exception {
