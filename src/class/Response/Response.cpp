@@ -4,7 +4,7 @@ Response::Response() {}
 
 Response::~Response() {}
 
-static bool verifyPermission(const string& file)
+static bool verifyPermission(const string &file)
 {
     if (access(file.c_str(), F_OK) != 0)
         return (false);
@@ -13,20 +13,21 @@ static bool verifyPermission(const string& file)
     return (true);
 }
 
-string Response::defineFilePath(string& uri, Request& req){
-	string filePath;
-	(void)req;
-	
-	if (uri == "/"){
-		filePath = "content/index.html";
-	}
-    else{
-        filePath = "content" + uri;
+string Response::defineFilePath(string &uri, Request &req)
+{
+    string filePath;
+    (void)req;
+
+    if (uri == "/") {
+        filePath = "content/index.html";
     }
-	return (filePath);
+    else {
+        filePath = "content" + uri; // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
+    }
+    return (filePath);
 }
 
-string Response::defineResponseBody(const string& filePath, Request& req)
+string Response::defineResponseBody(const string &filePath, Request &req)
 {
     if (req._isCgi) {
         _index = req.getServer().getRoute()[0].getIndex();
@@ -55,7 +56,7 @@ string Response::defineResponseBody(const string& filePath, Request& req)
     return (buffer.str());
 }
 
-string Response::defineContentLength(const string& body)
+string Response::defineContentLength(const string &body)
 {
     ostringstream oss;
 
@@ -85,14 +86,13 @@ string Response::defineContentType(string filePath)
 
         for (; it != mimeTypes.end(); ++it)
             if (it->first == extension)
-            	return (it->second + ";charset=UTF-8");
+                return (it->second + ";charset=UTF-8");
     }
     return ("text/plain;charset=UTF-8");
 }
 
 string Response::buildMessage(void)
 {
-
     // string response =
     //     "HTTP/1.1 200 OK\r\n"
     //     "Content-Type: text/plain\r\n"
@@ -101,16 +101,21 @@ string Response::buildMessage(void)
     //     "\r\n"
     //     "Hello from server";
 
-    string response = 
-    "HTTP/1.1 200 OK\r\n"
-    "Access-Control-Allow-Credentials: true\r\n"
-    "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
-    "Access-Control-Allow-Methods: DELETE, GET, POST\r\n"
-    "Content-Length:" + _contentLength + "\r\n"
-    "Content-Type:" + _contentType + "\r\n"
-    "Connection: close" + "\r\n"
-    "\r\n"
-    + _responseBody;
+    string response =
+        "HTTP/1.1 200 OK\r\n"
+        "Access-Control-Allow-Credentials: true\r\n"
+        "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
+        "Access-Control-Allow-Methods: DELETE, GET, POST\r\n"
+        "Content-Length:" +
+        _contentLength +
+        "\r\n"
+        "Content-Type:" +
+        _contentType +
+        "\r\n"
+        "Connection: close" +
+        "\r\n"
+        "\r\n" +
+        _responseBody;
 
     return (response);
 }
@@ -188,7 +193,7 @@ string Response::executeCGI(Request &req)
         close(fd[0]);
         waitpid(pid, &status, 0);
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        throw Server::exception(RED "Error: child process failed" RESET);
+            throw Server::exception(RED "Error: child process failed" RESET);
         }
     }
     return (result);
