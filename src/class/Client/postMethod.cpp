@@ -45,18 +45,22 @@ map<string, string> parseMultipartData(const string& body, const string& boundar
                 filename = disposition.substr(filenameStart + 10, filenameEnd - filenameStart - 10);
             }
 
+
             // Add the form field to the formData map
-            if (!filename.empty()) {
-                formData[name] = filename;
-            } else {
+            if (!name.empty()) {
+                formData["name"] = name;
+            }
+            if (!name.empty()) {
                 formData[name] = content;
+            }
+            if (!filename.empty()) {
+                formData["filename"] = filename;
             }
         }
 
         start = end + delimiter.length();
         end = body.find(delimiter, start);
     }
-
     return formData;
 }
 
@@ -69,12 +73,14 @@ bool directoryExists(const std::string& path) {
 }
 
 bool Client::saveUploadedFile(const string& filename, const string& fileContent, const string& directory) {
-	cout << "Saving file" << endl;
 	if (!directoryExists(directory)) {
-		mkdir(directory.c_str(), 0777);
+        if (mkdir(directory.c_str(), 0777) == -1) {
+            std::cerr << "Error creating directory: " << directory << std::endl;
+            return false;
+        }
 	}
 
-    if (!access(directory.c_str(), W_OK)) {
+    if (access(directory.c_str(), W_OK) == -1) {
         _response.setStatusCode(FORBIDDEN);
         _response.setStatusMessage("Forbidden");
         _response.setResponseBody("Directory is not writable");
@@ -85,29 +91,35 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
     }
 
 	string finalFilename = filename.empty() ? "default_filename.txt" : filename;
-	cout << "Final filename: " << finalFilename << endl;
+	cout << "Final filename: " << finalFilename << endl; //remove later
 
 	string path = directory + "/" + finalFilename;
     ofstream outFile(path.c_str(), ios::binary);
+    if (!outFile) {
+        std::cerr << "Error opening file for writing: " << path << std::endl; //remove later
+        return false;
+    }
+
     outFile.write(fileContent.c_str(), fileContent.size());
     outFile.close();
+    if (!outFile) {
+        return false;
+    }
     return true;
 }
 
 int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
-	cout << contentType << endl;
     _response.setHeader("Content-type", "text/plain");
-    if (contentType.find("multipart/form-data") != string::npos) {
+    if (contentType.find("multipart/form-data") != string::npos || contentType.find("multipart/form") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
 
-		string filename = getFilename(formData["filename"]);
-		string directory = _response.getFilePath() + formData["directory"];
-        for (map<string, string>::const_iterator it = formData.begin(); it != formData.end(); ++it) {
-            if (it->first == "file" && !saveUploadedFile(filename, it->second, directory)) {
-                return FORBIDDEN;
-            }
+		string filename = formData["filename"];
+        string uri = _request.getURI();
+		string directory = "content" + uri + "uploads";
+        if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
+            return FORBIDDEN;
         }
     } else {
         // Handle other POST data

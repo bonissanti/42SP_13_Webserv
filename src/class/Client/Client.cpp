@@ -97,19 +97,20 @@ int Client::runGetMethod()
 void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 {
     Client::_request = requests[pollFds.fd];
+    string build;
 
     if (_request.getStatusCode() == BAD_REQUEST) {
-        string response = _response.buildMessage();
-        send(pollFds.fd, response.c_str(), response.size(), 0);
-        return;
+        build = _response.buildMessage();
+    } else {
+        callMethod();
+        build = _response.buildMessage();
     }
-
-    int statusCode = callMethod();
-    string build = _response.buildMessage();
-
     send(pollFds.fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
-    (void)statusCode;
+
     requests.erase(pollFds.fd);
     close(pollFds.fd);
+
+    _request.clear();
+    _response.clear();
 }
