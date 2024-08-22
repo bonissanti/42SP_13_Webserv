@@ -58,7 +58,7 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request.getURI();
-    string filePath = _response.defineFilePath(uri, _request);
+    string filePath = defineFilePath(uri);
 
     if (!Utils::fileExists(filePath)) {
         _request.setStatusCode(NOT_FOUND);
@@ -82,16 +82,58 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request.getURI();
-    string filePath = _response.defineFilePath(uri, _request);
-    string contentType = _response.defineContentType(filePath);
-    string responseBody = _response.defineResponseBody(filePath, _request);
-    string contentLength = _response.defineContentLength(responseBody);
+    string filePath = defineFilePath(uri);
+    string contentType = defineContentType(filePath);
+    string responseBody = defineResponseBody(filePath, _request);
+    string contentLength = defineContentLength(responseBody);
 
     _response.setFilePath(filePath);
     _response.setContentType(contentType);
     _response.setResponseBody(responseBody);
     _response.setContentLength(contentLength);
+    _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
     return (OK);
+}
+
+
+string Client::defineFilePath(string &uri)
+{
+    string filePath;
+
+    if (uri == "/") {
+        filePath = "content/index.html";
+    }
+    else {
+        filePath = "content" + uri; // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
+    }
+    return (filePath);
+}
+
+
+string Client::defineContentType(string filePath)
+{
+    size_t index;
+    string extension;
+    map<string, string> mimeTypes;
+    mimeTypes[".html"] = "text/html";
+    mimeTypes[".css"] = "text/css";
+    mimeTypes[".txt"] = "text/plain";
+    mimeTypes[".png"] = "image/png";
+    mimeTypes[".jpg"] = "image/jpg";
+    mimeTypes[".gif"] = "image/gif";
+    mimeTypes[".js"] = "application/js";
+    mimeTypes[".pdf"] = "application/pdf";
+
+    index = filePath.rfind('.');
+    if (index != string::npos) {
+        extension = filePath.substr(index);
+        map<string, string>::iterator it = mimeTypes.begin();
+
+        for (; it != mimeTypes.end(); ++it)
+            if (it->first == extension)
+                return (it->second + ";charset=UTF-8");
+    }
+    return ("text/plain;charset=UTF-8");
 }
 
 void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
@@ -113,4 +155,51 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 
     _request.clear();
     _response.clear();
+}
+
+string Client::defineResponseBody(const string &filePath, Request &req)
+{
+    if (_request.getIsCgi()) {
+        _response.getIndex() = req.getServer().getRoute()[0].getIndex();
+
+        if (_response.getIndex().find(".py") != string::npos || _response.getIndex().find(".php") != string::npos)
+            return (_response.executeCGI(req));
+    }
+
+    ifstream file(filePath.c_str());
+    if (!file.is_open()) {
+        _response.setStatusCode(NOT_FOUND);
+        return ("");
+    }
+    else if (file.fail()) {
+        _response.setStatusCode(INTERNAL_SERVER_ERROR);
+        return ("");
+    }
+    stringstream buffer;
+    buffer << file.rdbuf();
+
+    if (!verifyPermission(filePath)) {
+        _response.setStatusCode(FORBIDDEN);
+        return ("");
+    }
+    file.close();
+    return (buffer.str());
+}
+
+bool Client::verifyPermission(const string &file)
+{
+    if (access(file.c_str(), F_OK) != 0)
+        return (false);
+    else if (access(file.c_str(), F_OK) != 0)
+        return (false);
+    return (true);
+}
+
+string Client::defineContentLength(const string &body)
+{
+    ostringstream oss;
+
+    size_t len = body.size();
+    oss << len;
+    return (oss.str());
 }

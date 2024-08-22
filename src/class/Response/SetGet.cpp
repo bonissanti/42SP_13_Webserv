@@ -39,3 +39,11 @@ string Response::getFilePath(void) const{
 string Response::getBody(void) const {
     return _responseBody;
 }
+
+string Response::getIndex(void) const {
+    return _index;
+}
+
+int Response::getStatusCode(void) const {
+    return _statusCode;
+}

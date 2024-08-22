@@ -10,7 +10,6 @@
 
 class Request {
     private:
-        map<int, Request> _requests;
         map<string, string> _headers;
         string _method;
         string _uri;

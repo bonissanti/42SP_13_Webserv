@@ -32,11 +32,6 @@ int Request::getStatusCode() const
     return _statusCode;
 }
 
-map<int, Request> Request::getRequest() const
-{
-    return _requests;
-}
-
 Server Request::getServer() const
 {
     return _server;

@@ -166,7 +166,6 @@ bool Request::isReadyForResponse() const {
 }
 
 void Request::clear() {
-    _requests.clear();
     _headers.clear();
     _method.clear();
     _uri.clear();

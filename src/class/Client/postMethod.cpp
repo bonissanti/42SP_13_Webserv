@@ -84,8 +84,8 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
         _response.setStatusCode(FORBIDDEN);
         _response.setStatusMessage("Forbidden");
         _response.setResponseBody("Directory is not writable");
-        _response.setContentLength(_response.defineContentLength("Directory is not writable"));
-        _response.setHeader("Content-length", _response.defineContentLength("Directory is not writable"));
+        _response.setContentLength(defineContentLength("Directory is not writable"));
+        _response.setHeader("Content-length", defineContentLength("Directory is not writable"));
         _response.setHeader("Content-type", "text/plain");
         return false;
     }

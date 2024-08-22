@@ -29,10 +29,8 @@ class Response {
 
         int getMethodIndex(string method);
         string executeCGI(Request& req);
-        string defineFilePath(string& uri, Request& req);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
-        string defineContentType(string filePath);
         string defineContentLength(const string& body);
         char** configEnviron(Request& req);
 
@@ -46,6 +44,9 @@ class Response {
 
         string getFilePath(void) const;
         string getBody(void) const;
+        string getIndex(void) const;
+        int getStatusCode(void) const;
+
         void setHeader(const string& field, const string& value);
         string buildMessage(void);
 
