@@ -7,6 +7,7 @@ class Utils {
     public:
         static string trim(string str);
         static int strtoi(string number);
+        static string itostr(int value) ;
         static int getServersNumber(string filePath);
         static bool validateFile(string file);
         static void bzero(void* ptr, size_t size);
@@ -15,6 +16,7 @@ class Utils {
         static bool fileExists(const std::string& filePath);
         static bool hasDeletePermission(const std::string& filePath);
         static string statusCodeToString(int code);
+        
 };
 
 #endif

@@ -28,7 +28,7 @@ class Response {
         ~Response();
 
         int getMethodIndex(string method);
-        string executeCGI(Request& req);
+        string executeCGI(Request& req, const string& filePath);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentLength(const string& body);

@@ -84,13 +84,14 @@ int Client::runGetMethod()
     string uri = _request.getURI();
     string filePath = defineFilePath(uri);
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(filePath, _request);
+    string responseBody = defineResponseBody(filePath);
     string contentLength = defineContentLength(responseBody);
 
     _response.setFilePath(filePath);
     _response.setContentType(contentType);
     _response.setResponseBody(responseBody);
     _response.setContentLength(contentLength);
+    
     _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
@@ -101,8 +102,10 @@ string Client::defineFilePath(string &uri)
     string filePath;
 
     if (uri == "/") {
-        filePath = "content/index.html";
+        filePath = "content/index.html"; //mudar
     }
+    else if (uri == "/cgi")
+    	filePath = "content" + uri + "/" + _request.getServer().getRoute()[0].getIndex();
     else {
         filePath = "content" + uri; // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
     }
@@ -157,15 +160,14 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _response.clear();
 }
 
-string Client::defineResponseBody(const string &filePath, Request &req)
+string Client::defineResponseBody(const string &filePath)
 {
-    if (_request.getIsCgi()) {
-        _response.getIndex() = req.getServer().getRoute()[0].getIndex();
-
-        if (_response.getIndex().find(".py") != string::npos || _response.getIndex().find(".php") != string::npos)
-            return (_response.executeCGI(req));
+	if (_request.getIsCgi()) {
+        if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos){
+            return(_response.executeCGI(_request, filePath));
+        }
     }
-
+	
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _response.setStatusCode(NOT_FOUND);

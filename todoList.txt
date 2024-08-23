@@ -3,7 +3,6 @@
 3- Validar a Rota que esta sendo recebida no request, pois pode ser um método invalido.
 4- Lista de código de erros e respostas.
 5- Tratamento de sinais.
-6- Pagina com python e outra com php.
 7- Paginas de erro default.
 GET:
     200 OK

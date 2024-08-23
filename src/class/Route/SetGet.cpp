@@ -44,6 +44,8 @@ string Route::getReturn() const
 
 string Route::getCgi() const
 {
+	if (_cgi.empty())
+		return ("");
     return _cgi;
 }
 

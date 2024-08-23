@@ -114,47 +114,88 @@ constructor.
 ** @return: void
 */
 
-void Run::startServer(vector<Server>& servers)
+void Run::startServer(vector<Server>& servers, vector<struct pollfd>& pollFds)
 {
     int returnValue;
     map<int, Request> requests;
-    vector<struct pollfd> pollFds = loadPolls(servers);
+    pollFds = loadPolls(servers);
     Client clientManager;
-
+    
     while (true) {
         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-
-        if (returnValue == 0) {
+        
+        if (returnValue == 0){
             cout << "Error: poll Timeout" << endl;
-            // Jogar pagine de timeout
+            //Jogar pagine de timeout
         }
-        else if (returnValue == -1) {
+        else if (returnValue == -1){
             cout << "Error: poll failed" << endl;
         }
-        else {
+        else
+        {
             for (size_t i = 0; i < pollFds.size(); i++) {
                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                    int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-                    clientManager.addAssociation(clientFd, servers[i]);
+                	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
+                	clientManager.addAssociation(clientFd, servers[i]);
                 }
                 else if (pollFds[i].revents & POLLIN) {
-                    Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                    try {
-                        Request::readRequest(pollFds, i, requests);
-                    } catch (const std::exception &e) {
-                        cerr << "Error reading request: " << e.what() << endl;
-                    }
+                	Server actualServer = clientManager.getServerFd(pollFds[i].fd);
+                 	Request::readRequest(pollFds, i, requests, actualServer);
                 }
-                else if (pollFds[i].revents & POLLOUT) {
-                	if (requests.find(pollFds[i].fd) != requests.end()
-                        && requests[pollFds[i].fd].isReadyForResponse()) 
-                        try {
-                            clientManager.sendResponse(pollFds[i], requests);
-                        } catch (const std::exception &e) {
-                            cerr << "Error sending response: " << e.what() << endl;
-                        }
+                else {
+                	if (requests.find(pollFds[i].fd) != requests.end()) {
+                    	clientManager.sendResponse(pollFds[i], requests);
+                        pollFds.erase(pollFds.begin() + i);
+                    }
                 }
             }
         }
     }
 }
+
+// void Run::startServer(vector<Server>& servers)
+
+// void Run::startServer(vector<Server>& servers)
+// {
+//     int returnValue;
+//     map<int, Request> requests;
+//     vector<struct pollfd> pollFds = loadPolls(servers);
+//     Client clientManager;
+
+//     while (true) {
+//         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
+
+//         if (returnValue == 0) {
+//             cout << "Error: poll Timeout" << endl;
+//             // Jogar pagine de timeout
+//         }
+//         else if (returnValue == -1) {
+//             cout << "Error: poll failed" << endl;
+//         }
+//         else {
+//             for (size_t i = 0; i < pollFds.size(); i++) {
+//                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
+//                     int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
+//                     clientManager.addAssociation(clientFd, servers[i]);
+//                 }
+//                 else if (pollFds[i].revents & POLLIN) {
+//                     Server actualServer = clientManager.getServerFd(pollFds[i].fd);
+//                     try {
+//                         Request::readRequest(pollFds, i, requests, servers[i]);
+//                     } catch (const std::exception &e) {
+//                         cerr << "Error reading request: " << e.what() << endl;
+//                     }
+//                 }
+//                 else if (pollFds[i].revents & POLLOUT) {
+//                 	if (requests.find(pollFds[i].fd) != requests.end()
+//                         && requests[pollFds[i].fd].isReadyForResponse()) 
+//                         try {
+//                             clientManager.sendResponse(pollFds[i], requests);
+//                         } catch (const std::exception &e) {
+//                             cerr << "Error sending response: " << e.what() << endl;
+//                         }
+//                 }
+//             }
+//         }
+//     }
+// }

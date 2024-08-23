@@ -55,6 +55,7 @@ typedef enum {
 #include <fcntl.h>
 #include <poll.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #include <cstring>
 #include <exception>

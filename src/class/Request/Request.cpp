@@ -1,12 +1,7 @@
 #include "Request.hpp"
 
-Request::Request(const string &raw_request, Server &server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK)
-{
-    parseRequest(raw_request);
-}
-
-Request::Request() : _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
-
+Request::Request(Server& server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
+Request::Request() {}
 Request::~Request() {}
 
 Request& Request::operator=(const Request &other)
@@ -87,7 +82,7 @@ void Request::parseBody(istringstream &request_stream)
     getline(request_stream, _body, '\0');
 }
 
-bool Request::validateRequest() const
+bool Request::validateRequest()
 {
     static vector<string> valid_methods;
     valid_methods.push_back("GET");
@@ -121,6 +116,9 @@ bool Request::validateRequest() const
         // cout << "Error: missing Content-Length" << endl;
         return false;
     }
+    
+    if (_uri.substr(0, 4) == "/cgi")
+    	_isCgi = true;
     return true;
 }
 
@@ -137,14 +135,14 @@ void Request::printRequest() const
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests)
+void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
         int fd = pollFds[i].fd;
         if (requests.find(fd) == requests.end())
-            requests[fd] = Request();
+            requests[fd] = Request(server);
         requests[fd].parseRequest(string(buffer, bytesReceived));
     } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;

@@ -10,14 +10,13 @@
 class Server {
     private:
 		int _listen;
-        int _socketFd; //socket()
+        int _socketFd;
         int _pollFd;
         string _server_name;
         string _root;
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
         vector<Route> _routes;
-        // vector<int> _clientFd;
 
     public:
         Server(void);

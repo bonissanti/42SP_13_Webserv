@@ -31,6 +31,7 @@ FILES		= Utils.cpp		 			\
 			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
 			class/Request/SetGet.cpp 	\
+			class/Response/CGI.cpp		\
 			class/Response/SetGet.cpp	\
 			class/Response/Response.cpp	\
 			class/Route/Route.cpp 		\

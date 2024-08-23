@@ -105,3 +105,4 @@ string setRoot(string root)
         root.insert(root.end(), '/');
     return (root);
 }
+
