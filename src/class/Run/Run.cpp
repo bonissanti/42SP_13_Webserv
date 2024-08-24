@@ -5,6 +5,7 @@
 #include "../Client/Client.hpp"
 #include "../Request/Request.hpp"
 #include "../Response/Response.hpp"
+#include "../../../include/defines.hpp"
 
 Run::Run() {}
 Run::~Run() {}
@@ -131,6 +132,8 @@ void Run::startServer(vector<Server>& servers, vector<struct pollfd>& pollFds)
         else if (returnValue == -1){
             cout << "Error: poll failed" << endl;
         }
+        else if (signalUsed)
+        	break ;
         else
         {
             for (size_t i = 0; i < pollFds.size(); i++) {
@@ -150,6 +153,13 @@ void Run::startServer(vector<Server>& servers, vector<struct pollfd>& pollFds)
                 }
             }
         }
+    }
+    // for (size_t i = 0; i < pollFds.size(); i++){
+    // 	close(pollFds[i].fd);
+    // }
+    pollFds.clear();
+    for (size_t i = 0; i < servers.size(); i++){
+    	servers[i].getRoute().clear();
     }
 }
 

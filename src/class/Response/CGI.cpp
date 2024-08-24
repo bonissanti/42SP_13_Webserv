@@ -1,5 +1,7 @@
 #include "Response.hpp"
 
+extern char **environ;
+
 void Response::freeEnviron(char **envp)
 {
     for (int i = 0; envp[i]; i++)
@@ -16,6 +18,7 @@ bool Response::checkFile(const string &file)
 char **Response::configEnviron(Request &req)
 {
     char **envp = new char *[6];
+    
     string contentType = "CONTENT_TYPE=" + _contentType;
     string contentLength = "CONTENT_LENGTH=" + _contentLength;
     string scriptName = "SCRIPT_NAME=" + req.getServer().getRoute()[0].getCgi();

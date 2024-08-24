@@ -11,6 +11,7 @@
 class Client {
     private:
         map<int, Server> _fdsMap;
+        map<string, string> _mimeTypes;
         Response _response;
         Request _request;
 

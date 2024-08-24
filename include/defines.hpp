@@ -69,5 +69,6 @@ typedef enum {
 #include <algorithm>
 
 using namespace std;
+extern bool signalUsed;
 
 #endif

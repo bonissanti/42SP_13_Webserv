@@ -2,17 +2,20 @@
 #include "class/Run/Run.hpp"
 #include "class/Server/Server.hpp"
 #include "../include/Utils.hpp"
+#include "../include/defines.hpp"
 
 vector<Server> signServers;
 vector<struct pollfd> signPollFds;
+bool signalUsed = false;
 
 void	handleSignals(int sigNum)
 {
 	(void)sigNum;
-	if (!signServers.empty()){
-		for (size_t i = 0; i < signServers.size(); i++)
-			signServers[i].getRoute().clear();
-	}
+	signalUsed = true;
+	// if (!signServers.empty()){
+	// 	for (size_t i = 0; i < signServers.size(); i++)
+	// 		signServers[i].getRoute().clear();
+	// }
 	cerr << YELLOW << "\nBye! 👋" << RESET << endl;
 	exit (0);
 }

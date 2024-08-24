@@ -4,6 +4,7 @@
 4- Lista de código de erros e respostas.
 5- Tratamento de sinais.
 7- Paginas de erro default.
+8- Rodar o valgrind
 GET:
     200 OK
     301 Moved Permanently
