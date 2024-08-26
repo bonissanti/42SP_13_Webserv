@@ -31,6 +31,7 @@ class Client {
         int runDeleteMethod(void);
         bool saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
+        void setResponseData(int statusCode, string filePath, string contentType, string responseBody);
 
         class ClientException : public std::exception {
             private:

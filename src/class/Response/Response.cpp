@@ -28,7 +28,8 @@ string Response::buildMessage(void)
         "Connection: close" +
         "\r\n"
         "\r\n" +
-        _responseBody;
+        _responseBody +
+        "\r\n";
 
     return (response);
 }

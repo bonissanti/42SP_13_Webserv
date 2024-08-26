@@ -110,30 +110,25 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
 int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
-    if (contentType.find("multipart/form-data") != string::npos || contentType.find("multipart/form") != string::npos) {
+    cout << "Content-type: " << contentType << endl;
+    if (contentType.find("multipart/form-data") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
 
 		string filename = formData["filename"];
         string uri = _request.getURI();
-		string directory = "content" + uri + "uploads";
+		string directory = "content" + uri;
         if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
+            setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
             return FORBIDDEN;
         }
     } else {
         // Handle other POST data
-        string responseBody = "Unsupported Content-Type";
-        _response.setStatusCode(BAD_REQUEST);
-        _response.setStatusMessage("Bad Request");
-        _response.setResponseBody(responseBody);
-        _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+        cout << "Here" << endl;
+        setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type");
         return BAD_REQUEST;
     }
 
-    string responseBody = "File uploaded successfully";
-    _response.setStatusCode(OK);
-    _response.setStatusMessage("OK");
-    _response.setResponseBody(responseBody);
-    _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+    setResponseData(OK, "", "text/plain", "File uploaded successfully");
     return OK;
 }

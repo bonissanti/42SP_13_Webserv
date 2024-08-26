@@ -61,21 +61,21 @@ int Client::runDeleteMethod()
     string filePath = defineFilePath(uri);
 
     if (!Utils::fileExists(filePath)) {
-        _request.setStatusCode(NOT_FOUND);
+        setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        _request.setStatusCode(FORBIDDEN);
+        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        _request.setStatusCode(INTERNAL_SERVER_ERROR);
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
         return INTERNAL_SERVER_ERROR;
     }
 
-    _response.setStatusCode(OK);
+    setResponseData(OK, filePath, "text/plain", "200 OK");
     return OK;
 }
 
@@ -87,11 +87,17 @@ int Client::runGetMethod()
     string responseBody = defineResponseBody(filePath, _request);
     string contentLength = defineContentLength(responseBody);
 
-    _response.setFilePath(filePath);
-    _response.setContentType(contentType);
-    _response.setResponseBody(responseBody);
-    _response.setContentLength(contentLength);
-    _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
+    if (_response.getStatusCode() == NOT_FOUND){
+        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found");
+        return NOT_FOUND;
+    } else if (_response.getStatusCode() == FORBIDDEN){
+        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden");
+        return FORBIDDEN;
+    } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
+        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error");
+        return INTERNAL_SERVER_ERROR;
+    }
+    setResponseData(OK, filePath, contentType, responseBody);
     return (OK);
 }
 
@@ -142,6 +148,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     string build;
 
     if (_request.getStatusCode() == BAD_REQUEST) {
+        setResponseData(BAD_REQUEST, "", "text/plain", "Bad Request");
         build = _response.buildMessage();
     } else {
         callMethod();
@@ -202,4 +209,12 @@ string Client::defineContentLength(const string &body)
     size_t len = body.size();
     oss << len;
     return (oss.str());
+}
+
+void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody) {
+    _response.setStatusCode(statusCode);
+    _response.setFilePath(filePath);
+    _response.setContentType(contentType);
+    _response.setResponseBody(responseBody);
+    _response.setContentLength(defineContentLength(responseBody));
 }
