@@ -75,18 +75,14 @@ bool directoryExists(const std::string& path) {
 bool Client::saveUploadedFile(const string& filename, const string& fileContent, const string& directory) {
 	if (!directoryExists(directory)) {
         if (mkdir(directory.c_str(), 0777) == -1) {
+            setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
             std::cerr << "Error creating directory: " << directory << std::endl;
             return false;
         }
 	}
 
     if (access(directory.c_str(), W_OK) == -1) {
-        _response.setStatusCode(FORBIDDEN);
-        _response.setStatusMessage("Forbidden");
-        _response.setResponseBody("Directory is not writable");
-        _response.setContentLength(defineContentLength("Directory is not writable"));
-        _response.setHeader("Content-length", defineContentLength("Directory is not writable"));
-        _response.setHeader("Content-type", "text/plain");
+        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden");
         return false;
     }
 
@@ -95,6 +91,7 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
 	string path = directory + "/" + finalFilename;
     ofstream outFile(path.c_str(), ios::binary);
     if (!outFile) {
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
         std::cerr << "Error opening file for writing: " << path << std::endl; //remove later
         return false;
     }
@@ -102,6 +99,7 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
     outFile.write(fileContent.c_str(), fileContent.size());
     outFile.close();
     if (!outFile) {
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
         return false;
     }
     return true;
@@ -110,21 +108,24 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
 int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
+
     cout << "Content-type: " << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
 
 		string filename = formData["filename"];
+        cout << "Filename: " << filename << endl;
         string uri = _request.getURI();
-		string directory = "content" + uri;
+		string directory = "content" + uri; //change this later
         if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
-            setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
+            // setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
             return FORBIDDEN;
         }
+    } else if (contentType.empty()) {
+        setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header");
+        return BAD_REQUEST;
     } else {
-        // Handle other POST data
-        cout << "Here" << endl;
         setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type");
         return BAD_REQUEST;
     }
