@@ -19,7 +19,6 @@ class Response {
         string _contentLength;
         map<string, string> _headers;
 
-        // string getStatusMessage(int code) const;
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
         string readCGI(int fd);
@@ -29,6 +28,7 @@ class Response {
 
         int getMethodIndex(string method);
         string executeCGI(Request& req, const string& filePath);
+        string handleAutoIndex(Request& req, const string& filePath);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentLength(const string& body);

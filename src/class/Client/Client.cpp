@@ -159,14 +159,18 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _response.clear();
 }
 
-string Client::defineResponseBody(const string &filePath)
+string Client::defineResponseBody(const string& filePath)
 {
 	if (_request.getIsCgi()) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos){
             return(_response.executeCGI(_request, filePath));
         }
     }
-	
+    bool tempAutoIndex = true;
+    // if (_request.getServer().getRoute()[0].getAutoIndex()){
+    if (tempAutoIndex)
+    	return (_response.handleAutoIndex(_request, filePath));
+     
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _response.setStatusCode(NOT_FOUND);

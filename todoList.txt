@@ -1,5 +1,4 @@
 1- Mesclar request até chegar ao fim da requisição(multipart).
-2- CGI: se não tiver content_length no retorno o EOF marca o fim da resposta.
 3- Validar a Rota que esta sendo recebida no request, pois pode ser um método invalido.
 4- Lista de código de erros e respostas.
 5- Tratamento de sinais.
