@@ -57,6 +57,14 @@ bool Utils::validateFile(string file_name)
     return true;
 }
 
+bool Utils::isFile(const string& path){
+    struct stat info;
+
+    if (stat(path.c_str(), &info) != 0)
+        return (false);
+    return (info.st_mode & S_IFREG) != 0;
+}
+
 int Utils::getServersNumber(string filePath)
 {
     if(Utils::validateFile(filePath) == false)

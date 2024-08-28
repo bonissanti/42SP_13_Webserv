@@ -47,3 +47,10 @@ string Response::getIndex(void) const {
 int Response::getStatusCode(void) const {
     return _statusCode;
 }
+
+bool Response::checkAutoIndexInRoute(const vector<Route> &routes){
+    for (size_t i = 0; i < routes.size(); i++)
+        if (routes[i].getAutoIndex() == true)
+            return (true);
+    return (false);
+}

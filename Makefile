@@ -35,7 +35,7 @@ FILES		= Utils.cpp		 			\
 			class/Response/CGI.cpp		\
 			class/Response/SetGet.cpp	\
 			class/Response/Response.cpp	\
-			class/Response/Redirect.cpp \
+			class/Response/AutoIndex.cpp \
 			class/Route/Route.cpp 		\
 			class/Route/SetGet.cpp 		\
 			class/Run/Run.cpp 			\

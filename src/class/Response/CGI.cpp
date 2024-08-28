@@ -19,20 +19,19 @@ char **Response::configEnviron(Request &req)
 {
     char **envp = new char *[6];
     
-    string contentType = "CONTENT_TYPE=" + _contentType;
-    string contentLength = "CONTENT_LENGTH=" + _contentLength;
-    string scriptName = "SCRIPT_NAME=" + req.getServer().getRoute()[0].getCgi();
-    string pathInfo = "PATH_INFO=" + req._uri;
     string serverName = "SERVER_NAME=" + req.getServer().getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(req.getServer().getListen());
     string protocol = "SERVER_PROTOCOL=" + req._version;
+    string pathInfo = "PATH_INFO=" + req._uri;
+    string method = "REQUEST_METHOD=" + req.getMethod();
+    string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
 
-    envp[0] = strdup(_contentType.c_str());
-    envp[1] = strdup(_contentLength.c_str());
-    envp[2] = strdup(pathInfo.c_str());
-    envp[3] = strdup(serverName.c_str());
-    envp[4] = strdup(serverPort.c_str());
-    envp[5] = strdup(protocol.c_str());
+    envp[0] = strdup(serverName.c_str());
+    envp[1] = strdup(serverPort.c_str());
+    envp[2] = strdup(protocol.c_str());
+    envp[3] = strdup(pathInfo.c_str());
+    envp[4] = strdup(method.c_str());
+    envp[5] = strdup(gatewayInterface.c_str());
     envp[6] = NULL;
     return (envp);
 }
@@ -81,6 +80,7 @@ string Response::executeCGI(Request &req, const string& filePath)
         waitpid(pid, &status, 0);
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
         	cerr << RED << "Error: child process failed" << RESET << endl;
+            kill(pid, SIGKILL);
         }
     }
     return (result);

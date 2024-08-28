@@ -44,7 +44,7 @@ int main(int argc, char** argv)
         Server::configServer(signServers);
         run.startServer(signServers, signPollFds);
     }
-    catch (const Server::exception& e) {
+    catch (const std::exception& e) {
         cerr << e.what() << '\n';
     }
     return 0;

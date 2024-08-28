@@ -16,7 +16,7 @@ class Utils {
         static bool fileExists(const std::string& filePath);
         static bool hasDeletePermission(const std::string& filePath);
         static string statusCodeToString(int code);
-        
+        static bool isFile(const string& path);        
 };
 
 #endif
