@@ -67,6 +67,8 @@ typedef enum {
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
+#include <cstddef>
+#include <sys/stat.h>
 
 using namespace std;
 

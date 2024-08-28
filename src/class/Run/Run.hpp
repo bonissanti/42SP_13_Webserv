@@ -1,18 +1,18 @@
 #ifndef RUN_HPP
 #define RUN_HPP
 
-#include "../../../include/Utils.hpp"
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 #include "../Server/Server.hpp"
 
 class Run {
     private:
+        int _serversNumber;
         vector<Server> servers;
 
     public:
         Run(void);
         ~Run();
-        vector<struct pollfd> loadPolls(vector<Server> servers);
+        void setServersNumber(string filePath);
         void startServer(vector<Server>& servers);
         int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds);
 

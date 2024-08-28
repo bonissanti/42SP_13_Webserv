@@ -49,47 +49,7 @@ bool Utils::validateFile(string file_name)
 
 int Utils::getServersNumber(string filePath)
 {
-    if(Utils::validateFile(filePath) == false)
-        throw Server::exception("Error: invalid file format");
-
-    ifstream file(filePath.c_str());
-    if (!file.is_open()) {
-        return -1;
-    }
-
-    string line;
-    int serverCount = 0;
-    bool insideServerBlock = false;
-    stack<char> brackets;
-
-    while (getline(file, line)) {
-        for (string::size_type i = 0; i < line.size(); ++i) {
-            char c = line[i];
-
-            if (!insideServerBlock && line.substr(i, 6) == "server") {
-                insideServerBlock = true;
-                i += 5;
-                continue;
-            }
-
-            if (insideServerBlock) {
-                if (c == '{') {
-                    brackets.push(c);
-                }
-                else if (c == '}') { if (brackets.empty()) { serverCount = -1;
-                    }
-                    brackets.pop();
-                    if (brackets.empty()) {
-                        insideServerBlock = false;
-                        ++serverCount;
-                    }
-                }
-            }
-        }
-    }
-    if (serverCount == -1 || serverCount > 1024)
-        throw Server::exception(RED "Error: invalid config file" RESET);
-    return serverCount;
+   
 }
 
 void Utils::debugMode(const string& msg)
