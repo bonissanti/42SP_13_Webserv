@@ -26,7 +26,8 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 DEBUG		= debug/debug.cpp
-FILES		= Utils.cpp		 			\
+FILES		= 
+			class/Utils/Utils.cpp		\
 			class/Client/Client.cpp		\
 			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
