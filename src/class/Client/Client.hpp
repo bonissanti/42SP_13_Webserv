@@ -10,11 +10,12 @@
 
 class Client {
     private:
-        map<int, Server> _fdsMap;
+        int _clientFd;
+        Server _server;
         Response _response;
         Request _request;
 
-        string defineFilePath(string& uri);
+        string defineFilePath(void);
         string defineContentType(string filePath);
         string defineResponseBody(const string &filePath, Request &req);
         bool verifyPermission(const string &file);

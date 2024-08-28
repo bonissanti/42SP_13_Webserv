@@ -58,7 +58,7 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request.getURI();
-    string filePath = defineFilePath(uri);
+    string filePath = defineFilePath();
 
     if (!Utils::fileExists(filePath)) {
         _request.setStatusCode(NOT_FOUND);
@@ -82,7 +82,7 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request.getURI();
-    string filePath = defineFilePath(uri);
+    string filePath = defineFilePath();
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(filePath, _request);
     string contentLength = defineContentLength(responseBody);
@@ -96,15 +96,15 @@ int Client::runGetMethod()
 }
 
 
-string Client::defineFilePath(string &uri)
+string Client::defineFilePath(void)
 {
     string filePath;
 
-    if (uri == "/") {
+    if (_request.getURI() == "/") {
         filePath = "content/index.html";
     }
     else {
-        filePath = "content" + uri; // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
+        filePath = "content" + _request.getURI(); // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
     }
     return (filePath);
 }
