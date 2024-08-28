@@ -49,3 +49,7 @@ string Request::getHeader(const string &field) const {
     }
     return "";
 }
+
+map<string, string> Request::getFormData() const {
+    return _formData;
+}

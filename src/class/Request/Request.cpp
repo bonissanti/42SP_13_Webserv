@@ -50,6 +50,8 @@ void Request::parseRequest(const string &raw_request) {
         _statusCode = BAD_REQUEST;
     }
 
+    printRequest();
+
     _readyForResponse = true;
     _buffer.clear();
 }
@@ -81,10 +83,69 @@ void Request::parseHeaders(istringstream &request_stream)
     }
 }
 
-void Request::parseBody(istringstream &request_stream)
-{
-    _body.clear();
-    getline(request_stream, _body, '\0');
+void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
+    string body;
+    getline(request_stream, body, '\0');
+
+    size_t pos = 0;
+    string part_boundary = "--" + boundary;
+    string end_boundary = part_boundary + "--";
+
+    while ((pos = body.find(part_boundary)) != string::npos) {
+        body.erase(0, pos + part_boundary.length() + 2); // +2 for \r\n
+
+        if (body.find(end_boundary) == 0) {
+            break; // End of multipart data
+        }
+
+        size_t part_end = body.find(part_boundary);
+        string part = body.substr(0, part_end);
+        body.erase(0, part_end);
+
+        istringstream part_stream(part);
+        string part_line;
+        string filename;
+        string part_content;
+        // bool in_part = false;
+
+        while (getline(part_stream, part_line)) {
+            if (part_line.find("Content-Disposition:") != string::npos) {
+                size_t filename_pos = part_line.find("filename=");
+                if (filename_pos != string::npos) {
+                    filename = part_line.substr(filename_pos + 10);
+                    filename = filename.substr(0, filename.length() - 1); // Remove trailing quote
+                }
+            } else if (part_line == "\r" || part_line == "\n" || part_line.empty()) {
+                // Skip empty part_lines
+            } else {
+                part_content += part_line + "\n";
+            }
+        }
+
+        if (!part_content.empty() && part_content[part_content.length() - 1] == '\n') {
+            part_content.erase(part_content.size() - 1);
+        }
+
+        if (!filename.empty()) {
+            _formData[filename] = part_content;
+        }
+    }
+}
+
+void Request::parseBody(istringstream &request_stream) {
+    string content_type = getHeader("content-type");
+    if (content_type.find("multipart/form-data") != string::npos) {
+        size_t boundary_pos = content_type.find("boundary=");
+        if (boundary_pos == string::npos) {
+            _statusCode = BAD_REQUEST;
+            std::cout << "Boundary not found in Content-Type" << std::endl;
+            return;
+        }
+        string boundary = "--" + content_type.substr(boundary_pos + 9);
+        parseMultidata(request_stream, boundary);
+    } else {
+        getline(request_stream, _body, '\0');
+    }
 }
 
 bool Request::validateRequest() const

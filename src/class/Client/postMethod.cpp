@@ -105,21 +105,58 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
     return true;
 }
 
+// int Client::runPostMethod() {
+//     string contentType = _request.getHeader("content-type");
+//     _response.setHeader("Content-type", "text/plain");
+
+//     cout << "Content-type: " << contentType << endl;
+//     if (contentType.find("multipart/form-data") != string::npos) {
+//         string boundary = contentType.substr(contentType.find("boundary=") + 9);
+//         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
+
+// 		string filename = formData["filename"];
+//         cout << "Filename: " << filename << endl;
+//         string uri = _request.getURI();
+// 		string directory = "content" + uri; //change this later
+//         if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
+//             // setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
+//             return FORBIDDEN;
+//         }
+//     } else if (contentType.empty()) {
+//         setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header");
+//         return BAD_REQUEST;
+//     } else {
+//         setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type");
+//         return BAD_REQUEST;
+//     }
+
+//     setResponseData(OK, "", "text/plain", "File uploaded successfully");
+//     return OK;
+// }
+
 int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
 
     cout << "Content-type: " << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
-        string boundary = contentType.substr(contentType.find("boundary=") + 9);
-        map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
+        // Assuming the Request class has a method to get parsed form data
+        map<string, string> formData = _request.getFormData();
 
-		string filename = formData["filename"];
+        if (formData.find("filename") == formData.end() || formData.find("fileContent") == formData.end()) {
+            setResponseData(BAD_REQUEST, "", "text/plain", "Missing form data");
+            return BAD_REQUEST;
+        }
+
+        string filename = formData["filename"];
         cout << "Filename: " << filename << endl;
         string uri = _request.getURI();
-		string directory = "content" + uri; //change this later
-        if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
-            // setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
+        string directory = "content" + uri; // Change this to your desired directory structure
+
+        // Extract the file content using the name from the form data
+        string fileContent = formData["fileContent"];
+
+        if (!saveUploadedFile(filename, fileContent, directory)) {
             return FORBIDDEN;
         }
     } else if (contentType.empty()) {
