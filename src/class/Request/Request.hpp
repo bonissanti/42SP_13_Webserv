@@ -36,9 +36,9 @@ class Request {
         };
 
     public:
-        Request(const string& raw_request, Server& server);
-        ~Request();
+        Request(Server& server);
         Request();
+        ~Request();
         Request& operator=(const Request &other);
 
         string getHeader(const string& field) const;
@@ -56,10 +56,10 @@ class Request {
         int setStatusCode(HttpStatus code);
 
         void printRequest() const;
-        bool validateRequest() const;
+        bool validateRequest();
         bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
-        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
+        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server server);
         friend class Response;
 
         void clear();

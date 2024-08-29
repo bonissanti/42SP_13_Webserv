@@ -47,10 +47,16 @@ void Server::create(ifstream& file)
                 throw Server::exception("Unknown configuration key: " + key);
         }
         else if (line.find("route") == 0) {
-            Route new_route;
-            new_route.create(line, file);
-            _routes.push_back(new_route);
-            routeFound = true;
+            try
+            {
+                Route new_route;
+                new_route.create(line, file);
+                _routes.push_back(new_route);
+                routeFound = true;
+            }
+            catch(const Route::exception& e){
+                throw;
+            }
         }
     }
     if (_listen == 100)
@@ -99,9 +105,16 @@ const char* Server::Server::exception::what() const throw()
 
 string setRoot(string root)
 {
-    if (root[0] != '/')
-        throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-    if (root.substr(root.length() - 1) != "/")
-        root.insert(root.end(), '/');
+    // try
+    // {
+        if (root[0] != '/')
+            throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
+        if (root.substr(root.length() - 1) != "/")
+            root.insert(root.end(), '/');
+    // }
+    // catch(const std::exception& e){
+        // std::cerr << e.what() << '\n';
+    // }
     return (root);
 }
+

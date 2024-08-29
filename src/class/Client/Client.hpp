@@ -11,12 +11,13 @@
 class Client {
     private:
         map<int, Server> _fdsMap;
+        map<string, string> _mimeTypes;
         Response _response;
         Request _request;
 
         string defineFilePath(string& uri);
         string defineContentType(string filePath);
-        string defineResponseBody(const string &filePath, Request &req);
+        string defineResponseBody(const string& filePath);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
     public:

@@ -13,7 +13,7 @@ class Run {
         Run(void);
         ~Run();
         vector<struct pollfd> loadPolls(vector<Server> servers);
-        void startServer(vector<Server>& servers);
+        void startServer(vector<Server>& servers, vector<struct pollfd>& pollFds);
         int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds);
 
         class exception : public std::exception {

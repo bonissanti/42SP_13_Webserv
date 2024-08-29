@@ -19,6 +19,8 @@ bool Route::getCgiOn() const
 
 string Route::getRoot() const
 {
+    if (_root.empty())
+        return ("");
     return _root;
 }
 
@@ -44,6 +46,8 @@ string Route::getReturn() const
 
 string Route::getCgi() const
 {
+	if (_cgi.empty())
+		return ("");
     return _cgi;
 }
 
@@ -71,6 +75,7 @@ void Route::setRoot(string& root)
     if (root.substr(root.length() - 1) != "/")
         root.insert(root.end(), '/');
     _root = root;
+
 }
 
 void Route::setAllowMethods(const string& allowMethods)
