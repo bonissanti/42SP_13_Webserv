@@ -60,7 +60,7 @@ class Request {
 
         void printRequest() const;
         bool validateRequest() const;
-        bool isRequestComplete(const std::string& request);
+        bool isRequestComplete();
         void parseRequest(const string& raw_request);
         static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
         friend class Response;

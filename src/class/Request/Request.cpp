@@ -24,10 +24,41 @@ Request& Request::operator=(const Request &other)
     return *this;
 }
 
+bool Request::isRequestComplete() {
+    size_t header_end = _buffer.find("\r\n\r\n");
+    if (header_end == string::npos) {
+        return false;
+    }
+
+    // Parse headers to find Content-Length
+    istringstream header_stream(_buffer.substr(0, header_end));
+    string line;
+    while (getline(header_stream, line) && !line.empty()) {
+        size_t colon_pos = line.find(':');
+        if (colon_pos != string::npos) {
+            string header_name = line.substr(0, colon_pos);
+            string header_value = line.substr(colon_pos + 1);
+            _headers[header_name] = header_value;
+        }
+    }
+
+    // Check if Content-Length header is present
+    map<string, string>::iterator it = _headers.find("Content-Length");
+    if (it != _headers.end()) {
+        int content_length = Utils::strtoi(it->second);
+        if (_buffer.size() < header_end + 4 + content_length) {
+            return false; // Request is not complete yet
+        }
+    }
+
+    return true;
+}
+
 void Request::parseRequest(const string &raw_request) {
     _buffer.append(raw_request);
+    static int i;
 
-    if (_buffer.find("\r\n\r\n") == string::npos) {
+    if (!isRequestComplete()) {
         return;
     }
 
@@ -42,6 +73,8 @@ void Request::parseRequest(const string &raw_request) {
         return;
     }
 
+    cout << "Count of requests: " << ++i << endl;
+
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
@@ -50,7 +83,7 @@ void Request::parseRequest(const string &raw_request) {
         _statusCode = BAD_REQUEST;
     }
 
-    printRequest();
+    // printRequest();
 
     _readyForResponse = true;
     _buffer.clear();
@@ -68,7 +101,9 @@ void Request::parseRequestLine(const string &firstLine)
 void Request::parseHeaders(istringstream &request_stream)
 {
     string line;
-    while (getline(request_stream, line) && line != "\r") {
+
+    while (getline(request_stream, line) && line != "\r" && line != "") {
+        // Skip boundary extraction
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string key = line.substr(0, colon_pos);
@@ -76,65 +111,53 @@ void Request::parseHeaders(istringstream &request_stream)
             transform(key.begin(), key.end(), key.begin(), ::tolower);
             _headers[key] = value;
         }
-        else {
+        else 
+        {
             _statusCode = BAD_REQUEST;
-            // throw runtime_error("Invalid header format");
+            break;
         }
     }
 }
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
-    string body;
-    getline(request_stream, body, '\0');
+    string line;
+    string part_content;
+    string filename;
 
-    size_t pos = 0;
-    string part_boundary = "--" + boundary;
-    string end_boundary = part_boundary + "--";
-
-    while ((pos = body.find(part_boundary)) != string::npos) {
-        body.erase(0, pos + part_boundary.length() + 2); // +2 for \r\n
-
-        if (body.find(end_boundary) == 0) {
-            break; // End of multipart data
-        }
-
-        size_t part_end = body.find(part_boundary);
-        string part = body.substr(0, part_end);
-        body.erase(0, part_end);
-
-        istringstream part_stream(part);
-        string part_line;
-        string filename;
-        string part_content;
-        // bool in_part = false;
-
-        while (getline(part_stream, part_line)) {
-            if (part_line.find("Content-Disposition:") != string::npos) {
-                size_t filename_pos = part_line.find("filename=");
-                if (filename_pos != string::npos) {
-                    filename = part_line.substr(filename_pos + 10);
-                    filename = filename.substr(0, filename.length() - 1); // Remove trailing quote
-                }
-            } else if (part_line == "\r" || part_line == "\n" || part_line.empty()) {
-                // Skip empty part_lines
-            } else {
-                part_content += part_line + "\n";
+    while (getline(request_stream, line)) {
+        if (line.find(boundary) != string::npos) {
+            if (!part_content.empty() && !filename.empty()) {
+                _formData[filename] = part_content;
             }
+            part_content.clear();
+            filename.clear();
+        } else if (line.find("Content-Disposition: form-data; name=\"") != string::npos) {
+            size_t start_pos = line.find("filename=\"");
+            if (start_pos != string::npos) {
+                start_pos += 10; // Move past 'filename="'
+                size_t end_pos = line.find("\"", start_pos);
+                filename = line.substr(start_pos, end_pos - start_pos);
+            }
+        } else {
+            part_content += line + "\n";
         }
+    }
 
-        if (!part_content.empty() && part_content[part_content.length() - 1] == '\n') {
-            part_content.erase(part_content.size() - 1);
-        }
-
-        if (!filename.empty()) {
-            _formData[filename] = part_content;
-        }
+    if (!part_content.empty() && !filename.empty()) {
+        _formData[filename] = part_content;
+    }
+    
+    // Print formData
+    cout << "FormData:" << endl;
+    for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+        cout << it->first << ": " << it->second << endl;
     }
 }
 
 void Request::parseBody(istringstream &request_stream) {
     string content_type = getHeader("content-type");
     if (content_type.find("multipart/form-data") != string::npos) {
+        cout << "Parsing multipart/form-data body" << endl;
         size_t boundary_pos = content_type.find("boundary=");
         if (boundary_pos == string::npos) {
             _statusCode = BAD_REQUEST;
@@ -193,6 +216,9 @@ void Request::printRequest() const
 
     vector<string> key, value;
     for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
+        cout << it->first << ": " << it->second << endl;
+    }
+    for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
     }
     cout << _body << endl;
