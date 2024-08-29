@@ -1,8 +1,7 @@
 #ifndef ROUTE_HPP
 #define ROUTE_HPP
 
-#include "../../../include/Utils.hpp"
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 
 class Route {
     private:

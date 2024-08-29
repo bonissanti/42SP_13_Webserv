@@ -1,10 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <map>
-#include <string>
-
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 #include "../Request/Request.hpp"
 
 class Response {

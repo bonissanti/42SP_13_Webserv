@@ -1,6 +1,5 @@
 #include "Response.hpp"
-#include "../../../include/Utils.hpp"
-#include <sys/stat.h>
+#include "../Utils/Utils.hpp"
 
 Response::Response() {}
 

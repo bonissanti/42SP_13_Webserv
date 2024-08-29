@@ -1,11 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <cstddef>
-#include <map>
-#include <string>
-
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 #include "../Server/Server.hpp"
 
 class Request {
