@@ -57,36 +57,39 @@ void Server::create(ifstream& file)
         throw Server::exception(RED "Error: server or listen are not set" RESET);
 }
 
-void Server::configServer(vector<Server>& servers)
+void Server::openPortsToListen(void)
 {
     int inUse = 1;
     struct sockaddr_in serverAddr;
 
     Utils::bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); 
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    for (size_t i = 0; i < servers.size(); i++) {
-        serverAddr.sin_port = htons(servers[i]._listen);  
-        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); 
+    serverAddr.sin_port = htons(_listen);
+    _socketFd = socket(AF_INET, SOCK_STREAM, 0);
 
-        if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
-            throw Server::exception(RED "Error: setsockopt failed" RESET);
+    if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
+        throw Server::exception(RED "Error: setsockopt failed" RESET);
 
-        int flags = fcntl(servers[i]._socketFd, F_GETFL);
-        if (flags < 0)
-            throw Server::exception(RED "Error: fcntl failed" RESET);
+    int flags = fcntl(_socketFd, F_GETFL);
+    if (flags < 0)
+        throw Server::exception(RED "Error: fcntl failed" RESET);
 
-        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
-            throw Server::exception(RED "Error: fcntl failed" RESET);
+    if (fcntl(_socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
+        throw Server::exception(RED "Error: fcntl failed" RESET);
 
-        if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            if (errno == EADDRINUSE)
-                throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
-        }
-        if (listen(servers[i]._socketFd, 10) < 0)
-            throw Server::exception(RED "Error: listen failed" RESET);
+    if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        if (errno == EADDRINUSE)
+            throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
     }
+    if (listen(_socketFd, 10) < 0)
+        throw Server::exception(RED "Error: listen failed" RESET);
+    
+    // set pollfd
+    _pollfd.fd = _socketFd;
+    _pollfd.events = POLLIN | POLLOUT;
+    _pollfd.revents = 0;
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
