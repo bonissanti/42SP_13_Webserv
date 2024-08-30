@@ -97,10 +97,10 @@ int Client::runGetMethod()
 }
     // _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
     
-static string defineCustomRoot(const vector<Route>& routes, const string& uri){
+static string defineHome(const vector<Route>& routes){
     for (size_t i = 0; i < routes.size(); i++)
-        if (routes[i].getRoute() == uri)
-            return (routes[i].getRoot());
+        if (routes[i].getRoute() == "/")
+            return ("content" + routes[i].getRoot());
     return ("content/index.html");
 }
 
@@ -109,10 +109,10 @@ string Client::defineFilePath(string uri)
     /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
     Especialmente quando usado autoindex, esse é um ponto de atenção */
 
-    string filePath = _request.getPath();
+    string filePath;
 
     if (uri == "/") {
-        filePath = defineCustomRoot(_request.getServer().getRoute(), uri);
+        filePath = defineHome(_request.getServer().getRoute());
     }
     else if (uri == "/cgi")
     	filePath = "content" + uri + "/" + _request.getServer().getRoute()[0].getIndex();
@@ -123,7 +123,8 @@ string Client::defineFilePath(string uri)
 }
 
 
-string Client::defineContentType(string filePath){
+string Client::defineContentType(string filePath)
+ _request.getPath(){
     size_t index;
     string extension;
     _mimeTypes[".html"] = "text/html";

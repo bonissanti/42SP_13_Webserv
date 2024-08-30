@@ -12,11 +12,6 @@ string Request::getURI() const
     return _uri;
 }
 
-string Request::getPath() const
-{
-    return _path;
-}
-
 string Request::getVersion() const
 {
     return _version;

@@ -13,7 +13,6 @@ class Request {
         map<string, string> _headers;
         string _method;
         string _uri;
-        string _path;
         string _version;
         string _body;
         string _buffer;
@@ -45,7 +44,6 @@ class Request {
         string getHeader(const string& field) const;
         string getMethod() const;
         string getURI() const;
-        string getPath() const;
         string getVersion() const;
         map<string, string> getHeaders() const;
         string getBody() const;

@@ -22,7 +22,7 @@ inline static string applyHiperlink(const string& href, const string& fileName) 
     return buffer;
 }
 
-string Response::handleAutoIndex(const string& filePath, const string& uri){
+string Response::handleAutoIndex(string filePath, const string& uri){
 	
 	string list, href;
 	DIR *dir = opendir(filePath.c_str());
