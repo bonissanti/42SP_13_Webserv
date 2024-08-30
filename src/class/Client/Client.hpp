@@ -15,9 +15,9 @@ class Client {
         Response _response;
         Request _request;
 
-        string defineFilePath(string& uri);
+        string defineFilePath(string uri);
         string defineContentType(string filePath);
-        string defineResponseBody(const string& filePath);
+        string defineResponseBody(const string& filePath, const string& uri);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
     public:
