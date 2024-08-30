@@ -123,8 +123,7 @@ string Client::defineFilePath(string uri)
 }
 
 
-string Client::defineContentType(string filePath)
- _request.getPath(){
+string Client::defineContentType(string filePath){
     size_t index;
     string extension;
     _mimeTypes[".html"] = "text/html";
