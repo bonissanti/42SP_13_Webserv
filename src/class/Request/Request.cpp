@@ -1,7 +1,7 @@
 #include "Request.hpp"
 
-Request::Request(Server& server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
-Request::Request() {}
+Request::Request(Server& server) : _path("content/"), _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
+Request::Request() : _path("content/"),_isCgi(false), _readyForResponse (false), _statusCode(OK) {}
 Request::~Request() {}
 
 Request& Request::operator=(const Request &other)
@@ -11,6 +11,7 @@ Request& Request::operator=(const Request &other)
         _isCgi = other._isCgi;
         _statusCode = other._statusCode;
         _uri = other._uri;
+        _path = other._path;
         _version = other._version;
         _method = other._method;
         _headers = other._headers;
