@@ -105,16 +105,10 @@ const char* Server::Server::exception::what() const throw()
 
 string setRoot(string root)
 {
-    // try
-    // {
-        if (root[0] != '/')
-            throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-        if (root.substr(root.length() - 1) != "/")
-            root.insert(root.end(), '/');
-    // }
-    // catch(const std::exception& e){
-        // std::cerr << e.what() << '\n';
-    // }
+    if (root[0] != '/')
+        throw Server::exception(RED "Error: misformatted root path, please use '/path'" RESET);
+    if (root[root.length() - 1] != '/')
+        root.insert(root.end(), '/');
     return (root);
 }
 

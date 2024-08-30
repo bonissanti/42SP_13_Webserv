@@ -84,7 +84,7 @@ int Client::runGetMethod()
     string uri = _request.getURI();
     string filePath = defineFilePath(uri);
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(filePath);
+    string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
     _response.setFilePath(filePath);
@@ -104,7 +104,7 @@ static string defineHome(const vector<Route>& routes){
     return ("content/index.html");
 }
 
-string Client::defineFilePath(string &uri)
+string Client::defineFilePath(string uri)
 {   
     /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
     Especialmente quando usado autoindex, esse é um ponto de atenção */
@@ -124,7 +124,7 @@ string Client::defineFilePath(string &uri)
 
 
 string Client::defineContentType(string filePath)
-{
+ _request.getPath(){
     size_t index;
     string extension;
     _mimeTypes[".html"] = "text/html";
@@ -148,7 +148,7 @@ string Client::defineContentType(string filePath)
     return ("text/html;charset=UTF-8"); // alterado de plain para html como 'default'
 }
 
-string Client::defineResponseBody(const string& filePath)
+string Client::defineResponseBody(const string& filePath, const string& uri)
 {
 
 	if (_request.getIsCgi()) {
@@ -161,7 +161,7 @@ string Client::defineResponseBody(const string& filePath)
     stat(filePath.c_str(), &path_stat);
     if (S_ISDIR(path_stat.st_mode)){
         if (_response.checkAutoIndexInRoute(_request.getServer().getRoute()))
-        	return (_response.handleAutoIndex(filePath));
+        	return (_response.handleAutoIndex(filePath, uri));
     }
      
     ifstream file(filePath.c_str());

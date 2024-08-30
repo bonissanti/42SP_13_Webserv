@@ -15,28 +15,29 @@ static string generateDirectoryList(string& list){
 	return (response);
 }
 
-inline static string applyHiperlink(const string& currentPath, const string& fileName) {
+inline static string applyHiperlink(const string& href, const string& fileName) {
     string buffer;
     
-    buffer = "<li><a href=\"" + currentPath + fileName + "\">" + fileName + "</a></li>";
+    buffer = "<li><a href=\"" + href + fileName + "\">" + fileName + "</a></li>";
     return buffer;
 }
 
-string Response::handleAutoIndex(string filePath){
+string Response::handleAutoIndex(string filePath, const string& uri){
 	
-	string list, str;
+	string list, href;
 	DIR *dir = opendir(filePath.c_str());
 	if (!dir){
 		cerr << RED << "Error: opendir failed" << RESET << endl;
 		_statusCode = INTERNAL_SERVER_ERROR;
 		return ("");
 	}
-	if (filePath[filePath.length() - 1] != '/')
-		filePath += "/";
+	href = uri;
+	if (uri[uri.length() - 1] != '/')
+		href += "/";
 	struct dirent *entry;
 	while ((entry = readdir(dir))){
 		if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")){
-			list += applyHiperlink(filePath, entry->d_name);
+			list += applyHiperlink(href, entry->d_name);
 		}
 	}
 	closedir(dir);
