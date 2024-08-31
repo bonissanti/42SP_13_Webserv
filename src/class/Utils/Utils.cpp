@@ -1,6 +1,4 @@
-#include "../include/Utils.hpp"
-#include "../include/defines.hpp"
-#include "class/Server/Server.hpp"
+#include "Utils.hpp"
 
 #include <sys/stat.h>
 #include <stack>
@@ -47,21 +45,6 @@ bool Utils::validateFile(string file_name)
     return true;
 }
 
-int Utils::getServersNumber(string filePath)
-{
-   
-}
-
-void Utils::debugMode(const string& msg)
-{
-#ifndef DEBUG
-    (void)msg;
-#endif
-
-#ifdef DEBUG
-    cerr << BBLUE << msg << RESET << endl;
-#endif
-}
 
 // Verifica se o arquivo existe
 bool Utils::fileExists(const std::string& filePath) {
