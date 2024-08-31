@@ -1,8 +1,8 @@
 #include <sys/poll.h>
 
-#include "class/Utils/Utils.hpp"
 #include "class/Run/Run.hpp"
 #include "class/Server/Server.hpp"
+#include "class/Utils/Utils.hpp"
 
 int main(int argc, char** argv)
 {
@@ -10,7 +10,7 @@ int main(int argc, char** argv)
         if (argc != 2)
             throw Server::exception(RED "Error: invalid number of arguments" RESET);
 
-        int numbersOfServers = Utils::getServersNumber(argv[1]);
+        int numbersOfServers = Run::setServersNumber(argv[1]);
         vector<Server> servers(numbersOfServers);
 
         ifstream file(argv[1]);
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
             servers[i].create(file);
             servers[i].openPortsToListen();
         }
-        Run run.startServer(servers);
+        Run::startServer(servers);
     }
     catch (const Server::exception& e) {
         cerr << e.what() << '\n';

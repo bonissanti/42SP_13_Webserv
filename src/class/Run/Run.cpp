@@ -7,9 +7,9 @@
 Run::Run() {}
 Run::~Run() {}
 
-void setServersNumber(string filePath)
+int Run::setServersNumber(string filePath)
 {
-     if(Utils::validateFile(filePath) == false)
+    if (Utils::validateFile(filePath) == false)
         throw Server::exception("Error: invalid file format");
 
     ifstream file(filePath.c_str());
@@ -36,7 +36,9 @@ void setServersNumber(string filePath)
                 if (c == '{') {
                     brackets.push(c);
                 }
-                else if (c == '}') { if (brackets.empty()) { serverCount = -1;
+                else if (c == '}') {
+                    if (brackets.empty()) {
+                        serverCount = -1;
                     }
                     brackets.pop();
                     if (brackets.empty()) {
@@ -52,14 +54,14 @@ void setServersNumber(string filePath)
     return serverCount;
 }
 
-int Run::acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
+pollfd Run::acceptNewConnection(int socketFd)
 {
     int clientFd;
     socklen_t addrlen;
     struct sockaddr_in clientAddr;
 
     addrlen = sizeof(clientAddr);
-    clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
+    clientFd = accept(socketFd, (struct sockaddr*)&clientAddr, &addrlen);
     if (clientFd == -1) {
         if (errno == EWOULDBLOCK)
             cout << "No pending connections for now" << endl;
@@ -80,52 +82,51 @@ int Run::acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     commFd.fd = clientFd;
     commFd.events = POLLIN | POLLOUT;
     commFd.revents = 0;
-    pollFds.push_back(commFd);
-    return (clientFd);
+    return (commFd);
 }
 
 void Run::startServer(vector<Server>& servers)
 {
-    int returnValue;
-    vector<struct pollfd> pollFds = setPollFd(servers);
     vector<Client> clientManager;
-    // Client clientManager;
-    // map<int, Request> requests
-
+    int pollValue;
     while (true) {
-        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
+        size_t i = 0;
+        for (; i < servers.size(); i++) {
+            pollValue = poll(&servers[i].getPollFd(), 1, 0);
+            if (pollValue == -1)
+                throw Server::exception(RED "Error: poll failed" RESET);
+            if (pollValue == 0)
+                continue;
+            if (i < servers.size() && servers[i].getPollFd().revents & POLLIN) {
+                struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
+                servers[i].setFd(actualFd);
 
-        if (returnValue == 0) {
-            cout << "Error: poll Timeout" << endl;
-            // Jogar pagine de timeout
+                try {
+                    Request newRequest;
+                    newRequest.readRequest(actualFd, newRequest);
+                    Client newClient(&servers[i], &newRequest);
+                    clientManager.push_back(newClient);
+                    break;
+                }
+                catch (const std::exception& e) {
+                    cerr << "Error reading request: " << e.what() << endl;
+                }
+            }
         }
-        else if (returnValue == -1) {
-            cout << "Error: poll failed" << endl;
-        }
-        else {
-            for (size_t i = 0; i < pollFds.size(); i++) {
-                if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                    int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-                    // clientManager.addAssociation(clientFd, servers[i]);
-                }
-                else if (pollFds[i].revents & POLLIN) {
-                    Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                    try {
-                        Request::readRequest(pollFds, i, requests);
-                    }
-                    catch (const std::exception& e) {
-                        cerr << "Error reading request: " << e.what() << endl;
-                    }
-                }
-                else if (pollFds[i].revents & POLLOUT) {
-                    if (requests.find(pollFds[i].fd) != requests.end() && requests[pollFds[i].fd].isReadyForResponse())
-                        try {
-                            clientManager.sendResponse(pollFds[i], requests);
-                        }
-                        catch (const std::exception& e) {
-                            cerr << "Error sending response: " << e.what() << endl;
-                        }
-                }
+
+        pollValue = poll(&servers[i].getPollFd(), 1, 0);
+        if (pollValue == -1)
+            throw Server::exception(RED "Error: poll failed" RESET);
+        if (pollValue == 0)
+            continue;
+        if (servers[i].getPollFd().revents & POLLOUT) {
+            try {
+                clientManager[i].sendResponse();
+                clientManager.erase(clientManager.begin() + i);
+                break;
+            }
+            catch (const std::exception& e) {
+                cerr << "Error sending response: " << e.what() << endl;
             }
         }
     }
