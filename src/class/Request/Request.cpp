@@ -153,13 +153,13 @@ void Request::printRequest() const
     cout << _body << endl;
 }
 
-void Request::readRequest(struct pollfd &actualFd, Request &newRequest)
+void Request::readRequest(struct pollfd &actualFd)
 {
     char buffer[65535];
     ssize_t bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
 
     if (bytesReceived > 0) {
-        newRequest.parseRequest(string(buffer, bytesReceived));
+        parseRequest(string(buffer, bytesReceived));
     }
     else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;

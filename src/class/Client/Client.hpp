@@ -22,7 +22,6 @@ class Client {
 
     public:
         Client();
-        Client(Server *server, Request *request);
         ~Client();
         void addAssociation(int clientFd, Server server);
         int callMethod(void);
@@ -35,6 +34,7 @@ class Client {
         Server* getServer(void);
         Response *getResponse(void);
         Request *getRequest(void);
+        void setServer(Server *server);
 
         class ClientException : public std::exception {
             private:

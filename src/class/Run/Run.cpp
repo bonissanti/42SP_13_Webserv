@@ -87,25 +87,23 @@ pollfd Run::acceptNewConnection(int socketFd)
 
 void Run::startServer(vector<Server>& servers)
 {
-    vector<Client> clientManager;
     int pollValue;
     while (true) {
-        size_t i = 0;
-        for (; i < servers.size(); i++) {
+        Client client;
+        size_t i = -1;
+        
+        while( ++i < servers.size()) {
             pollValue = poll(&servers[i].getPollFd(), 1, 0);
             if (pollValue == -1)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (pollValue == 0)
                 continue;
-            if (i < servers.size() && servers[i].getPollFd().revents & POLLIN) {
+            if (servers[i].getPollFd().revents & POLLIN) {
                 struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
                 servers[i].setFd(actualFd);
-
                 try {
-                    Request newRequest;
-                    newRequest.readRequest(actualFd, newRequest);
-                    Client newClient(&servers[i], &newRequest);
-                    clientManager.push_back(newClient);
+                    client.setServer(&servers[i]);
+                    client.getRequest()->readRequest(actualFd);
                     break;
                 }
                 catch (const std::exception& e) {
@@ -121,9 +119,7 @@ void Run::startServer(vector<Server>& servers)
             continue;
         if (servers[i].getPollFd().revents & POLLOUT) {
             try {
-                clientManager[i].sendResponse();
-                clientManager.erase(clientManager.begin() + i);
-                break;
+                client.sendResponse();
             }
             catch (const std::exception& e) {
                 cerr << "Error sending response: " << e.what() << endl;

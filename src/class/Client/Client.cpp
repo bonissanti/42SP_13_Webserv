@@ -1,17 +1,15 @@
 #include "Client.hpp"
 
-Client::Client(){}
-
-Client::Client(Server* server, Request* request)
+Client::Client()
 {
-    _server = new Server(*server);
-    _request = new Request(*request);
-    _response = NULL;
+    _server = NULL;
+    _request = new Request();
+    _response = new Response();
 }
 
 Client::~Client() {
-    delete _server;
     delete _request;
+    delete _response;
 }
 
 Client::ClientException::ClientException(const string& message) : msg(message) {}
@@ -45,6 +43,11 @@ Request* Client::getRequest(void)
 Response* Client::getResponse(void)
 {
     return (_response);
+}
+
+void Client::setServer(Server* server)
+{
+    _server = server;
 }
 
 int Client::callMethod()
