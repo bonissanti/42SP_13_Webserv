@@ -1,27 +1,33 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "../Utils/Utils.hpp"
 #include "../Route/Route.hpp"
+#include "../Utils/Utils.hpp"
 
 class Server {
     private:
         int _listen;
         int _socketFd;  // socket()
-        struct pollfd _pollfd;
+        struct pollfd _fd;
         string _server_name;
         string _root;
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
         vector<Route> _routes;
+
     public:
         Server(void);
+        Server(const Server& toCopy);
         ~Server();
 
         int getSocket(void);
         int getClientFd(void);
         int getListen(void);
         string getServerName(void);
+        vector<Route> getRoute(void);
+        string getRoot() const;
+        struct pollfd& getPollFd(void);
+
         void addClient(int clientFd);
 
         void create(ifstream& file);
@@ -31,12 +37,9 @@ class Server {
         void setListen(int port);
         void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
-
-        vector<Route> getRoute(void);
+        void setFd(struct pollfd& pollFd);
 
         void openPortsToListen(void);
-
-        string getRoot() const;
 
         class exception : public std::exception {
             private:

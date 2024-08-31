@@ -8,6 +8,17 @@ Server::Server()
     _root = "/data/";
 }
 
+Server::Server(const Server& toCopy){
+    _listen = toCopy._listen;
+    _socketFd = toCopy._socketFd;
+    _fd = toCopy._fd;
+    _server_name = toCopy._server_name;
+    _root = toCopy._root;
+    _client_max_body_size = toCopy._client_max_body_size;
+    _error_page = toCopy._error_page;
+    _routes = toCopy._routes;
+}
+
 Server::~Server() {}
 
 void Server::create(ifstream& file)
@@ -85,11 +96,11 @@ void Server::openPortsToListen(void)
     }
     if (listen(_socketFd, 10) < 0)
         throw Server::exception(RED "Error: listen failed" RESET);
-    
+
     // set pollfd
-    _pollfd.fd = _socketFd;
-    _pollfd.events = POLLIN | POLLOUT;
-    _pollfd.revents = 0;
+    _fd.fd = _socketFd;
+    _fd.events = POLLIN | POLLOUT;
+    _fd.revents = 0;
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
