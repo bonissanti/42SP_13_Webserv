@@ -48,7 +48,7 @@ bool Response::checkFile(const string &file)
 char **Response::configEnviron(Request &req)
 {
     char **envp = new char *[3];
-    string requestMethod = "REQUEST_METHOD=GET" + req._method;
+    // string requestMethod = "REQUEST_METHOD=GET" + req->_method;
     // string queryString = "QUERY_STRING=" + ex: username=Random&emailaddress=random@example.com;
     string contentType = "CONTENT_TYPE=" + _contentType;
     // string contentLength = "CONTENT_LENGTH=" + _contentLength;
@@ -56,9 +56,9 @@ char **Response::configEnviron(Request &req)
     // string pathInfo = "PATH_INFO=" +
     string serverName = "SERVER_NAME=" + req.getServer().getServerName();
     // string serverPort = "SERVER_PORT=" + req.getServer().getListen()
-    string protocol = "SERVER_PROTOCOL=" + req._version;
+    // string protocol = "SERVER_PROTOCOL=" + req._version;
 
-    envp[0] = strdup(requestMethod.c_str());
+    // envp[0] = strdup(requestMethod->c_str());
     // envp[1] = strdup(queryString.c_str());
     envp[2] = NULL;
     return (envp);
@@ -97,6 +97,7 @@ string Response::executeCGI(Request &req)
             freeEnviron(envp);
             throw Server::exception(RED "Error: execve failed" RESET);
         }
+        freeEnviron(envp);
         close(fd[1]);
     }
     else {
