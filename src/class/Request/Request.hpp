@@ -33,8 +33,9 @@ class Request {
 
     public:
         Request(const string& raw_request, Server& server);
-        ~Request();
         Request();
+        Request(const Request& toCopy);
+        ~Request();
         Request& operator=(const Request &other);
 
         string getHeader(const string& field) const;
@@ -55,9 +56,7 @@ class Request {
         bool validateRequest() const;
         bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
-        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests);
-        friend class Response;
-
+        void readRequest(struct pollfd& actualFd, Request& newRequest);
         void clear();
 };
 
