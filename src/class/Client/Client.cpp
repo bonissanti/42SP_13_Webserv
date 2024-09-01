@@ -2,12 +2,12 @@
 
 Client::Client()
 {
-    _server = NULL;
     _request = new Request();
     _response = new Response();
 }
 
-Client::~Client() {
+Client::~Client()
+{
     delete _request;
     delete _response;
 }
@@ -30,7 +30,7 @@ int Client::getMethodIndex(string method)
     return (-1);
 }
 
-Server* Client::getServer(void)
+Server Client::getServer(void)
 {
     return (_server);
 }
@@ -45,7 +45,7 @@ Response* Client::getResponse(void)
     return (_response);
 }
 
-void Client::setServer(Server* server)
+void Client::setServer(Server server)
 {
     _server = server;
 }
@@ -158,11 +158,10 @@ void Client::sendResponse(void)
         callMethod();
         build = _response->buildMessage();
     }
-    send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
+    send(_server.getPollFd().fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
 
-    close(_server->getPollFd().fd);
-
+    close(_server.getPollFd().fd);
     _request->clear();
     _response->clear();
 }

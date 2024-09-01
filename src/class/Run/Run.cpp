@@ -90,40 +90,36 @@ void Run::startServer(vector<Server>& servers)
     int pollValue;
     while (true) {
         Client client;
-        size_t i = -1;
-        
-        while( ++i < servers.size()) {
-            pollValue = poll(&servers[i].getPollFd(), 1, 0);
+        bool requestFound = false;
+        size_t i = 0;
+
+        while (i < servers.size()) {
+            pollValue = poll(&servers[i].getPollFd(), 1, 100);
             if (pollValue == -1)
                 throw Server::exception(RED "Error: poll failed" RESET);
-            if (pollValue == 0)
-                continue;
             if (servers[i].getPollFd().revents & POLLIN) {
-                struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
-                servers[i].setFd(actualFd);
                 try {
-                    client.setServer(&servers[i]);
+                    requestFound = true;
+                    struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
+                    servers[i].setClientFd(actualFd);
+                    client.setServer(servers[i]);
                     client.getRequest()->readRequest(actualFd);
-                    break;
                 }
                 catch (const std::exception& e) {
                     cerr << "Error reading request: " << e.what() << endl;
                 }
             }
-        }
-
-        pollValue = poll(&servers[i].getPollFd(), 1, 0);
-        if (pollValue == -1)
-            throw Server::exception(RED "Error: poll failed" RESET);
-        if (pollValue == 0)
-            continue;
-        if (servers[i].getPollFd().revents & POLLOUT) {
-            try {
-                client.sendResponse();
+            else if (servers[i].getPollFd().revents & POLLOUT) {
+                try {
+                    requestFound = false;
+                    client.sendResponse();
+                    servers[i].getServerFd();
+                }
+                catch (const std::exception& e) {
+                    cerr << "Error sending response: " << e.what() << endl;
+                }
             }
-            catch (const std::exception& e) {
-                cerr << "Error sending response: " << e.what() << endl;
-            }
+            i = requestFound ? i : i + 1;
         }
     }
 }

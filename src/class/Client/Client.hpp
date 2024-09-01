@@ -10,7 +10,7 @@
 
 class Client {
     private:
-        Server *_server;
+        Server _server;
         Response *_response;
         Request *_request;
 
@@ -31,10 +31,10 @@ class Client {
         bool saveUploadedFile(const string &filename, const string &fileContent, const string &directory);
         void sendResponse(void);
         int getMethodIndex(string method);
-        Server* getServer(void);
+        Server getServer(void);
         Response *getResponse(void);
         Request *getRequest(void);
-        void setServer(Server *server);
+        void setServer(Server server);
 
         class ClientException : public std::exception {
             private:
