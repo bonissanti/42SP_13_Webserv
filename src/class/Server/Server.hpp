@@ -9,6 +9,7 @@ class Server {
         int _listen;
         int _socketFd;  // socket()
         struct pollfd _fd;
+        struct pollfd _tempFd;
         string _server_name;
         string _root;
         int _client_max_body_size;
@@ -21,12 +22,12 @@ class Server {
         ~Server();
 
         int getSocket(void);
-        int getClientFd(void);
         int getListen(void);
         string getServerName(void);
         vector<Route> getRoute(void);
         string getRoot() const;
         struct pollfd& getPollFd(void);
+        void getServerFd(void);
 
         void addClient(int clientFd);
 
@@ -37,7 +38,7 @@ class Server {
         void setListen(int port);
         void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
-        void setFd(struct pollfd& pollFd);
+        void setClientFd(struct pollfd& pollFd);
 
         void openPortsToListen(void);
 

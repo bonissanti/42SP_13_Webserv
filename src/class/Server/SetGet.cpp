@@ -17,7 +17,7 @@ string Server::getServerName(void)
 
 int Server::getListen(void)
 {
-    return (_listen);\
+    return (_listen);
 }
 
 struct pollfd& Server::getPollFd(void)
@@ -30,9 +30,15 @@ string Server::getRoot() const
     return _root;
 }
 
-void Server::setFd(struct pollfd& pollFd)
+void Server::setClientFd(struct pollfd& pollFd)
 {
+    _tempFd = _fd;
     _fd = pollFd;
+}
+
+void Server::getServerFd(void)
+{
+    _fd = _tempFd;
 }
 void Server::setListen(int port)
 {
