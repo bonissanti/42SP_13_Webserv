@@ -15,6 +15,7 @@ Request& Request::operator=(const Request &other)
         _method = other._method;
         _headers = other._headers;
         _body = other._body;
+        _formData = other._formData;
     }
     return *this;
 }
@@ -122,7 +123,8 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
     while (getline(request_stream, line)) {
         if (line.find(boundary) != string::npos) {
             if (!part_content.empty() && !filename.empty()) {
-                _formData[filename] = part_content;
+                _formData["filename"] = filename;
+                _formData["fileContent"] = part_content;
             }
             part_content.clear();
             filename.clear();
@@ -143,10 +145,10 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
     }
     
     // Print formData
-    cout << "FormData:" << endl;
-    for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-        cout << it->first << ": " << it->second << endl;
-    }
+    // cout << "FormData:" << endl;
+    // for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+    //     cout << it->first << ": " << it->second << endl;
+    // }
 }
 
 void Request::parseBody(istringstream &request_stream) {

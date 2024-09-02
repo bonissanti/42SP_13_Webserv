@@ -138,6 +138,8 @@ int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
 
+    cout << "filename: " << _request.getFormData()["filename"] << endl;
+
     cout << "Content-type: " << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
         // Assuming the Request class has a method to get parsed form data
