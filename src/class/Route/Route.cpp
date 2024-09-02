@@ -48,7 +48,9 @@ void Route::create(const string& line, ifstream& file)
             continue;
         if (pos != string::npos) {
             key = Utils::trim(currentLine.substr(0, pos));
+            cerr << key << endl;
             value = Utils::trim(currentLine.substr(pos + 1));
+
             if (key == "allow_methods")
                 setAllowMethods(value);
             else if (key == "root")
@@ -63,8 +65,6 @@ void Route::create(const string& line, ifstream& file)
                 setRedirect(value);
             else if (key == "return")
                 setReturn(value);
-            else if (key == "cgi")
-                setCgi(value);
             else
                 throw Route::exception("Error: Unknown configuration key: " + key);
         }

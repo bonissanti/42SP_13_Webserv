@@ -95,6 +95,7 @@ int Client::runGetMethod()
 {
     string uri = _request->getURI();
     string filePath = defineFilePath(uri);
+
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
@@ -122,10 +123,11 @@ string Client::defineFilePath(string uri)
     string filePath;
 
     if (uri == "/") {
-        filePath = defineHome(_request->getServer().getRoute());
+        filePath = defineHome(_server.getRoute());
     }
-    else if (uri == "/cgi")
-    	filePath = "content" + uri + "/" + _request->getServer().getRoute()[0].getIndex();
+    else if (uri == "/cgi"){
+    	filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
+    }
     else {
         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
                                                     // corretamente a pasta conforme a rota
@@ -155,7 +157,7 @@ string Client::defineContentType(string filePath)
             if (it->first == extension)
                 return (it->second + ";charset=UTF-8");
     }
-    return ("text/plain;charset=UTF-8");
+    return ("text/html;charset=UTF-8");
 }
 
 void Client::sendResponse(void)
@@ -180,10 +182,11 @@ void Client::sendResponse(void)
 string Client::defineResponseBody(const string& filePath, const string& uri)
 {
     if (_request->getIsCgi()) {
-        _response->getIndex() = _request->getServer().getRoute()[0].getIndex();
+        _response->getIndex() = _server.getRoute()[0].getIndex();
+        cerr << _response->getIndex() << endl;
 
         if (_response->getIndex().find(".py") != string::npos || _response->getIndex().find(".php") != string::npos)
-            return (_response->executeCGI(*_request, uri));
+            return (_response->executeCGI(*_request, _server, uri));
     }
 
     ifstream file(filePath.c_str());
