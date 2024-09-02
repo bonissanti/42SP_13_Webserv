@@ -49,7 +49,6 @@ void Route::create(const string& line, ifstream& file)
         if (pos != string::npos) {
             key = Utils::trim(currentLine.substr(0, pos));
             value = Utils::trim(currentLine.substr(pos + 1));
-
             if (key == "allow_methods")
                 setAllowMethods(value);
             else if (key == "root")

@@ -103,7 +103,7 @@ void Request::parseBody(istringstream &request_stream)
     getline(request_stream, _body, '\0');
 }
 
-bool Request::validateRequest() const
+bool Request::validateRequest()
 {
     static vector<string> valid_methods;
     valid_methods.push_back("GET");
@@ -137,6 +137,9 @@ bool Request::validateRequest() const
         // cout << "Error: missing Content-Length" << endl;
         return false;
     }
+    
+    if (_uri.substr(0, 4) == "/cgi")
+    	_isCgi = true;
     return true;
 }
 

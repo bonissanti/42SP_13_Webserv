@@ -1,7 +1,0 @@
-// GET
-GET http://localhost:1029
-
-// POST
-
-// DELETE
-DELETE http://localhost:1028/teste_delete.del

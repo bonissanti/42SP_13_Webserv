@@ -25,6 +25,16 @@ int Utils::strtoi(string number)
     return (result);
 }
 
+string Utils::itostr(int value)
+{
+	string result;
+	stringstream ss;
+	
+	ss << value;
+	ss >> result;
+	return (result);
+}
+
 void    Utils::bzero(void *ptr, size_t size)
 {
     size_t i = -1;
@@ -45,6 +55,13 @@ bool Utils::validateFile(string file_name)
     return true;
 }
 
+bool Utils::isFile(const string& path){
+    struct stat info;
+
+    if (stat(path.c_str(), &info) != 0)
+        return (false);
+    return (info.st_mode & S_IFREG) != 0;
+}
 
 // Verifica se o arquivo existe
 bool Utils::fileExists(const std::string& filePath) {

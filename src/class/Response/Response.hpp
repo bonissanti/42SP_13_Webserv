@@ -16,7 +16,6 @@ class Response {
         string _contentLength;
         map<string, string> _headers;
 
-        // string getStatusMessage(int code) const;
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
         string readCGI(int fd);
@@ -25,7 +24,8 @@ class Response {
         ~Response();
 
         int getMethodIndex(string method);
-        string executeCGI(Request& req);
+        string executeCGI(Request& req, const string& filePath);
+        string handleAutoIndex(string filePath, const string& uri);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentLength(const string& body);
@@ -36,6 +36,7 @@ class Response {
         void setContentType(string contentType);
         void setContentLength(string length);
         void setHeaders(map<string, string> headers);
+        void setHeader(const string& field, const string& value);
         void setResponseBody(string responseBody);
         void setStatusMessage(string statusMessage);
 
@@ -44,9 +45,9 @@ class Response {
         string getIndex(void) const;
         int getStatusCode(void) const;
 
-        void setHeader(const string& field, const string& value);
-        string buildMessage(void);
+        bool checkAutoIndexInRoute(const vector<Route> &routes);
 
+        string buildMessage(void);
         void clear();
 };
 

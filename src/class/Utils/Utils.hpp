@@ -55,7 +55,10 @@ typedef enum {
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <dirent.h>
 
 #include <cstring>
 #include <exception>
@@ -71,6 +74,8 @@ typedef enum {
 #include <sys/stat.h>
 
 using namespace std;
+
+extern bool signalUsed;
 
 class Utils {
     public:

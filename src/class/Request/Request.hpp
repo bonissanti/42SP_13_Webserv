@@ -53,7 +53,7 @@ class Request {
         int setStatusCode(HttpStatus code);
 
         void printRequest() const;
-        bool validateRequest() const;
+        bool validateRequest();
         bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
         void readRequest(struct pollfd& actualFd);

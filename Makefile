@@ -1,4 +1,5 @@
 #------------------------- Makefile for Webserv ---------------------------# 
+
 ################################ Colors ####################################  
 
 BLUE 	= \033[0;34m
@@ -30,8 +31,10 @@ FILES		= class/Utils/Utils.cpp		\
 			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
 			class/Request/SetGet.cpp 	\
+			class/Response/CGI.cpp		\
 			class/Response/SetGet.cpp	\
 			class/Response/Response.cpp	\
+			class/Response/AutoIndex.cpp \
 			class/Route/Route.cpp 		\
 			class/Route/SetGet.cpp 		\
 			class/Run/Run.cpp 			\

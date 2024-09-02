@@ -106,14 +106,27 @@ int Client::runGetMethod()
     _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
+    // _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
+    
+static string defineHome(const vector<Route>& routes){
+    for (size_t i = 0; i < routes.size(); i++)
+        if (routes[i].getRoute() == "/")
+            return ("content" + routes[i].getRoot());
+    return ("content/index.html");
+}
 
-string Client::defineFilePath(void)
-{
+string Client::defineFilePath(string uri)
+{   
+    /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
+    Especialmente quando usado autoindex, esse é um ponto de atenção */
+
     string filePath;
 
-    if (_request->getURI() == "/") {
-        filePath = "content/index.html";
+    if (uri == "/") {
+        filePath = defineHome(_request.getServer().getRoute());
     }
+    else if (uri == "/cgi")
+    	filePath = "content" + uri + "/" + _request.getServer().getRoute()[0].getIndex();
     else {
         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
                                                     // corretamente a pasta conforme a rota
@@ -125,22 +138,21 @@ string Client::defineContentType(string filePath)
 {
     size_t index;
     string extension;
-    map<string, string> mimeTypes;
-    mimeTypes[".html"] = "text/html";
-    mimeTypes[".css"] = "text/css";
-    mimeTypes[".txt"] = "text/plain";
-    mimeTypes[".png"] = "image/png";
-    mimeTypes[".jpg"] = "image/jpg";
-    mimeTypes[".gif"] = "image/gif";
-    mimeTypes[".js"] = "application/js";
-    mimeTypes[".pdf"] = "application/pdf";
+    _mimeTypes[".html"] = "text/html";
+    _mimeTypes[".css"] = "text/css";
+    _mimeTypes[".txt"] = "text/plain";
+    _mimeTypes[".png"] = "image/png";
+    _mimeTypes[".jpg"] = "image/jpg";
+    _mimeTypes[".gif"] = "image/gif";
+    _mimeTypes[".js"] = "application/js";
+    _mimeTypes[".pdf"] = "application/pdf";
 
     index = filePath.rfind('.');
     if (index != string::npos) {
         extension = filePath.substr(index);
-        map<string, string>::iterator it = mimeTypes.begin();
+        map<string, string>::iterator it = _mimeTypes.begin();
 
-        for (; it != mimeTypes.end(); ++it)
+        for (; it != _mimeTypes.end(); ++it)
             if (it->first == extension)
                 return (it->second + ";charset=UTF-8");
     }
