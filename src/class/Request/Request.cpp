@@ -117,17 +117,22 @@ void Request::parseHeaders(istringstream &request_stream)
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
     string line;
-    string part_content;
+    vector<char> part_content;
     string filename;
+    map<string, vector<char> > headers;
+    bool is_file_content = false;
+    bool is_header = true;
 
     while (getline(request_stream, line)) {
         if (line.find(boundary) != string::npos) {
             if (!part_content.empty() && !filename.empty()) {
-                _formData["filename"] = filename;
+                _formData["filename"] = vector<char>(filename.begin(), filename.end());
                 _formData["fileContent"] = part_content;
             }
             part_content.clear();
             filename.clear();
+            is_file_content = false;
+            is_header = true;
         } else if (line.find("Content-Disposition: form-data; name=\"") != string::npos) {
             size_t start_pos = line.find("filename=\"");
             if (start_pos != string::npos) {
@@ -135,20 +140,20 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
                 size_t end_pos = line.find("\"", start_pos);
                 filename = line.substr(start_pos, end_pos - start_pos);
             }
-        } else {
-            part_content += line + "\n";
+        } else if (line.find("Content-Type:") != string::npos) {
+            is_file_content = true;
+        } else if (is_file_content && is_header && line.empty()) {
+            is_header = false; // End of headers, start of file content
+        } else if (is_file_content && !is_header) {
+            part_content.insert(part_content.end(), line.begin(), line.end());
+            part_content.push_back('\n');
         }
     }
 
     if (!part_content.empty() && !filename.empty()) {
-        _formData[filename] = part_content;
+        _formData["filename"] = vector<char>(filename.begin(), filename.end());
+        _formData["fileContent"] = part_content;
     }
-    
-    // Print formData
-    // cout << "FormData:" << endl;
-    // for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-    //     cout << it->first << ": " << it->second << endl;
-    // }
 }
 
 void Request::parseBody(istringstream &request_stream) {
@@ -218,8 +223,17 @@ void Request::printRequest() const
     for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
     }
-    for (map<string, string>::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-        cout << it->first << ": " << it->second << endl;
+    for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+        cout << it->first << ": ";
+        for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+            cout << it->first << ": ";
+            for (vector<char>::const_iterator iter = it->second.begin(); iter != it->second.end(); ++iter) {
+                char c = *iter;
+                cout << c;
+            }
+            cout << endl;
+        }
+        cout << endl;
     }
     cout << _body << endl;
 }

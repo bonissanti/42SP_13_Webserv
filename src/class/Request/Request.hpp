@@ -11,7 +11,7 @@
 class Request {
     private:
         map<string, string> _headers;
-        map<string, string> _formData;
+        map<string, vector<char> > _formData;
         string _method;
         string _uri;
         string _version;
@@ -48,7 +48,7 @@ class Request {
         string getURI() const;
         string getVersion() const;
         map<string, string> getHeaders() const;
-        map<string, string> getFormData() const;
+        map<string, vector<char> > getFormData() const;
         string getBody() const;
         bool getIsCgi() const;
         int getStatusCode() const;

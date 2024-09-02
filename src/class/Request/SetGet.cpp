@@ -50,6 +50,6 @@ string Request::getHeader(const string &field) const {
     return "";
 }
 
-map<string, string> Request::getFormData() const {
+map<string, vector<char> > Request::getFormData() const {
     return _formData;
 }

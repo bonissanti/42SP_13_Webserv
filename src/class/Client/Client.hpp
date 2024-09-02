@@ -30,7 +30,7 @@ class Client {
         int runGetMethod(void);
         int runPostMethod(void);
         int runDeleteMethod(void);
-        bool saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
+        bool saveUploadedFile(const string& filename, const std::vector<char>& fileContent, const string& directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody);
 

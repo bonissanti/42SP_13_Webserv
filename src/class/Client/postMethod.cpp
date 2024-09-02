@@ -72,7 +72,7 @@ bool directoryExists(const std::string& path) {
     return false;
 }
 
-bool Client::saveUploadedFile(const string& filename, const string& fileContent, const string& directory) {
+bool Client::saveUploadedFile(const string& filename, const std::vector<char>& fileContent, const string& directory) {
 	if (!directoryExists(directory)) {
         if (mkdir(directory.c_str(), 0777) == -1) {
             setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
@@ -96,67 +96,34 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
         return false;
     }
 
-    outFile.write(fileContent.c_str(), fileContent.size());
+    outFile.write(fileContent.data(), fileContent.size());
     outFile.close();
-    if (!outFile) {
+    if (!outFile.good()) {
         setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
         return false;
     }
     return true;
 }
 
-// int Client::runPostMethod() {
-//     string contentType = _request.getHeader("content-type");
-//     _response.setHeader("Content-type", "text/plain");
-
-//     cout << "Content-type: " << contentType << endl;
-//     if (contentType.find("multipart/form-data") != string::npos) {
-//         string boundary = contentType.substr(contentType.find("boundary=") + 9);
-//         map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
-
-// 		string filename = formData["filename"];
-//         cout << "Filename: " << filename << endl;
-//         string uri = _request.getURI();
-// 		string directory = "content" + uri; //change this later
-//         if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
-//             // setResponseData(FORBIDDEN, "", "text/plain", "Error saving uploaded file");
-//             return FORBIDDEN;
-//         }
-//     } else if (contentType.empty()) {
-//         setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header");
-//         return BAD_REQUEST;
-//     } else {
-//         setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type");
-//         return BAD_REQUEST;
-//     }
-
-//     setResponseData(OK, "", "text/plain", "File uploaded successfully");
-//     return OK;
-// }
-
 int Client::runPostMethod() {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
 
-    cout << "filename: " << _request.getFormData()["filename"] << endl;
-
     cout << "Content-type: " << contentType << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
-        // Assuming the Request class has a method to get parsed form data
-        map<string, string> formData = _request.getFormData();
+        map<string, std::vector<char> > formData = _request.getFormData();
 
         if (formData.find("filename") == formData.end() || formData.find("fileContent") == formData.end()) {
             setResponseData(BAD_REQUEST, "", "text/plain", "Missing form data");
             return BAD_REQUEST;
         }
 
-        string filename = formData["filename"];
+        string filename = std::string(formData["filename"].begin(), formData["filename"].end());
         cout << "Filename: " << filename << endl;
         string uri = _request.getURI();
         string directory = "content" + uri; // Change this to your desired directory structure
 
-        // Extract the file content using the name from the form data
-        string fileContent = formData["fileContent"];
+        std::vector<char> fileContent = formData["fileContent"];
 
         if (!saveUploadedFile(filename, fileContent, directory)) {
             return FORBIDDEN;
