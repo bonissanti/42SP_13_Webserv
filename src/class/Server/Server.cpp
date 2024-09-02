@@ -89,12 +89,7 @@ void Server::openPortsToListen(void)
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
         throw Server::exception(RED "Error: setsockopt failed" RESET);
 
-    int flags = fcntl(_socketFd, F_GETFL);
-    if (flags < 0)
-        throw Server::exception(RED "Error: fcntl failed" RESET);
 
-    if (fcntl(_socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
-        throw Server::exception(RED "Error: fcntl failed" RESET);
 
     if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         if (errno == EADDRINUSE)

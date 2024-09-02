@@ -89,8 +89,6 @@ class Utils {
         static bool isFile(const string& path);
         static string itostr(int value);
         static string statusCodeToString(int code);
-        static bool isFile(const string& path);
-        static string itostr(int value); 
 };
 
 #endif
