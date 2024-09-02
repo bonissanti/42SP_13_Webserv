@@ -13,10 +13,11 @@ class Client {
         Server _server;
         Response *_response;
         Request *_request;
+        map<string, string> _mimeTypes;
 
-        string defineFilePath(void);
+        string defineFilePath(string uri);
         string defineContentType(string filePath);
-        string defineResponseBody(const string &filePath);
+        string defineResponseBody(const string &filePath, const string &uri);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
 

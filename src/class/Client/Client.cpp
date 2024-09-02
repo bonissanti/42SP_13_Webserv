@@ -70,7 +70,7 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath();
+    string filePath = defineFilePath(uri);
 
     if (!Utils::fileExists(filePath)) {
         _request->setStatusCode(NOT_FOUND);
@@ -94,7 +94,7 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath();
+    string filePath = defineFilePath(uri);
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
@@ -106,7 +106,6 @@ int Client::runGetMethod()
     _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
-    // _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
     
 static string defineHome(const vector<Route>& routes){
     for (size_t i = 0; i < routes.size(); i++)
@@ -123,10 +122,10 @@ string Client::defineFilePath(string uri)
     string filePath;
 
     if (uri == "/") {
-        filePath = defineHome(_request.getServer().getRoute());
+        filePath = defineHome(_request->getServer().getRoute());
     }
     else if (uri == "/cgi")
-    	filePath = "content" + uri + "/" + _request.getServer().getRoute()[0].getIndex();
+    	filePath = "content" + uri + "/" + _request->getServer().getRoute()[0].getIndex();
     else {
         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
                                                     // corretamente a pasta conforme a rota
@@ -178,13 +177,13 @@ void Client::sendResponse(void)
     _response->clear();
 }
 
-string Client::defineResponseBody(const string& filePath)
+string Client::defineResponseBody(const string& filePath, const string& uri)
 {
     if (_request->getIsCgi()) {
         _response->getIndex() = _request->getServer().getRoute()[0].getIndex();
 
         if (_response->getIndex().find(".py") != string::npos || _response->getIndex().find(".php") != string::npos)
-            return (_response->executeCGI(*_request));
+            return (_response->executeCGI(*_request, uri));
     }
 
     ifstream file(filePath.c_str());

@@ -35,16 +35,6 @@ string Utils::itostr(int value)
 	return (result);
 }
 
-string Utils::itostr(int value)
-{
-	string result;
-	stringstream ss;
-	
-	ss << value;
-	ss >> result;
-	return (result);
-}
-
 void    Utils::bzero(void *ptr, size_t size)
 {
     size_t i = -1;

@@ -58,6 +58,7 @@ class Request {
         void parseRequest(const string& raw_request);
         void readRequest(struct pollfd& actualFd);
         void clear();
+        friend class Response;
 };
 
 #endif  // REQUEST_HPP
