@@ -26,8 +26,7 @@ DEBUG_FLAG	= -D DEBUG
 
 ################################# Webserv src ################################
 
-DEBUG		= debug/debug.cpp
-FILES		= Utils.cpp		 			\
+FILES		= class/Utils/Utils.cpp		\
 			class/Client/Client.cpp		\
 			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
@@ -42,7 +41,7 @@ FILES		= Utils.cpp		 			\
 			class/Server/Server.cpp		\
 			class/Server/SetGet.cpp		\
 
-MAND_SRCS	= main.cpp $(DEBUG) $(FILES)
+MAND_SRCS	= main.cpp $(FILES)
 SRC_DIR		= ./src
 SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
 TEST_DIR	= $(SRC_DIR)/tests
@@ -84,10 +83,6 @@ $(OBJS_DIR)/%.o: $(TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	@$(CPP) $(CFLAGS) -c $< -o $@
 	@echo "$(BLUE_B)Compiling:$(RESET) $<"
-
-debug: CFLAGS += $(DEBUG_FLAG)
-debug: clean $(NAME)
-	@echo "$(GREEN)$(NAME) compiled with debug flag$(RESET)"
 
 test: $(TEST_OBJS) $(OBJS_COMMON)
 	@$(CPP) $(CFLAGS) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)

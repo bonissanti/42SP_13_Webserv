@@ -1,20 +1,19 @@
 #ifndef RUN_HPP
 #define RUN_HPP
 
-#include "../../../include/Utils.hpp"
-#include "../../../include/defines.hpp"
 #include "../Server/Server.hpp"
+#include "../Utils/Utils.hpp"
+#include <stack>
 
 class Run {
     private:
-        vector<Server> servers;
-
-    public:
         Run(void);
         ~Run();
-        vector<struct pollfd> loadPolls(vector<Server> servers);
-        void startServer(vector<Server>& servers, vector<struct pollfd>& pollFds);
-        int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds);
+        static struct pollfd acceptNewConnection(int socketFd);
+
+    public:
+        static int setServersNumber(string filePath);
+        static void startServer(vector<Server>& servers);
 
         class exception : public std::exception {
             private:

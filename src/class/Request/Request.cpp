@@ -1,10 +1,30 @@
 #include "Request.hpp"
 
-Request::Request(Server& server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
-Request::Request() {}
+Request::Request(const string &raw_request, Server &server)
+    : _server(server), _isCgi(false), _readyForResponse(false), _statusCode(OK)
+{
+    parseRequest(raw_request);
+}
+
+Request::Request(const Request &toCopy)
+{
+    _headers = toCopy._headers;
+    _method = toCopy._method;
+    _uri = toCopy._uri;
+    _version = toCopy._version;
+    _body = toCopy._body;
+    _buffer = toCopy._buffer;
+    _server = toCopy._server;
+    _isCgi = toCopy._isCgi;
+    _readyForResponse = toCopy._readyForResponse;
+    _statusCode = toCopy._statusCode;
+}
+
+Request::Request() : _isCgi(false), _readyForResponse(false), _statusCode(OK) {}
+
 Request::~Request() {}
 
-Request& Request::operator=(const Request &other)
+Request &Request::operator=(const Request &other)
 {
     if (this != &other) {
         _server = other._server;
@@ -19,7 +39,8 @@ Request& Request::operator=(const Request &other)
     return *this;
 }
 
-void Request::parseRequest(const string &raw_request) {
+void Request::parseRequest(const string &raw_request)
+{
     _buffer.append(raw_request);
 
     if (_buffer.find("\r\n\r\n") == string::npos) {
@@ -135,35 +156,33 @@ void Request::printRequest() const
     cout << _body << endl;
 }
 
-void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server)
+void Request::readRequest(struct pollfd &actualFd)
 {
     char buffer[65535];
-    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
+    ssize_t bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
+
     if (bytesReceived > 0) {
-        int fd = pollFds[i].fd;
-        if (requests.find(fd) == requests.end())
-            requests[fd] = Request(server);
-        requests[fd].parseRequest(string(buffer, bytesReceived));
-    } else if (bytesReceived == 0) {
+        parseRequest(string(buffer, bytesReceived));
+    }
+    else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-        requests.erase(pollFds[i].fd);
-    } else {
+        close(actualFd.fd);
+    }
+    else {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
         perror("Error: recv failed");
-        close(pollFds[i].fd);
-        pollFds.erase(pollFds.begin() + i);
-        requests.erase(pollFds[i].fd);
+        close(actualFd.fd);
     }
 }
 
-bool Request::isReadyForResponse() const {
+bool Request::isReadyForResponse() const
+{
     return _readyForResponse;
 }
 
-void Request::clear() {
+void Request::clear()
+{
     _headers.clear();
     _method.clear();
     _uri.clear();
@@ -172,5 +191,5 @@ void Request::clear() {
     _buffer.clear();
     _isCgi = false;
     _readyForResponse = false;
-    _statusCode = HttpStatus(); // Assuming HttpStatus has a default constructor
+    _statusCode = HttpStatus();  // Assuming HttpStatus has a default constructor
 }

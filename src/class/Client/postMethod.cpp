@@ -1,5 +1,5 @@
 #include "../Response/Response.hpp"
-#include "../../../include/Utils.hpp"
+#include "../Utils/Utils.hpp"
 #include "Client.hpp"
 #include <sys/stat.h>
 
@@ -81,12 +81,12 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
 	}
 
     if (access(directory.c_str(), W_OK) == -1) {
-        _response.setStatusCode(FORBIDDEN);
-        _response.setStatusMessage("Forbidden");
-        _response.setResponseBody("Directory is not writable");
-        _response.setContentLength(defineContentLength("Directory is not writable"));
-        _response.setHeader("Content-length", defineContentLength("Directory is not writable"));
-        _response.setHeader("Content-type", "text/plain");
+        _response->setStatusCode(FORBIDDEN);
+        _response->setStatusMessage("Forbidden");
+        _response->setResponseBody("Directory is not writable");
+        _response->setContentLength(defineContentLength("Directory is not writable"));
+        _response->setHeader("Content-length", defineContentLength("Directory is not writable"));
+        _response->setHeader("Content-type", "text/plain");
         return false;
     }
 
@@ -108,14 +108,14 @@ bool Client::saveUploadedFile(const string& filename, const string& fileContent,
 }
 
 int Client::runPostMethod() {
-    string contentType = _request.getHeader("content-type");
-    _response.setHeader("Content-type", "text/plain");
+    string contentType = _request->getHeader("content-type");
+    _response->setHeader("Content-type", "text/plain");
     if (contentType.find("multipart/form-data") != string::npos || contentType.find("multipart/form") != string::npos) {
         string boundary = contentType.substr(contentType.find("boundary=") + 9);
-        map<string, string> formData = parseMultipartData(_request.getBody(), boundary);
+        map<string, string> formData = parseMultipartData(_request->getBody(), boundary);
 
 		string filename = formData["filename"];
-        string uri = _request.getURI();
+        string uri = _request->getURI();
 		string directory = "content" + uri + "uploads";
         if (!saveUploadedFile(filename, formData[formData["name"]], directory)) {
             return FORBIDDEN;
@@ -123,17 +123,17 @@ int Client::runPostMethod() {
     } else {
         // Handle other POST data
         string responseBody = "Unsupported Content-Type";
-        _response.setStatusCode(BAD_REQUEST);
-        _response.setStatusMessage("Bad Request");
-        _response.setResponseBody(responseBody);
-        _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+        _response->setStatusCode(BAD_REQUEST);
+        _response->setStatusMessage("Bad Request");
+        _response->setResponseBody(responseBody);
+        _response->setHeader("Content-length", Utils::toString(responseBody.length()));
         return BAD_REQUEST;
     }
 
     string responseBody = "File uploaded successfully";
-    _response.setStatusCode(OK);
-    _response.setStatusMessage("OK");
-    _response.setResponseBody(responseBody);
-    _response.setHeader("Content-length", Utils::toString(responseBody.length()));
+    _response->setStatusCode(OK);
+    _response->setStatusMessage("OK");
+    _response->setResponseBody(responseBody);
+    _response->setHeader("Content-length", Utils::toString(responseBody.length()));
     return OK;
 }

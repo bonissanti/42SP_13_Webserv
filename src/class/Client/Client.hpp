@@ -3,44 +3,47 @@
 
 #include <exception>
 
-#include "../../../include/defines.hpp"
 #include "../Request/Request.hpp"
 #include "../Response/Response.hpp"
 #include "../Server/Server.hpp"
+#include "../Utils/Utils.hpp"
 
 class Client {
     private:
-        map<int, Server> _fdsMap;
-        map<string, string> _mimeTypes;
-        Response _response;
-        Request _request;
+        Server _server;
+        Response *_response;
+        Request *_request;
 
-        string defineFilePath(string uri);
+        string defineFilePath(void);
         string defineContentType(string filePath);
-        string defineResponseBody(const string& filePath, const string& uri);
+        string defineResponseBody(const string &filePath);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
+
     public:
         Client();
         ~Client();
         void addAssociation(int clientFd, Server server);
-        Server getServerFd(int clientFd);
         int callMethod(void);
-        int getMethodIndex(string method);
         int runGetMethod(void);
         int runPostMethod(void);
         int runDeleteMethod(void);
-        bool saveUploadedFile(const string& filename, const string& fileContent, const string& directory);
-        void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
+        bool saveUploadedFile(const string &filename, const string &fileContent, const string &directory);
+        void sendResponse(void);
+        int getMethodIndex(string method);
+        Server getServer(void);
+        Response *getResponse(void);
+        Request *getRequest(void);
+        void setServer(Server server);
 
         class ClientException : public std::exception {
             private:
                 string msg;
 
             public:
-                ClientException(const string& message);
+                ClientException(const string &message);
                 virtual ~ClientException() throw();
-                virtual const char* what() const throw();
+                virtual const char *what() const throw();
         };
 };
 

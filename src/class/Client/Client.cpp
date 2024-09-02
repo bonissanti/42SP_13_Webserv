@@ -1,8 +1,16 @@
 #include "Client.hpp"
 
-Client::Client() {}
+Client::Client()
+{
+    _request = new Request();
+    _response = new Response();
+}
 
-Client::~Client() {}
+Client::~Client()
+{
+    delete _request;
+    delete _response;
+}
 
 Client::ClientException::ClientException(const string& message) : msg(message) {}
 Client::ClientException::~ClientException() throw() {}
@@ -10,22 +18,6 @@ Client::ClientException::~ClientException() throw() {}
 const char* Client::ClientException::what() const throw()
 {
     return (msg.c_str());
-}
-
-void Client::addAssociation(int clientFd, Server server)
-{
-    _fdsMap[clientFd] = server;
-}
-
-Server Client::getServerFd(int clientFd)
-{
-    Server null;
-    if (_fdsMap.find(clientFd) != _fdsMap.end())
-        return (_fdsMap[clientFd]);
-    else {
-        cerr << RED << "Error: serverFd not found for request" << RESET;
-    }
-    return (null);
 }
 
 int Client::getMethodIndex(string method)
@@ -38,61 +30,80 @@ int Client::getMethodIndex(string method)
     return (-1);
 }
 
+Server Client::getServer(void)
+{
+    return (_server);
+}
+
+Request* Client::getRequest(void)
+{
+    return (_request);
+}
+
+Response* Client::getResponse(void)
+{
+    return (_response);
+}
+
+void Client::setServer(Server server)
+{
+    _server = server;
+}
+
 int Client::callMethod()
 {
-    if (_request.getURI().empty())
-        return (_request.setStatusCode(BAD_REQUEST));
+    if (_request->getURI().empty())
+        return (_request->setStatusCode(BAD_REQUEST));
 
-    switch (getMethodIndex(_request.getMethod())) {
+    switch (getMethodIndex(_request->getMethod())) {
         case GET:
-           return runGetMethod();
+            return runGetMethod();
         case POST:
-           return runPostMethod();
+            return runPostMethod();
         case DELETE:
-           return runDeleteMethod();
+            return runDeleteMethod();
         default:
-            return (_request.setStatusCode(NOT_FOUND));
+            return (_request->setStatusCode(NOT_FOUND));
     }
 }
 
 int Client::runDeleteMethod()
 {
-    string uri = _request.getURI();
-    string filePath = defineFilePath(uri);
+    string uri = _request->getURI();
+    string filePath = defineFilePath();
 
     if (!Utils::fileExists(filePath)) {
-        _request.setStatusCode(NOT_FOUND);
+        _request->setStatusCode(NOT_FOUND);
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        _request.setStatusCode(FORBIDDEN);
+        _request->setStatusCode(FORBIDDEN);
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        _request.setStatusCode(INTERNAL_SERVER_ERROR);
+        _request->setStatusCode(INTERNAL_SERVER_ERROR);
         return INTERNAL_SERVER_ERROR;
     }
 
-    _response.setStatusCode(OK);
+    _response->setStatusCode(OK);
     return OK;
 }
 
 int Client::runGetMethod()
 {
-    string uri = _request.getURI();
-    string filePath = defineFilePath(uri);
+    string uri = _request->getURI();
+    string filePath = defineFilePath();
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
-    _response.setFilePath(filePath);
-    _response.setContentType(contentType);
-    _response.setResponseBody(responseBody);
-    _response.setContentLength(contentLength);
-    
-    _response.setStatusCode(OK);
+    _response->setFilePath(filePath);
+    _response->setContentType(contentType);
+    _response->setResponseBody(responseBody);
+    _response->setContentLength(contentLength);
+    _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
     // _response.setStatusCode(OK);// TODO: colocar o status code correto conforme o ocorrido
@@ -117,14 +128,14 @@ string Client::defineFilePath(string uri)
     else if (uri == "/cgi")
     	filePath = "content" + uri + "/" + _request.getServer().getRoute()[0].getIndex();
     else {
-        filePath = "content" + uri; // TODO: nem sempre a pasta sera a content, precisa ler e pegar corretamente a pasta conforme a rota
+        filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
+                                                    // corretamente a pasta conforme a rota
     }
     return (filePath);
 }
 
-
 string Client::defineContentType(string filePath)
- _request.getPath(){
+{
     size_t index;
     string extension;
     _mimeTypes[".html"] = "text/html";
@@ -145,68 +156,58 @@ string Client::defineContentType(string filePath)
             if (it->first == extension)
                 return (it->second + ";charset=UTF-8");
     }
-    return ("text/html;charset=UTF-8"); // alterado de plain para html como 'default'
+    return ("text/plain;charset=UTF-8");
 }
 
-string Client::defineResponseBody(const string& filePath, const string& uri)
+void Client::sendResponse(void)
 {
+    string build;
 
-	if (_request.getIsCgi()) {
-        if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos){
-            return(_response.executeCGI(_request, filePath));
-        }
+    if (_request->getStatusCode() == BAD_REQUEST) {
+        build = _response->buildMessage();
+    }
+    else {
+        callMethod();
+        build = _response->buildMessage();
+    }
+    send(_server.getPollFd().fd, build.c_str(), build.size(), 0);
+    cout << "Message sent" << endl;
+
+    close(_server.getPollFd().fd);
+    _request->clear();
+    _response->clear();
+}
+
+string Client::defineResponseBody(const string& filePath)
+{
+    if (_request->getIsCgi()) {
+        _response->getIndex() = _request->getServer().getRoute()[0].getIndex();
+
+        if (_response->getIndex().find(".py") != string::npos || _response->getIndex().find(".php") != string::npos)
+            return (_response->executeCGI(*_request));
     }
 
-    struct stat path_stat;
-    stat(filePath.c_str(), &path_stat);
-    if (S_ISDIR(path_stat.st_mode)){
-        if (_response.checkAutoIndexInRoute(_request.getServer().getRoute()))
-        	return (_response.handleAutoIndex(filePath, uri));
-    }
-     
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
-        _response.setStatusCode(NOT_FOUND);
+        _response->setStatusCode(NOT_FOUND);
         return ("");
     }
     else if (file.fail()) {
-        _response.setStatusCode(INTERNAL_SERVER_ERROR);
+        _response->setStatusCode(INTERNAL_SERVER_ERROR);
         return ("");
     }
     stringstream buffer;
     buffer << file.rdbuf();
 
     if (!verifyPermission(filePath)) {
-        _response.setStatusCode(FORBIDDEN);
+        _response->setStatusCode(FORBIDDEN);
         return ("");
     }
     file.close();
     return (buffer.str());
 }
 
-void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
-{
-    Client::_request = requests[pollFds.fd];
-    string build;
-
-    if (_request.getStatusCode() == BAD_REQUEST) {
-        build = _response.buildMessage();
-    } else {
-        callMethod();
-        build = _response.buildMessage();
-    }
-    send(pollFds.fd, build.c_str(), build.size(), 0);
-    cout << "Message sent" << endl;
-
-    requests.erase(pollFds.fd);
-    close(pollFds.fd);
-
-    _request.clear();
-    _response.clear();
-}
-
-
-bool Client::verifyPermission(const string &file)
+bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)
         return (false);
@@ -215,7 +216,7 @@ bool Client::verifyPermission(const string &file)
     return (true);
 }
 
-string Client::defineContentLength(const string &body)
+string Client::defineContentLength(const string& body)
 {
     ostringstream oss;
 

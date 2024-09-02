@@ -1,11 +1,7 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include <cstddef>
-#include <map>
-#include <string>
-
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 #include "../Server/Server.hpp"
 
 class Request {
@@ -36,8 +32,9 @@ class Request {
         };
 
     public:
-        Request(Server& server);
+        Request(const string& raw_request, Server& server);
         Request();
+        Request(const Request& toCopy);
         ~Request();
         Request& operator=(const Request &other);
 
@@ -59,9 +56,7 @@ class Request {
         bool validateRequest();
         bool isRequestComplete(const std::string& request);
         void parseRequest(const string& raw_request);
-        static void readRequest(vector<struct pollfd>& pollFds, int i, map<int, Request>& requests, Server server);
-        friend class Response;
-
+        void readRequest(struct pollfd& actualFd);
         void clear();
 };
 
