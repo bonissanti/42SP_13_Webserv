@@ -1,7 +1,7 @@
 1- Mesclar request até chegar ao fim da requisição(multipart).
 3- Validar a Rota que esta sendo recebida no request, pois pode ser um método invalido.
 4- Lista de código de erros e respostas.
-5- Tratamento de sinais.
+5- Tratamento de sinais. OK
 7- Paginas de erro default.
 8- Rodar o valgrind
 GET:
@@ -32,7 +32,7 @@ DELETE:
     500 Internal Server Error
 8- DELETE
 9- POST*
-10- Autoindex (dir list).
+10- Autoindex (dir list). OK
 11- Redirect.
 12- Server default é o primeiro que aparece.
 13- 

@@ -8,7 +8,8 @@ Server::Server()
     _root = "/data/";
 }
 
-Server::Server(const Server& toCopy){
+Server::Server(const Server& toCopy)
+{
     _listen = toCopy._listen;
     _socketFd = toCopy._socketFd;
     _fd = toCopy._fd;
@@ -58,14 +59,14 @@ void Server::create(ifstream& file)
                 throw Server::exception("Unknown configuration key: " + key);
         }
         else if (line.find("route") == 0) {
-            try
-            {
+            try {
                 Route new_route;
                 new_route.create(line, file);
-                _routes.push_back(new_route);
+                if(filterDuplicatesRoutes(new_route))
+                    _routes.push_back(new_route);
                 routeFound = true;
             }
-            catch(const Route::exception& e){
+            catch (const Route::exception& e) {
                 throw;
             }
         }
@@ -89,8 +90,6 @@ void Server::openPortsToListen(void)
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
         throw Server::exception(RED "Error: setsockopt failed" RESET);
 
-
-
     if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         if (errno == EADDRINUSE)
             throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
@@ -102,6 +101,14 @@ void Server::openPortsToListen(void)
     _fd.fd = _socketFd;
     _fd.events = POLLIN | POLLOUT;
     _fd.revents = 0;
+}
+
+bool Server::filterDuplicatesRoutes(Route& route) {
+    for (size_t i = 0; i < _routes.size(); i++) {
+        if (_routes[i].getRoute() == route.getRoute())
+            return false;
+    }
+    return true;
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
@@ -120,4 +127,3 @@ string setRoot(string root)
         root.insert(root.end(), '/');
     return (root);
 }
-

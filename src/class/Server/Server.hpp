@@ -15,6 +15,7 @@ class Server {
         int _client_max_body_size;
         vector<map<int, string> > _error_page;
         vector<Route> _routes;
+        bool filterDuplicatesRoutes(Route& route);
 
     public:
         Server(void);
@@ -39,7 +40,6 @@ class Server {
         void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
         void setClientFd(struct pollfd& pollFd);
-
         void openPortsToListen(void);
 
         class exception : public std::exception {
