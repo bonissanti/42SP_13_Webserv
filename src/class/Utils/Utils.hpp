@@ -81,8 +81,10 @@ class Utils {
     public:
         static string trim(string str);
         static int strtoi(string number);
+        string itostr(int value);
         static int getServersNumber(string filePath);
         static bool validateFile(string file);
+        bool isFile(const string& path);
         static void bzero(void* ptr, size_t size);
         static string toString(size_t value);
         static bool fileExists(const std::string& filePath);
