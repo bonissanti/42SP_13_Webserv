@@ -15,7 +15,7 @@ class Client {
         Request *_request;
         map<string, string> _mimeTypes;
 
-        string defineFilePath(string uri);
+        string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);
         string defineResponseBody(const string &filePath, const string &uri);
         bool verifyPermission(const string &file);

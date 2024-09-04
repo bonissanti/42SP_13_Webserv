@@ -70,7 +70,8 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath(uri);
+    Route matchedRoute = _server.findMatchingRoute(uri);
+    string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
         _request->setStatusCode(NOT_FOUND);
@@ -94,8 +95,9 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath(uri);
+    Route matchedRoute = _server.findMatchingRoute(uri);
 
+    string filePath = defineFilePath(matchedRoute, uri);
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
@@ -108,32 +110,36 @@ int Client::runGetMethod()
     return (OK);
 }
     
-static string defineHome(const vector<Route>& routes){
-    for (size_t i = 0; i < routes.size(); i++)
-        if (routes[i].getRoute() == "/")
-            return ("content" + routes[i].getRoot());
-    return ("content/index.html");
-}
+// string Client::defineFilePath(Route &route, string uri)
+// {   
+//     /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
+//     Especialmente quando usado autoindex, esse é um ponto de atenção */
 
-string Client::defineFilePath(string uri)
-{   
-    /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
-    Especialmente quando usado autoindex, esse é um ponto de atenção */
+//     string filePath;
 
+//     if (uri == "/") {
+//         filePath = defineHome(_server.getRoute());
+//     }
+//     else if (uri == "/cgi"){
+//     	filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
+//     }
+//     else {
+//         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
+//                                                     // corretamente a pasta conforme a rota
+//     }
+//     return (filePath);
+// }
+
+string Client::defineFilePath(Route &route, string uri){
     string filePath;
 
-    if (uri == "/") {
-        filePath = defineHome(_server.getRoute());
-    }
-    else if (uri == "/cgi"){
-    	filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
-    }
-    else {
-        filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
-                                                    // corretamente a pasta conforme a rota
-    }
+    if (uri == route.getRoute() || uri == "/")
+        filePath = route.getRoot() + route.getIndex();
+    else
+        filePath = route.getRoot() + uri; 
     return (filePath);
 }
+
 
 string Client::defineContentType(string filePath)
 {

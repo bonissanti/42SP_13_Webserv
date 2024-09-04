@@ -2,7 +2,6 @@
 
 string Route::getRoute() const
 {
-    cerr << _route << endl;
 	if (_route.empty())
     	return "";
     return _route;
@@ -73,8 +72,8 @@ void Route::setRoot(string& root)
 {
     if (root[0] != '/')
         throw Route::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-    if (root[root.length() - 1] != '/')
-        root.insert(root.end(), '/');
+    if (root[root.length() - 1] == '/')
+        root.erase(root.end() - 1);
     _root = root;
 
 }

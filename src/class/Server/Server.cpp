@@ -97,7 +97,6 @@ void Server::openPortsToListen(void)
     if (listen(_socketFd, 10) < 0)
         throw Server::exception(RED "Error: listen failed" RESET);
 
-    // set pollfd
     _fd.fd = _socketFd;
     _fd.events = POLLIN | POLLOUT;
     _fd.revents = 0;
@@ -109,6 +108,18 @@ bool Server::filterDuplicatesRoutes(Route& route) {
             return false;
     }
     return true;
+}
+
+Route Server::findMatchingRoute(const string& uri){
+    Route defined;
+
+    if (uri == "/") // as default
+        return (defined);
+    for (size_t i = 0; i < _routes.size(); i++){
+        if (uri == _routes[i].getRoute())
+            return(defined = _routes[i]);
+    }
+    return (defined); // as default
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
