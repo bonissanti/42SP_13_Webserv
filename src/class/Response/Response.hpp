@@ -24,7 +24,7 @@ class Response {
         ~Response();
 
         int getMethodIndex(string method);
-        string executeCGI(Request& req, Server &server, const string& filePath);
+        string executeCGI(Request& req, Server &server, string filePath);
         string handleAutoIndex(string filePath, const string& uri);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
@@ -39,13 +39,12 @@ class Response {
         void setHeader(const string& field, const string& value);
         void setResponseBody(string responseBody);
         void setStatusMessage(string statusMessage);
+        void setIndex(string index);
 
         string getFilePath(void) const;
         string getBody(void) const;
         string getIndex(void) const;
         int getStatusCode(void) const;
-
-        bool checkAutoIndexInRoute(const vector<Route> &routes);
 
         string buildMessage(void);
         void clear();

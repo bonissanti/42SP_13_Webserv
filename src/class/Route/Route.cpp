@@ -7,7 +7,7 @@ Route::Route()
     : _route("")
     , _autoIndex(false)
     , _cgiOn(false)
-    , _root("content/")
+    , _root("content")
     , _allowMethods("GET POST DELETE")
     , _index("index.html")
     , _redirect("")
@@ -58,8 +58,6 @@ void Route::create(const string& line, ifstream& file)
                 setIndex(value);
             else if (key == "autoindex")
                 setAutoIndex(value == "true");
-            else if (key == "cgi")
-                setCgiOn(value == "true");
             else if (key == "redirect")
                 setRedirect(value);
             else if (key == "return")
@@ -71,6 +69,8 @@ void Route::create(const string& line, ifstream& file)
             throw Route::exception("Error: Invalid configuration line: " + currentLine);
     }
 }
+
+void Route::clear(void)
 
 // EXCEPTIONS
 

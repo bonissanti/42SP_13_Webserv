@@ -36,13 +36,12 @@ char **Response::configEnviron(Server& server, Request &req)
     return (envp);
 }
 
-string Response::executeCGI(Request &req, Server& server, const string& filePath)
+string Response::executeCGI(Request &req, Server& server, string filePath)
 {
     int pid;
     int fd[2];
     int status;
     string result;
-
     if (!checkFile(filePath)) {
         _statusCode = NOT_FOUND;
         return ("");

@@ -99,7 +99,7 @@ int Client::runGetMethod()
 
     string filePath = defineFilePath(matchedRoute, uri);
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(filePath, uri);
+    string responseBody = defineResponseBody(matchedRoute, filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
     _response->setFilePath(filePath);
@@ -133,10 +133,21 @@ int Client::runGetMethod()
 string Client::defineFilePath(Route &route, string uri){
     string filePath;
 
-    if (uri == route.getRoute() || uri == "/")
-        filePath = route.getRoot() + route.getIndex();
-    else
-        filePath = route.getRoot() + uri; 
+
+    if (route.getCgiOn()){
+            filePath = route.getRoot() + uri.substr(route.getRoute().length()); 
+        if (uri == route.getRoute())
+            filePath = route.getRoot() + uri + "/" + route.getIndex();
+    }
+    else if (route.getAutoIndex()){
+        filePath = route.getRoot() + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
+    }
+    else{
+        if (uri == route.getRoute() || uri == "/")
+            filePath = route.getRoot() + "/" + route.getIndex();
+        else
+            filePath = route.getRoot() + uri.substr(route.getRoute().length()); 
+    }
     return (filePath);
 }
 
@@ -185,16 +196,20 @@ void Client::sendResponse(void)
     _response->clear();
 }
 
-string Client::defineResponseBody(const string& filePath, const string& uri)
+string Client::defineResponseBody(Route &route, const string& filePath, const string& uri)
 {
-    if (_request->getIsCgi()) {
-        _response->getIndex() = _server.getRoute()[0].getIndex();
-        cerr << _response->getIndex() << endl;
-
-        if (_response->getIndex().find(".py") != string::npos || _response->getIndex().find(".php") != string::npos)
-            return (_response->executeCGI(*_request, _server, uri));
+    if (route.getCgiOn()) {
+        if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
+            return (_response->executeCGI(*_request, _server, filePath));
     }
 
+    struct stat path_stat;
+    stat(filePath.c_str(), &path_stat);
+    if (S_ISDIR(path_stat.st_mode)){
+        if (route.getAutoIndex())
+        	return (_response->handleAutoIndex(filePath, uri));
+    } 
+    
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _response->setStatusCode(NOT_FOUND);

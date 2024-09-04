@@ -113,11 +113,15 @@ bool Server::filterDuplicatesRoutes(Route& route) {
 Route Server::findMatchingRoute(const string& uri){
     Route defined;
 
-    if (uri == "/") // as default
-        return (defined);
     for (size_t i = 0; i < _routes.size(); i++){
-        if (uri == _routes[i].getRoute())
-            return(defined = _routes[i]);
+        if (uri == _routes[i].getRoute()){
+            defined = _routes[i];
+            return (defined);
+        }
+    }
+
+    if (uri.find("/cgi") == 0){
+        defined.setCgiOn(true);
     }
     return (defined); // as default
 }
