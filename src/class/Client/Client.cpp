@@ -107,8 +107,9 @@ int Client::runGetMethod()
     _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
-    
-static string defineHome(const vector<Route>& routes){
+
+static string defineHome(const vector<Route>& routes)
+{
     for (size_t i = 0; i < routes.size(); i++)
         if (routes[i].getRoute() == "/")
             return ("content" + routes[i].getRoot());
@@ -116,8 +117,8 @@ static string defineHome(const vector<Route>& routes){
 }
 
 string Client::defineFilePath(string uri)
-{   
-    /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
+{
+    /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio.
     Especialmente quando usado autoindex, esse é um ponto de atenção */
 
     string filePath;
@@ -125,8 +126,8 @@ string Client::defineFilePath(string uri)
     if (uri == "/") {
         filePath = defineHome(_server.getRoute());
     }
-    else if (uri == "/cgi"){
-    	filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
+    else if (uri == "/cgi") {
+        filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
     }
     else {
         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
@@ -209,6 +210,25 @@ string Client::defineResponseBody(const string& filePath, const string& uri)
     return (buffer.str());
 }
 
+void Client::handleMultiPartRequest(void)
+{
+    char buffer[65535];
+    ssize_t bytesReceived = recv(_server.getPollFd().fd, buffer, sizeof(buffer), 0);
+
+    if (bytesReceived > 0) {
+        _request->parseRequest(string(buffer, bytesReceived));
+    }
+    else if (bytesReceived == 0) {
+        cout << "Connection closed" << endl;
+        close(_server.getPollFd().fd);
+    }
+    else {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+        perror("Error: recv failed");
+        close(_server.getPollFd().fd);
+    }
+}
 bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)

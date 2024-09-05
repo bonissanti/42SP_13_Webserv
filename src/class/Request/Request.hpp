@@ -1,8 +1,8 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include "../Utils/Utils.hpp"
 #include "../Server/Server.hpp"
+#include "../Utils/Utils.hpp"
 
 class Request {
     private:
@@ -36,7 +36,7 @@ class Request {
         Request();
         Request(const Request& toCopy);
         ~Request();
-        Request& operator=(const Request &other);
+        Request& operator=(const Request& other);
 
         string getHeader(const string& field) const;
         string getMethod() const;
@@ -48,7 +48,7 @@ class Request {
         int getStatusCode() const;
         map<int, Request> getRequest() const;
         Server getServer() const;
-        bool isReadyForResponse() const;
+        bool getIsReadyForResponse() const;
 
         int setStatusCode(HttpStatus code);
 

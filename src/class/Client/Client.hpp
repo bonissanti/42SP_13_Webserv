@@ -29,6 +29,7 @@ class Client {
         int runGetMethod(void);
         int runPostMethod(void);
         int runDeleteMethod(void);
+        void handleMultiPartRequest(void);
         bool saveUploadedFile(const string &filename, const string &fileContent, const string &directory);
         void sendResponse(void);
         int getMethodIndex(string method);

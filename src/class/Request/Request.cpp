@@ -137,9 +137,9 @@ bool Request::validateRequest()
         // cout << "Error: missing Content-Length" << endl;
         return false;
     }
-    
+
     if (_uri.substr(0, 4) == "/cgi")
-    	_isCgi = true;
+        _isCgi = true;
     return true;
 }
 
@@ -174,11 +174,6 @@ void Request::readRequest(struct pollfd &actualFd)
         perror("Error: recv failed");
         close(actualFd.fd);
     }
-}
-
-bool Request::isReadyForResponse() const
-{
-    return _readyForResponse;
 }
 
 void Request::clear()
