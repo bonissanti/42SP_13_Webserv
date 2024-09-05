@@ -77,6 +77,21 @@ bool Utils::hasDeletePermission(const std::string& filePath) {
     return true;
 }
 
+bool Utils::uriAlreadyPresent(const string& route, const string& uri){
+    size_t pos = route.find_last_of('/');
+    if (pos == string::npos)
+        return (false);
+    if (route.substr(0, pos) == uri)
+        return (true);
+    return (false);
+}
+
+string Utils::removeSlash(string str){
+    if (str[0] == '/')
+        return (str.erase(0, 1));
+    return (str);
+}
+
 string Utils::toString(size_t value) {
     ostringstream oss;
     oss << value;

@@ -70,8 +70,6 @@ void Route::create(const string& line, ifstream& file)
     }
 }
 
-void Route::clear(void)
-
 // EXCEPTIONS
 
 Route::exception::exception(const string& msg) : msg(msg) {}

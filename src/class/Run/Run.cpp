@@ -66,11 +66,16 @@ pollfd Run::acceptNewConnection(int socketFd)
         if (errno == EWOULDBLOCK)
             cout << "No pending connections for now" << endl;
         else
-            cerr << "Error: accept failed" << endl;
+            cerr << RED << "Error: accept failed" << RESET << endl;
     }
     else
         cout << "New communication established!" << endl;  // log message
 
+    // int flags = fcntl(clientFd, F_GETFL, 0);
+    // if (flags == -1)
+    //     cerr << RED << "Error: fcntl failed" << RESET << endl;
+    // if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) == -1)
+    //     cerr << RED << "Error: fcntl failed" << RESET << endl;
 
     struct pollfd commFd;
 

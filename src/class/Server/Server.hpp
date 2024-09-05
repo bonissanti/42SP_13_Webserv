@@ -7,7 +7,7 @@
 class Server {
     private:
         int _listen;
-        int _socketFd;  // socket()
+        int _socketFd;
         struct pollfd _fd;
         struct pollfd _tempFd;
         string _server_name;
@@ -41,7 +41,7 @@ class Server {
         void setRoute(vector<string> routeLines, size_t& i);
         void setClientFd(struct pollfd& pollFd);
         void openPortsToListen(void);
-        Route findMatchingRoute(const string& uri);
+        Route findMatchingRoute(const string& uri, bool& subdirAutoindex);
 
         class exception : public std::exception {
             private:

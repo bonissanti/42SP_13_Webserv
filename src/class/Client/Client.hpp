@@ -14,6 +14,7 @@ class Client {
         Response *_response;
         Request *_request;
         map<string, string> _mimeTypes;
+        static bool _subdirAutoindex;
 
         string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);

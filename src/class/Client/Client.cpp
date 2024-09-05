@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+bool Client::_subdirAutoindex = false;
+
 Client::Client()
 {
     _request = new Request();
@@ -70,7 +72,7 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request->getURI();
-    Route matchedRoute = _server.findMatchingRoute(uri);
+    Route matchedRoute = _server.findMatchingRoute(uri, Client::_subdirAutoindex);
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
@@ -95,7 +97,7 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    Route matchedRoute = _server.findMatchingRoute(uri);
+    Route matchedRoute = _server.findMatchingRoute(uri, _subdirAutoindex);
 
     string filePath = defineFilePath(matchedRoute, uri);
     string contentType = defineContentType(filePath);
@@ -109,46 +111,30 @@ int Client::runGetMethod()
     _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
     return (OK);
 }
-    
-// string Client::defineFilePath(Route &route, string uri)
-// {   
-//     /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio. 
-//     Especialmente quando usado autoindex, esse é um ponto de atenção */
-
-//     string filePath;
-
-//     if (uri == "/") {
-//         filePath = defineHome(_server.getRoute());
-//     }
-//     else if (uri == "/cgi"){
-//     	filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
-//     }
-//     else {
-//         filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
-//                                                     // corretamente a pasta conforme a rota
-//     }
-//     return (filePath);
-// }
 
 string Client::defineFilePath(Route &route, string uri){
     string filePath;
-
+    string root = route.getRoot();
+    string index = route.getIndex();
 
     if (route.getCgiOn()){
-            filePath = route.getRoot() + uri.substr(route.getRoute().length()); 
+            filePath = root + uri.substr(route.getRoute().length()); 
         if (uri == route.getRoute())
-            filePath = route.getRoot() + uri + "/" + route.getIndex();
+            filePath = root + uri + "/" + index;
     }
     else if (route.getAutoIndex()){
-        filePath = route.getRoot() + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
+        if (!Utils::uriAlreadyPresent(root, uri))
+            filePath = root + (root[root.length() - 1] == '/' ? "" : "/");
+        else
+           filePath = root + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
     }
     else{
         if (uri == route.getRoute() || uri == "/")
-            filePath = route.getRoot() + "/" + route.getIndex();
+            filePath = root + "/" + index;
         else
-            filePath = route.getRoot() + uri.substr(route.getRoute().length()); 
+            filePath = root + uri.substr(route.getRoute().length()); 
     }
-    return (filePath);
+    return (Utils::removeSlash(filePath));
 }
 
 
@@ -206,7 +192,7 @@ string Client::defineResponseBody(Route &route, const string& filePath, const st
     struct stat path_stat;
     stat(filePath.c_str(), &path_stat);
     if (S_ISDIR(path_stat.st_mode)){
-        if (route.getAutoIndex())
+        if (_subdirAutoindex)
         	return (_response->handleAutoIndex(filePath, uri));
     } 
     

@@ -76,9 +76,8 @@ void Route::setRoot(string& root)
     if (root.length() > 1 && root[root.length() - 1] == '/')
         root.erase(root.end() - 1);
 
-    if (root == "/cgi"){
+    if (root.find("/cgi") != string::npos){
         _cgiOn = true;
-        _root = "content";
     }
     else if (root == "/")
         _root = "content";
