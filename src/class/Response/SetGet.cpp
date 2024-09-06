@@ -36,6 +36,10 @@ void Response::setIndex(string index){
     _index = index;
 }
 
+void Response::setLocation(string location){
+    _location = location;
+}
+
 string Response::getFilePath(void) const{
     return (_filePath);
 }
@@ -50,4 +54,8 @@ string Response::getIndex(void) const {
 
 int Response::getStatusCode(void) const {
     return _statusCode;
+}
+
+string Response::getLocation(void) const {
+    return _location;
 }

@@ -14,6 +14,7 @@ class Response {
         string _filePath;
         string _contentType;
         string _contentLength;
+        string _location;
         map<string, string> _headers;
 
         void freeEnviron(char** envp);
@@ -40,11 +41,13 @@ class Response {
         void setResponseBody(string responseBody);
         void setStatusMessage(string statusMessage);
         void setIndex(string index);
+        void setLocation(string location);
 
         string getFilePath(void) const;
         string getBody(void) const;
         string getIndex(void) const;
         int getStatusCode(void) const;
+        string getLocation(void) const;
 
         string buildMessage(void);
         void clear();

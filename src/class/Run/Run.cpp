@@ -93,8 +93,14 @@ void Run::startServer(vector<Server>& servers)
         bool requestFound = false;
         size_t i = 0;
 
+        if (signalUsed){
+            break ;
+        }
         while (i < servers.size()) {
             pollValue = poll(&servers[i].getPollFd(), 1, 10);
+            if (signalUsed){
+                break ;
+            }
             if (pollValue == -1)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (servers[i].getPollFd().revents & POLLIN) {

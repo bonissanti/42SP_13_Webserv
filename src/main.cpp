@@ -1,5 +1,3 @@
-#include <sys/poll.h>
-
 #include "class/Run/Run.hpp"
 #include "class/Server/Server.hpp"
 #include "class/Utils/Utils.hpp"
@@ -12,12 +10,7 @@ void	handleSignals(int sigNum)
 {
 	(void)sigNum;
 	signalUsed = true;
-	// if (!signServers.empty()){
-	// 	for (size_t i = 0; i < signServers.size(); i++)
-	// 		signServers[i].getRoute().clear();
-	// }
 	cerr << YELLOW << "\nBye! 👋" << RESET << endl;
-	exit (0);
 }
 
 int main(int argc, char** argv)

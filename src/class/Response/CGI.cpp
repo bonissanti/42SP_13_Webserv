@@ -17,7 +17,7 @@ bool Response::checkFile(const string &file)
 
 char **Response::configEnviron(Server& server, Request &req)
 {
-    char **envp = new char *[6];
+    char **envp = new char *[7];
     
     string serverName = "SERVER_NAME=" + server.getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(server.getListen());

@@ -32,7 +32,7 @@ int Client::getMethodIndex(string method)
     return (-1);
 }
 
-Server Client::getServer(void)
+Server* Client::getServer(void)
 {
     return (_server);
 }
@@ -47,9 +47,9 @@ Response* Client::getResponse(void)
     return (_response);
 }
 
-void Client::setServer(Server server)
+void Client::setServer(Server& server)
 {
-    _server = server;
+    _server = &server;
 }
 
 int Client::callMethod()
@@ -72,7 +72,7 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request->getURI();
-    Route matchedRoute = _server.findMatchingRoute(uri, Client::_subdirAutoindex);
+    Route matchedRoute = _server->findMatchingRoute(uri, Client::_subdirAutoindex);
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
@@ -97,20 +97,35 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    Route matchedRoute = _server.findMatchingRoute(uri, _subdirAutoindex);
+    Route matchedRoute = _request->getServer().findMatchingRoute(uri, _subdirAutoindex);
+
+    if (matchedRoute.getRedirect() != ""){
+        setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
+        return (MOVED_PERMANENTLY);
+    }
 
     string filePath = defineFilePath(matchedRoute, uri);
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(matchedRoute, filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
-    _response->setFilePath(filePath);
-    _response->setContentType(contentType);
-    _response->setResponseBody(responseBody);
-    _response->setContentLength(contentLength);
-    _response->setStatusCode(OK);  // TODO: colocar o status code correto conforme o ocorrido
+    if (_response->getStatusCode() == NOT_FOUND){
+        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found", "");
+        return NOT_FOUND;
+    }
+    else if (_response->getStatusCode() == FORBIDDEN){
+        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden", "");
+        return FORBIDDEN;
+    } 
+    else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
+        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");
+        return INTERNAL_SERVER_ERROR;
+    }
+
+    setResponseData(OK, filePath, contentType, responseBody, "");
     return (OK);
 }
+
 
 string Client::defineFilePath(Route &route, string uri){
     string filePath;
@@ -174,19 +189,19 @@ void Client::sendResponse(void)
         callMethod();
         build = _response->buildMessage();
     }
-    send(_server.getPollFd().fd, build.c_str(), build.size(), 0);
+    send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
 
-    close(_server.getPollFd().fd);
+    close(_server->getPollFd().fd);
     _request->clear();
     _response->clear();
 }
 
-string Client::defineResponseBody(Route &route, const string& filePath, const string& uri)
+string Client::defineResponseBody(const Route &route, const string& filePath, const string& uri)
 {
     if (route.getCgiOn()) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
-            return (_response->executeCGI(*_request, _server, filePath));
+            return (_response->executeCGI(*_request, *_server, filePath));
     }
 
     struct stat path_stat;
@@ -232,4 +247,14 @@ string Client::defineContentLength(const string& body)
     size_t len = body.size();
     oss << len;
     return (oss.str());
+}
+
+void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location){
+    if (statusCode == MOVED_PERMANENTLY)
+        _response->setLocation(location);
+    _response->setStatusCode(statusCode);
+    _response->setFilePath(filePath);
+    _response->setContentType(contentType);
+    _response->setResponseBody(responseBody);
+    _response->setContentLength(defineContentLength(responseBody));
 }
