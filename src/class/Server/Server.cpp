@@ -90,6 +90,13 @@ void Server::openPortsToListen(void)
     if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
         throw Server::exception(RED "Error: setsockopt failed" RESET);
 
+    // int flags = fcntl(_socketFd, F_GETFL);
+    // if (flags < 0)
+    //     throw Server::exception(RED "Error: fcntl failed" RESET);
+
+    // if (fcntl(_socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
+    //     throw Server::exception(RED "Error: fcntl failed" RESET); 
+
     if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         if (errno == EADDRINUSE)
             throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
@@ -97,7 +104,6 @@ void Server::openPortsToListen(void)
     if (listen(_socketFd, 10) < 0)
         throw Server::exception(RED "Error: listen failed" RESET);
 
-    // set pollfd
     _fd.fd = _socketFd;
     _fd.events = POLLIN | POLLOUT;
     _fd.revents = 0;
@@ -109,6 +115,26 @@ bool Server::filterDuplicatesRoutes(Route& route) {
             return false;
     }
     return true;
+}
+
+Route Server::findMatchingRoute(const string& uri, bool& subdirAutoindex){
+    Route routeDefault;
+
+    for (size_t i = 0; i < _routes.size(); i++){
+        if (uri == _routes[i].getRoute()){
+            if (_routes[i].getAutoIndex())
+                subdirAutoindex = true;
+            else
+                subdirAutoindex = false;
+            routeDefault = _routes[i];
+            return (routeDefault);
+        }
+    }
+
+    if (uri.find("/cgi") == 0){
+        routeDefault.setCgiOn(true);
+    }
+    return (routeDefault);
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}

@@ -73,6 +73,11 @@ pollfd Run::acceptNewConnection(int socketFd)
     else
         cout << "New communication established!" << endl;  // log message
 
+    // int flags = fcntl(clientFd, F_GETFL, 0);
+    // if (flags == -1)
+    //     cerr << RED << "Error: fcntl failed" << RESET << endl;
+    // if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) == -1)
+    //     cerr << RED << "Error: fcntl failed" << RESET << endl;
 
     struct pollfd commFd;
 
@@ -90,8 +95,14 @@ void Run::startServer(vector<Server>& servers)
         bool requestFound = false;
         size_t i = 0;
 
+        if (signalUsed){
+            break ;
+        }
         while (i < servers.size()) {
             pollValue = poll(&servers[i].getPollFd(), 1, 10);
+            if (signalUsed){
+                break ;
+            }
             if (pollValue == -1)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (servers[i].getPollFd().revents & POLLIN) {

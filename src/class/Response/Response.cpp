@@ -1,7 +1,11 @@
 #include "Response.hpp"
 #include "../Utils/Utils.hpp"
 
-Response::Response() {}
+Response::Response() 
+    : _statusCode(0), _index(""), _executor(""), _statusMessage(""), _responseBody(""),
+      _filePath(""), _contentType(""), _contentLength(""), _location("")
+{
+}
 
 Response::~Response() {}
 
@@ -16,6 +20,8 @@ string Response::buildMessage(void)
         "Content-Length:" + _contentLength +
         "\r\n"
         "Content-Type:" + _contentType +
+        "\r\n"
+        "Location:" + _location + 
         "\r\n"
         "Connection: close" +
         "\r\n"

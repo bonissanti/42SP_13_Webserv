@@ -87,8 +87,10 @@ class Utils {
         static bool fileExists(const std::string& filePath);
         static bool hasDeletePermission(const std::string& filePath);
         static bool isFile(const string& path);
+        static bool uriAlreadyPresent(const string& route, const string& uri);
         static string itostr(int value);
         static string statusCodeToString(int code);
+        static string removeSlash(string str);
 };
 
 #endif

@@ -298,7 +298,9 @@ void Request::printRequest() const
 void Request::readRequest(struct pollfd &actualFd)
 {
     char buffer[65535];
-    ssize_t bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
+    ssize_t bytesReceived;
+
+    bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
 
     if (bytesReceived > 0) {
         parseRequest(string(buffer, bytesReceived));

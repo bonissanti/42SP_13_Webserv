@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+bool Client::_subdirAutoindex = false;
+
 Client::Client()
 {
     _request = new Request();
@@ -30,7 +32,7 @@ int Client::getMethodIndex(string method)
     return (-1);
 }
 
-Server Client::getServer(void)
+Server* Client::getServer(void)
 {
     return (_server);
 }
@@ -45,9 +47,9 @@ Response* Client::getResponse(void)
     return (_response);
 }
 
-void Client::setServer(Server server)
+void Client::setServer(Server& server)
 {
-    _server = server;
+    _server = &server;
 }
 
 int Client::callMethod()
@@ -70,7 +72,8 @@ int Client::callMethod()
 int Client::runDeleteMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath(uri);
+    Route matchedRoute = _server->findMatchingRoute(uri, Client::_subdirAutoindex);
+    string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
         setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found");
@@ -94,10 +97,16 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    string filePath = defineFilePath(uri);
+    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
 
+    if (matchedRoute.getRedirect() != ""){
+        setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
+        return (MOVED_PERMANENTLY);
+    }
+
+    string filePath = defineFilePath(matchedRoute, uri);
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(filePath, uri);
+    string responseBody = defineResponseBody(matchedRoute, filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
     if (_response->getStatusCode() == NOT_FOUND){
@@ -114,33 +123,31 @@ int Client::runGetMethod()
     return (OK);
 }
 
-static string defineHome(const vector<Route>& routes)
-{
-    for (size_t i = 0; i < routes.size(); i++)
-        if (routes[i].getRoute() == "/")
-            return ("content" + routes[i].getRoot());
-    return ("content/index.html");
-}
-
-string Client::defineFilePath(string uri)
-{
-    /* TODO: reformular essa função, as vezes o cliente solicita algo com '/' no inicio.
-    Especialmente quando usado autoindex, esse é um ponto de atenção */
-
+string Client::defineFilePath(Route &route, string uri){
     string filePath;
+    string root = route.getRoot();
+    string index = route.getIndex();
 
-    if (uri == "/") {
-        filePath = defineHome(_server.getRoute());
+    if (route.getCgiOn()){
+            filePath = root + uri.substr(route.getRoute().length()); 
+        if (uri == route.getRoute())
+            filePath = root + uri + "/" + index;
     }
-    else if (uri == "/cgi") {
-        filePath = "content" + uri + "/" + _server.getRoute()[0].getIndex();
+    else if (route.getAutoIndex()){
+        if (!Utils::uriAlreadyPresent(root, uri))
+            filePath = root + (root[root.length() - 1] == '/' ? "" : "/");
+        else
+           filePath = root + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
     }
-    else {
-        filePath = "content" + _request->getURI();  // TODO: nem sempre a pasta sera a content, precisa ler e pegar
-                                                    // corretamente a pasta conforme a rota
+    else{
+        if (uri == route.getRoute() || uri == "/")
+            filePath = root + "/" + index;
+        else
+            filePath = root + uri.substr(route.getRoute().length()); 
     }
-    return (filePath);
+    return (Utils::removeSlash(filePath));
 }
+
 
 string Client::defineContentType(string filePath)
 {
@@ -178,24 +185,28 @@ void Client::sendResponse(void)
         callMethod();
         build = _response->buildMessage();
     }
-    send(_server.getPollFd().fd, build.c_str(), build.size(), 0);
+    send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
 
-    close(_server.getPollFd().fd);
+    close(_server->getPollFd().fd);
     _request->clear();
     _response->clear();
 }
 
-string Client::defineResponseBody(const string& filePath, const string& uri)
+string Client::defineResponseBody(const Route &route, const string& filePath, const string& uri)
 {
-    if (_request->getIsCgi()) {
-        _response->getIndex() = _server.getRoute()[0].getIndex();
-        cerr << _response->getIndex() << endl;
-
-        if (_response->getIndex().find(".py") != string::npos || _response->getIndex().find(".php") != string::npos)
-            return (_response->executeCGI(*_request, _server, uri));
+    if (route.getCgiOn()) {
+        if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
+            return (_response->executeCGI(*_request, *_server, filePath));
     }
 
+    struct stat path_stat;
+    stat(filePath.c_str(), &path_stat);
+    if (S_ISDIR(path_stat.st_mode)){
+        if (_subdirAutoindex)
+        	return (_response->handleAutoIndex(filePath, uri));
+    } 
+    
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _response->setStatusCode(NOT_FOUND);
@@ -219,20 +230,20 @@ string Client::defineResponseBody(const string& filePath, const string& uri)
 void Client::handleMultiPartRequest(void)
 {
     char buffer[65535];
-    ssize_t bytesReceived = recv(_server.getPollFd().fd, buffer, sizeof(buffer), 0);
+    ssize_t bytesReceived = recv(_server->getPollFd().fd, buffer, sizeof(buffer), 0);
 
     if (bytesReceived > 0) {
         _request->parseRequest(string(buffer, bytesReceived));
     }
     else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-        close(_server.getPollFd().fd);
+        close(_server->getPollFd().fd);
     }
     else {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
         perror("Error: recv failed");
-        close(_server.getPollFd().fd);
+        close(_server->getPollFd().fd);
     }
 }
 bool Client::verifyPermission(const string& file)
@@ -253,7 +264,9 @@ string Client::defineContentLength(const string& body)
     return (oss.str());
 }
 
-void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody) {
+void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location){
+    if (statusCode == MOVED_PERMANENTLY)
+        _response->setLocation(location);
     _response->setStatusCode(statusCode);
     _response->setFilePath(filePath);
     _response->setContentType(contentType);

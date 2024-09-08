@@ -2,7 +2,6 @@
 
 string Route::getRoute() const
 {
-    cerr << _route << endl;
 	if (_route.empty())
     	return "";
     return _route;
@@ -71,12 +70,19 @@ void Route::setCgiOn(bool cgiOn)
 
 void Route::setRoot(string& root)
 {
-    if (root[0] != '/')
+    if (root.empty() || root[0] != '/')
         throw Route::exception(RED "Error: misformatted root path, please use '/path'" RESET);
-    if (root[root.length() - 1] != '/')
-        root.insert(root.end(), '/');
-    _root = root;
 
+    if (root.length() > 1 && root[root.length() - 1] == '/')
+        root.erase(root.end() - 1);
+
+    if (root.find("/cgi") != string::npos){
+        _cgiOn = true;
+    }
+    else if (root == "/")
+        _root = "content";
+    else
+        _root = root;
 }
 
 void Route::setAllowMethods(const string& allowMethods)
