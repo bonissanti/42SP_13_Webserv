@@ -32,6 +32,14 @@ void Response::setHeader(const string& field, const string& value) {
     _headers[field] = value;
 }
 
+void Response::setIndex(string index){
+    _index = index;
+}
+
+void Response::setLocation(string location){
+    _location = location;
+}
+
 string Response::getFilePath(void) const{
     return (_filePath);
 }
@@ -48,9 +56,6 @@ int Response::getStatusCode(void) const {
     return _statusCode;
 }
 
-bool Response::checkAutoIndexInRoute(const vector<Route> &routes){
-    for (size_t i = 0; i < routes.size(); i++)
-        if (routes[i].getAutoIndex() == true)
-            return (true);
-    return (false);
+string Response::getLocation(void) const {
+    return _location;
 }

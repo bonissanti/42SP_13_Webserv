@@ -40,6 +40,7 @@ void Server::getServerFd(void)
 {
     _fd = _tempFd;
 }
+
 void Server::setListen(int port)
 {
     try {

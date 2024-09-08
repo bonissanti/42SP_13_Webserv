@@ -7,9 +7,9 @@ Route::Route()
     : _route("")
     , _autoIndex(false)
     , _cgiOn(false)
-    , _root("/data/")
+    , _root("content")
     , _allowMethods("GET POST DELETE")
-    , _index("content/html/index.html")
+    , _index("index.html")
     , _redirect("")
     , _return("")
     , _cgi("")
@@ -48,7 +48,6 @@ void Route::create(const string& line, ifstream& file)
             continue;
         if (pos != string::npos) {
             key = Utils::trim(currentLine.substr(0, pos));
-            cerr << key << endl;
             value = Utils::trim(currentLine.substr(pos + 1));
 
             if (key == "allow_methods")
@@ -59,8 +58,6 @@ void Route::create(const string& line, ifstream& file)
                 setIndex(value);
             else if (key == "autoindex")
                 setAutoIndex(value == "true");
-            else if (key == "cgi")
-                setCgiOn(value == "true");
             else if (key == "redirect")
                 setRedirect(value);
             else if (key == "return")

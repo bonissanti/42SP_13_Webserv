@@ -17,7 +17,7 @@ bool Response::checkFile(const string &file)
 
 char **Response::configEnviron(Server& server, Request &req)
 {
-    char **envp = new char *[6];
+    char **envp = new char *[7];
     
     string serverName = "SERVER_NAME=" + server.getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(server.getListen());
@@ -36,13 +36,12 @@ char **Response::configEnviron(Server& server, Request &req)
     return (envp);
 }
 
-string Response::executeCGI(Request &req, Server& server, const string& filePath)
+string Response::executeCGI(Request &req, Server& server, string filePath)
 {
     int pid;
     int fd[2];
     int status;
     string result;
-
     if (!checkFile(filePath)) {
         _statusCode = NOT_FOUND;
         return ("");
@@ -60,6 +59,8 @@ string Response::executeCGI(Request &req, Server& server, const string& filePath
         throw Server::exception(RED "Error: Fork failed" RESET);
     }
     if (pid == 0) {
+        signal(SIGINT, SIG_IGN);
+        signal(SIGTERM, SIG_IGN);
         char **envp = configEnviron(server, req);
         char *args[] = {const_cast<char *>(_executor.c_str()), const_cast<char *>(filePath.c_str()), NULL};
 
