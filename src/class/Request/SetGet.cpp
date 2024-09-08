@@ -53,3 +53,7 @@ string Request::getHeader(const string &field) const {
     }
     return "";
 }
+
+map<string, vector<char> > Request::getFormData() const {
+    return _formData;
+}

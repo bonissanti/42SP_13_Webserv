@@ -7,6 +7,7 @@
 class Request {
     private:
         map<string, string> _headers;
+        map<string, vector<char> > _formData;
         string _method;
         string _uri;
         string _version;
@@ -20,6 +21,7 @@ class Request {
         void parseRequestLine(const string& line);
         void parseHeaders(istringstream& request_stream);
         void parseBody(istringstream& request_stream);
+        void parseMultidata(istringstream &request_stream, const string &boundary);
         string generateErrorResponse(int statusCode) const;
         class exception : public std::exception {
             private:
@@ -43,6 +45,7 @@ class Request {
         string getURI() const;
         string getVersion() const;
         map<string, string> getHeaders() const;
+        map<string, vector<char> > getFormData() const;
         string getBody() const;
         bool getIsCgi() const;
         int getStatusCode() const;
@@ -54,7 +57,7 @@ class Request {
 
         void printRequest() const;
         bool validateRequest();
-        bool isRequestComplete(const std::string& request);
+        bool isRequestComplete();
         void parseRequest(const string& raw_request);
         void readRequest(struct pollfd& actualFd);
         void clear();
