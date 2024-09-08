@@ -15,55 +15,6 @@ string getFilename(const string& contentDisposition) {
     return "";
 }
 
-map<string, string> parseMultipartData(const string& body, const string& boundary) {
-    map<string, string> formData;
-    string delimiter = "--" + boundary;
-    size_t start = body.find(delimiter) + delimiter.length();
-    size_t end = body.find(delimiter, start);
-
-    while (end != string::npos) {
-        string part = body.substr(start, end - start);
-        size_t headerEnd = part.find("\r\n\r\n");
-        string headers = part.substr(0, headerEnd);
-        string content = part.substr(headerEnd + 4, part.length() - headerEnd - 6);
-
-        // Parse the Content-Disposition header
-        size_t dispositionStart = headers.find("Content-Disposition: ");
-        if (dispositionStart != string::npos) {
-            size_t dispositionEnd = headers.find("\r\n", dispositionStart);
-            string disposition = headers.substr(dispositionStart + 20, dispositionEnd - dispositionStart - 20);
-
-            // Extract the name and filename from the Content-Disposition header
-            size_t nameStart = disposition.find("name=\"");
-            size_t nameEnd = disposition.find("\"", nameStart + 6);
-            string name = disposition.substr(nameStart + 6, nameEnd - nameStart - 6);
-
-            size_t filenameStart = disposition.find("filename=\"");
-            size_t filenameEnd = disposition.find("\"", filenameStart + 10);
-            string filename = "";
-            if (filenameStart != string::npos) {
-                filename = disposition.substr(filenameStart + 10, filenameEnd - filenameStart - 10);
-            }
-
-
-            // Add the form field to the formData map
-            if (!name.empty()) {
-                formData["name"] = name;
-            }
-            if (!name.empty()) {
-                formData[name] = content;
-            }
-            if (!filename.empty()) {
-                formData["filename"] = filename;
-            }
-        }
-
-        start = end + delimiter.length();
-        end = body.find(delimiter, start);
-    }
-    return formData;
-}
-
 bool directoryExists(const string& path) {
     struct stat sb;
     if (stat(path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) {

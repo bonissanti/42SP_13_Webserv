@@ -98,6 +98,8 @@ void Request::parseRequest(const string &raw_request) {
         _statusCode = BAD_REQUEST;
     }
 
+    // printRequest();
+
     _readyForResponse = true;
     _buffer.clear();
 }
@@ -133,97 +135,114 @@ void Request::parseHeaders(istringstream &request_stream)
 }
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
-    const size_t buffer_size = 65535;
+    const size_t buffer_size = 65535; // Increase if necessary
     char buffer[buffer_size];
-    vector<char> part_content;
+    vector<char> partContent;
     string filename;
-    string content_type;
-    bool is_file_content = false;
-    bool is_header = true;
+    string contentType;
+    bool isFileContent = false;
+    bool isHeader = true;
+
+    std::string accumulated_content;
 
     while (request_stream.read(buffer, buffer_size) || request_stream.gcount() > 0) {
         size_t bytes_read = request_stream.gcount();
         string chunk(buffer, bytes_read);
+        accumulated_content += chunk;
 
-        size_t pos = 0;
-        while ((pos = chunk.find(boundary, pos)) != string::npos) {
-            if (!part_content.empty() && !filename.empty()) {
+        size_t boundaryPos = accumulated_content.find(boundary);
+        while (boundaryPos != string::npos) {
+            // Process the previous part
+            if (!partContent.empty() && !filename.empty()) {
                 _formData["filename"] = vector<char>(filename.begin(), filename.end());
-                _formData["fileContent"] = part_content;
-                _formData["contentType"] = vector<char>(content_type.begin(), content_type.end());
+                _formData["fileContent"] = partContent;
+                _formData["contentType"] = vector<char>(contentType.begin(), contentType.end());
             }
-            part_content.clear();
+
+            // Reset for the next part
+            partContent.clear();
             filename.clear();
-            content_type.clear();
-            is_file_content = false;
-            is_header = true;
-            pos += boundary.length();
-        }
+            contentType.clear();
+            isFileContent = false;
+            isHeader = true;
 
-        if (is_header) {
-            size_t header_end = chunk.find("\r\n\r\n");
+            // Extract content up to the boundary
+            string content_up_to_boundary = accumulated_content.substr(0, boundaryPos + boundary.size());
+
+            // Process headers
+            size_t header_end = content_up_to_boundary.find("\r\n\r\n");
             if (header_end != string::npos) {
-                string headers = chunk.substr(0, header_end);
-                chunk = chunk.substr(header_end + 4);
-                is_header = false;
+                string headers = content_up_to_boundary.substr(0, header_end);
+                isHeader = false;
 
-                size_t disposition_pos = headers.find("Content-Disposition: form-data; name=\"");
-                if (disposition_pos != string::npos) {
-                    size_t filename_pos = headers.find("filename=\"", disposition_pos);
-                    if (filename_pos != string::npos) {
-                        filename_pos += 10; // Move past 'filename="'
-                        size_t filename_end = headers.find("\"", filename_pos);
-                        filename = headers.substr(filename_pos, filename_end - filename_pos);
-                    }
+                size_t filename_pos = headers.find("filename=\"");
+                if (filename_pos != string::npos) {
+                    filename_pos += 10; // Move past 'filename="'
+                    size_t filename_end = headers.find("\"", filename_pos);
+                    filename = headers.substr(filename_pos, filename_end - filename_pos);
                 }
 
                 size_t type_pos = headers.find("Content-Type:");
                 if (type_pos != string::npos) {
                     type_pos += 14; // Move past 'Content-Type: '
                     size_t type_end = headers.find("\r\n", type_pos);
-                    content_type = headers.substr(type_pos, type_end - type_pos);
-                    is_file_content = true;
+                    contentType = headers.substr(type_pos, type_end - type_pos);
+                    isFileContent = true;
                 }
             }
-        }
 
-        if (is_file_content && !is_header) {
-            part_content.insert(part_content.end(), chunk.begin(), chunk.end());
+            // Add content after headers to partContent
+            if (isFileContent && !isHeader) {
+                size_t start_of_file_content = header_end + 4;
+                partContent.insert(partContent.end(),
+                                   content_up_to_boundary.begin() + start_of_file_content,
+                                   content_up_to_boundary.end());
+            }
+
+            // Update accumulated_content
+            accumulated_content = accumulated_content.substr(boundaryPos + boundary.size());
+            boundaryPos = accumulated_content.find(boundary);
         }
     }
 
-    if (!part_content.empty() && !filename.empty()) {
+    // Ensure the last chunk is added to partContent
+    if (!accumulated_content.empty() && isFileContent && !isHeader) {
+        partContent.insert(partContent.end(), accumulated_content.begin(), accumulated_content.end());
+    }
+
+    // Process the final part if it exists
+    if (!partContent.empty() && !filename.empty()) {
         _formData["filename"] = vector<char>(filename.begin(), filename.end());
-        _formData["fileContent"] = part_content;
-        _formData["contentType"] = vector<char>(content_type.begin(), content_type.end());
+        _formData["fileContent"] = partContent;
+        _formData["contentType"] = vector<char>(contentType.begin(), contentType.end());
     }
 }
 
-void Request::parseBody(istringstream &request_stream) {
-    string content_type = getHeader("content-type");
-    if (content_type.find("multipart/form-data") != string::npos) {
+void Request::parseBody(istringstream &requestStream) {
+    string contentType = getHeader("content-type");
+    if (contentType.find("multipart/form-data") != string::npos) {
         cout << "Parsing multipart/form-data body" << endl;
-        size_t boundary_pos = content_type.find("boundary=");
-        if (boundary_pos == string::npos) {
+        size_t boundaryPos = contentType.find("boundary=");
+        if (boundaryPos == string::npos) {
             _statusCode = BAD_REQUEST;
             std::cout << "Boundary not found in Content-Type" << std::endl;
             return;
         }
-        string boundary = "--" + content_type.substr(boundary_pos + 9);
-        parseMultidata(request_stream, boundary);
+        string boundary = "--" + contentType.substr(boundaryPos + 9);
+        parseMultidata(requestStream, boundary);
     } else {
-        getline(request_stream, _body, '\0');
+        getline(requestStream, _body, '\0');
     }
 }
 
 bool Request::validateRequest()
 {
-    static vector<string> valid_methods;
-    valid_methods.push_back("GET");
-    valid_methods.push_back("POST");
-    valid_methods.push_back("DELETE");
+    static vector<string> validMethods;
+    validMethods.push_back("GET");
+    validMethods.push_back("POST");
+    validMethods.push_back("DELETE");
 
-    if (find(valid_methods.begin(), valid_methods.end(), _method) == valid_methods.end()) {
+    if (find(validMethods.begin(), validMethods.end(), _method) == validMethods.end()) {
         // cout << "Error: invalid method" << endl;
         return false;
     }
@@ -290,7 +309,7 @@ void Request::readRequest(struct pollfd &actualFd)
         parseRequest(string(buffer, bytesReceived));
     }
     else if (bytesReceived == 0) {
-        _readyForResponse =
+        _readyForResponse = true;
         cout << "Connection closed" << endl;
         close(actualFd.fd);
     }
