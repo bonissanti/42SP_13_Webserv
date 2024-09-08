@@ -59,6 +59,8 @@ string Response::executeCGI(Request &req, Server& server, string filePath)
         throw Server::exception(RED "Error: Fork failed" RESET);
     }
     if (pid == 0) {
+        signal(SIGINT, SIG_IGN);
+        signal(SIGTERM, SIG_IGN);
         char **envp = configEnviron(server, req);
         char *args[] = {const_cast<char *>(_executor.c_str()), const_cast<char *>(filePath.c_str()), NULL};
 

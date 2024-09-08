@@ -97,7 +97,7 @@ int Client::runDeleteMethod()
 int Client::runGetMethod()
 {
     string uri = _request->getURI();
-    Route matchedRoute = _request->getServer().findMatchingRoute(uri, _subdirAutoindex);
+    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
 
     if (matchedRoute.getRedirect() != ""){
         setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
@@ -234,20 +234,20 @@ string Client::defineResponseBody(const Route &route, const string& filePath, co
 void Client::handleMultiPartRequest(void)
 {
     char buffer[65535];
-    ssize_t bytesReceived = recv(_server.getPollFd().fd, buffer, sizeof(buffer), 0);
+    ssize_t bytesReceived = recv(_server->getPollFd().fd, buffer, sizeof(buffer), 0);
 
     if (bytesReceived > 0) {
         _request->parseRequest(string(buffer, bytesReceived));
     }
     else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-        close(_server.getPollFd().fd);
+        close(_server->getPollFd().fd);
     }
     else {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
         perror("Error: recv failed");
-        close(_server.getPollFd().fd);
+        close(_server->getPollFd().fd);
     }
 }
 bool Client::verifyPermission(const string& file)

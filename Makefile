@@ -44,15 +44,12 @@ FILES		= class/Utils/Utils.cpp		\
 MAND_SRCS	= main.cpp $(FILES)
 SRC_DIR		= ./src
 SRC_FILES = $(addprefix ./src/, $(MAND_SRCS))
-TEST_DIR	= $(SRC_DIR)/tests
-TEST_SRCS	= $(shell find $(TEST_DIR) -name '*.cpp')
 SRCS_COMMON = $(filter-out main.cpp, $(MAND_SRCS))
 
 ################################# Webserv objects ###########################
 
 OBJS_DIR	= ./objs
 OBJS 		= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_FILES))
-TEST_OBJS	= $(patsubst $(TEST_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(TEST_SRCS))
 OBJS_COMMON	= $(patsubst $(SRC_DIR)/%.cpp, $(OBJS_DIR)/%.o, $(SRC_COMMON))
 
 ################################# Progress ##################################
@@ -83,10 +80,6 @@ $(OBJS_DIR)/%.o: $(TEST_DIR)/%.cpp
 	@mkdir -p $(@D)
 	@$(CPP) $(CFLAGS) -c $< -o $@
 	@echo "$(BLUE_B)Compiling:$(RESET) $<"
-
-test: $(TEST_OBJS) $(OBJS_COMMON)
-	@$(CPP) $(CFLAGS) $(TEST_OBJS) $(OBJS_COMMON) -o $(TEST_N)
-	@echo "$(GREEN)$(TEST_N) created$(RESET)"
 
 fclean: clean
 	@$(RM) $(NAME) $(TEST_N)
