@@ -65,8 +65,10 @@ pollfd Run::acceptNewConnection(int socketFd)
     if (clientFd == -1) {
         if (errno == EWOULDBLOCK)
             cout << "No pending connections for now" << endl;
-        else
+        else {
+            close(socketFd);
             cerr << "Error: accept failed" << endl;
+        }
     }
     else
         cout << "New communication established!" << endl;  // log message
@@ -94,16 +96,14 @@ void Run::startServer(vector<Server>& servers)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (servers[i].getPollFd().revents & POLLIN) {
                 try {
-                    if(client.getRequest()->getIsReadyForResponse() == false)
-                    {
                         requestFound = true;
                         struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
                         servers[i].setClientFd(actualFd);
                         client.setServer(servers[i]);
+                    while (client.getRequest()->getIsReadyForResponse() == false) {
+                        cout << "getting request" << endl;
                         client.getRequest()->readRequest(actualFd);
                     }
-                    else
-                        client.handleMultiPartRequest();
                 }
                 catch (const std::exception& e) {
                     cerr << "Error reading request: " << e.what() << endl;

@@ -100,13 +100,13 @@ int Client::runGetMethod()
     string responseBody = defineResponseBody(filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
-    if (_response.getStatusCode() == NOT_FOUND){
+    if (_response->getStatusCode() == NOT_FOUND){
         setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found");
         return NOT_FOUND;
-    } else if (_response.getStatusCode() == FORBIDDEN){
+    } else if (_response->getStatusCode() == FORBIDDEN){
         setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden");
         return FORBIDDEN;
-    } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
+    } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
         setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error");
         return INTERNAL_SERVER_ERROR;
     }
@@ -254,9 +254,9 @@ string Client::defineContentLength(const string& body)
 }
 
 void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody) {
-    _response.setStatusCode(statusCode);
-    _response.setFilePath(filePath);
-    _response.setContentType(contentType);
-    _response.setResponseBody(responseBody);
-    _response.setContentLength(defineContentLength(responseBody));
+    _response->setStatusCode(statusCode);
+    _response->setFilePath(filePath);
+    _response->setContentType(contentType);
+    _response->setResponseBody(responseBody);
+    _response->setContentLength(defineContentLength(responseBody));
 }

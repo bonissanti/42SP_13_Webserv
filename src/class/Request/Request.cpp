@@ -49,25 +49,24 @@ bool Request::isRequestComplete() {
     // Parse headers to find Content-Length
     istringstream header_stream(_buffer.substr(0, header_end));
     string line;
+    size_t content_length = 0;
     while (getline(header_stream, line) && !line.empty()) {
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string header_name = line.substr(0, colon_pos);
             string header_value = line.substr(colon_pos + 1);
             _headers[header_name] = header_value;
+
+            if (header_name == "Content-Length") {
+                content_length = Utils::strtoi(header_value);
+            }
         }
     }
 
-    // Check if Content-Length header is present
-    map<string, string>::iterator it = _headers.find("Content-Length");
-    if (it != _headers.end()) {
-        int content_length = Utils::strtoi(it->second);
-        if (_buffer.size() < header_end + 4 + content_length) {
-            return false; // Request is not complete yet
-        }
-    }
-
-    return true;
+    // Check if the entire body is received
+    size_t body_start = header_end + 4; // Move past "\r\n\r\n"
+    size_t body_length = _buffer.size() - body_start;
+    return body_length >= content_length;
 }
 
 void Request::parseRequest(const string &raw_request) {
@@ -98,8 +97,6 @@ void Request::parseRequest(const string &raw_request) {
     if (!validateRequest()) {
         _statusCode = BAD_REQUEST;
     }
-
-    // printRequest();
 
     _readyForResponse = true;
     _buffer.clear();
@@ -136,7 +133,7 @@ void Request::parseHeaders(istringstream &request_stream)
 }
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
-    const size_t buffer_size = 1024;
+    const size_t buffer_size = 65535;
     char buffer[buffer_size];
     vector<char> part_content;
     string filename;
@@ -144,10 +141,12 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
     bool is_file_content = false;
     bool is_header = true;
 
-    while (request_stream.getline(buffer, buffer_size)) {
-        string line(buffer);
+    while (request_stream.read(buffer, buffer_size) || request_stream.gcount() > 0) {
+        size_t bytes_read = request_stream.gcount();
+        string chunk(buffer, bytes_read);
 
-        if (line.find(boundary) != string::npos) {
+        size_t pos = 0;
+        while ((pos = chunk.find(boundary, pos)) != string::npos) {
             if (!part_content.empty() && !filename.empty()) {
                 _formData["filename"] = vector<char>(filename.begin(), filename.end());
                 _formData["fileContent"] = part_content;
@@ -158,22 +157,38 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
             content_type.clear();
             is_file_content = false;
             is_header = true;
-        } else if (line.find("Content-Disposition: form-data; name=\"") != string::npos) {
-            size_t start_pos = line.find("filename=\"");
-            if (start_pos != string::npos) {
-                start_pos += 10; // Move past 'filename="'
-                size_t end_pos = line.find("\"", start_pos);
-                filename = line.substr(start_pos, end_pos - start_pos);
+            pos += boundary.length();
+        }
+
+        if (is_header) {
+            size_t header_end = chunk.find("\r\n\r\n");
+            if (header_end != string::npos) {
+                string headers = chunk.substr(0, header_end);
+                chunk = chunk.substr(header_end + 4);
+                is_header = false;
+
+                size_t disposition_pos = headers.find("Content-Disposition: form-data; name=\"");
+                if (disposition_pos != string::npos) {
+                    size_t filename_pos = headers.find("filename=\"", disposition_pos);
+                    if (filename_pos != string::npos) {
+                        filename_pos += 10; // Move past 'filename="'
+                        size_t filename_end = headers.find("\"", filename_pos);
+                        filename = headers.substr(filename_pos, filename_end - filename_pos);
+                    }
+                }
+
+                size_t type_pos = headers.find("Content-Type:");
+                if (type_pos != string::npos) {
+                    type_pos += 14; // Move past 'Content-Type: '
+                    size_t type_end = headers.find("\r\n", type_pos);
+                    content_type = headers.substr(type_pos, type_end - type_pos);
+                    is_file_content = true;
+                }
             }
-        } else if (line.find("Content-Type:") != string::npos) {
-            size_t start_pos = line.find(": ") + 2;
-            content_type = line.substr(start_pos);
-            is_file_content = true;
-        } else if (is_file_content && is_header && line.empty()) {
-            is_header = false; // End of headers, start of file content
-        } else if (is_file_content && !is_header) {
-            part_content.insert(part_content.end(), buffer, buffer + request_stream.gcount());
-            part_content.push_back('\n');
+        }
+
+        if (is_file_content && !is_header) {
+            part_content.insert(part_content.end(), chunk.begin(), chunk.end());
         }
     }
 
@@ -275,6 +290,7 @@ void Request::readRequest(struct pollfd &actualFd)
         parseRequest(string(buffer, bytesReceived));
     }
     else if (bytesReceived == 0) {
+        _readyForResponse =
         cout << "Connection closed" << endl;
         close(actualFd.fd);
     }
