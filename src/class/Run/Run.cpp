@@ -1,70 +1,67 @@
 #include "Run.hpp"
 
-#include <sys/poll.h>
-
 #include "../Client/Client.hpp"
 #include "../Request/Request.hpp"
 #include "../Response/Response.hpp"
-#include "../../../include/defines.hpp"
 
 Run::Run() {}
 Run::~Run() {}
 
-/* function: loadPolls
------------------------------
-** @params: servers - Vector of servers passed by reference
-** @atr: pollFds - Vector of servers and client sockets
-
-** This function configures the pollFds vector of structs for use with the poll function. Each struct
-** in pollFds represents a file descriptor and its associated events. The POLLIN flag indicates that
-** a file descriptor is ready for reading, and the POLLOUT flag indicates that it is ready for writing.
-** After calling the poll function, you can check the revents field of each struct in pollFds to determine
-** which events occurred. For example:
-** - If pollFds[i].revents & POLLIN is true, it means the file descriptor is ready to read.
-** - If pollFds[i].revents & POLLOUT is true, it means the file descriptor is ready to write.
-**
-** @return: A vector of pollfd structs configured with file descriptors and event flags.
-*/
-
-vector<struct pollfd> Run::loadPolls(vector<Server> servers)
+int Run::setServersNumber(string filePath)
 {
-    vector<struct pollfd> pollFds(servers.size());
+    if (Utils::validateFile(filePath) == false)
+        throw Server::exception("Error: invalid file format");
 
-    for (size_t i = 0; i < servers.size(); i++) {
-        pollFds[i].fd = servers[i].getSocket();
-        pollFds[i].events = POLLIN | POLLOUT;
+    ifstream file(filePath.c_str());
+    if (!file.is_open()) {
+        return -1;
     }
-    return (pollFds);
+
+    string line;
+    int serverCount = 0;
+    bool insideServerBlock = false;
+    stack<char> brackets;
+
+    while (getline(file, line)) {
+        for (string::size_type i = 0; i < line.size(); ++i) {
+            char c = line[i];
+
+            if (!insideServerBlock && line.substr(i, 6) == "server") {
+                insideServerBlock = true;
+                i += 5;
+                continue;
+            }
+
+            if (insideServerBlock) {
+                if (c == '{') {
+                    brackets.push(c);
+                }
+                else if (c == '}') {
+                    if (brackets.empty()) {
+                        serverCount = -1;
+                    }
+                    brackets.pop();
+                    if (brackets.empty()) {
+                        insideServerBlock = false;
+                        ++serverCount;
+                    }
+                }
+            }
+        }
+    }
+    if (serverCount == -1 || serverCount > 1024)
+        throw Server::exception(RED "Error: invalid config file" RESET);
+    return serverCount;
 }
 
-/* function: acceptNewConnection
------------------------------
-** @params: serverSocket
-** @params: pollFds - only with server sockets
-** @atr: clientFd - New socket for communication with the client
-** @atr: socklen_t - A type alias for ssize_t, used to represent the size of socket address structures
-** @atr: sockaddr_in - A struct used to work with web connections, containing address information
-
-** This function is called when there is an incoming connection request on a server socket.
-** At this point, pollFds contains only server sockets, and no communication has been established yet.
-
-** The accept() function is used to create a new communication channel with the client. It generates
-** a clientFd, which is the socket file descriptor used for communication between the client and server.
-** This new socket will be used by the client to send requests and by the server to respond. At the end
-** of the function, we configure the new socket similarly to how we configured the server sockets in
-** the loadPolls() function, so that poll() can monitor its status.
-
-** @return: int as a file descriptor/socket
-*/
-
-int Run::acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
+pollfd Run::acceptNewConnection(int socketFd)
 {
     int clientFd;
     socklen_t addrlen;
     struct sockaddr_in clientAddr;
 
     addrlen = sizeof(clientAddr);
-    clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
+    clientFd = accept(socketFd, (struct sockaddr*)&clientAddr, &addrlen);
     if (clientFd == -1) {
         if (errno == EWOULDBLOCK)
             cout << "No pending connections for now" << endl;
@@ -74,138 +71,55 @@ int Run::acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     else
         cout << "New communication established!" << endl;  // log message
 
-    int flags = fcntl(clientFd, F_GETFL);
-    if (flags < 0)
-        throw Server::exception(RED "Error: fcntl failed" RESET);
-    if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) < 0)
-        throw Server::exception(RED "Error: fcntl failed" RESET);
 
     struct pollfd commFd;
 
     commFd.fd = clientFd;
     commFd.events = POLLIN | POLLOUT;
     commFd.revents = 0;
-    pollFds.push_back(commFd);
-    return (clientFd);
+    return (commFd);
 }
 
-/* function: startServer
------------------------------
-** @params: servers - Vector of servers passed by reference
-** @atr: returnValue - Used by poll to check if sockets are allowed to read or write
-** @atr: requests - Map of all pending requests
-** @atr: pollFds - Vector of servers and client sockets
-** @atr: clientManager - Class used to associate requests with their respective servers
-
-** This function first sets up the pollFds vector according to the number of servers.
-** It then uses the poll function to wait for a connection on localhost:<port>. After that, if
-** the returnValue is neither 0 nor -1, the function proceeds. In the first loop, it creates
-** a communication socket for the client to interact with the server (handled in acceptNewConnection).
-** With the clientFd value, we can associate this socket with the corresponding serverFD (handled by addAssociation).
-
-** The second loop checks if we are able to receive requests from the client, which is managed by
-** the readRequest function. Here, we get the serverFD associated with this socket and use it to save it in the Request
-constructor.
-
-** The third loop verifies if we can send the response to the client. Based on the information received from
-** the Request and some configurations from the Server and Route, a response message is built and sent
-** using the sendResponse function.
-
-** After communication with the clientFD is over, we close the fd and remove it from the pollFds vector.
-** @return: void
-*/
-
-void Run::startServer(vector<Server>& servers, vector<struct pollfd>& pollFds)
+void Run::startServer(vector<Server>& servers)
 {
-    int returnValue;
-    map<int, Request> requests;
-    pollFds = loadPolls(servers);
-    Client clientManager;
-    
+    int pollValue;
     while (true) {
-        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-        
-        if (returnValue == 0){
-            cout << "Error: poll Timeout" << endl;
-            //Jogar pagine de timeout
-        }
-        else if (returnValue == -1){
-            cout << "Error: poll failed" << endl;
-        }
-        else if (signalUsed)
-        	break ;
-        else
-        {
-            for (size_t i = 0; i < pollFds.size(); i++) {
-                if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-                	clientManager.addAssociation(clientFd, servers[i]);
-                }
-                else if (pollFds[i].revents & POLLIN) {
-                	Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-                 	Request::readRequest(pollFds, i, requests, actualServer);
-                }
-                else {
-                	if (requests.find(pollFds[i].fd) != requests.end()) {
-                    	clientManager.sendResponse(pollFds[i], requests);
-                        pollFds.erase(pollFds.begin() + i);
+        Client client;
+        bool requestFound = false;
+        size_t i = 0;
+
+        while (i < servers.size()) {
+            pollValue = poll(&servers[i].getPollFd(), 1, 10);
+            if (pollValue == -1)
+                throw Server::exception(RED "Error: poll failed" RESET);
+            if (servers[i].getPollFd().revents & POLLIN) {
+                try {
+                    if(client.getRequest()->getIsReadyForResponse() == false)
+                    {
+                        requestFound = true;
+                        struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
+                        servers[i].setClientFd(actualFd);
+                        client.setServer(servers[i]);
+                        client.getRequest()->readRequest(actualFd);
                     }
+                    else
+                        client.handleMultiPartRequest();
+                }
+                catch (const std::exception& e) {
+                    cerr << "Error reading request: " << e.what() << endl;
                 }
             }
+            else if (servers[i].getPollFd().revents & POLLOUT) {
+                try {
+                    requestFound = false;
+                    client.sendResponse();
+                    servers[i].getServerFd();
+                }
+                catch (const std::exception& e) {
+                    cerr << "Error sending response: " << e.what() << endl;
+                }
+            }
+            i = requestFound ? i : i + 1;
         }
     }
-    // for (size_t i = 0; i < pollFds.size(); i++){
-    // 	close(pollFds[i].fd);
-    // }
-    pollFds.clear();
-    for (size_t i = 0; i < servers.size(); i++){
-    	servers[i].getRoute().clear();
-    }
 }
-
-// void Run::startServer(vector<Server>& servers)
-
-// void Run::startServer(vector<Server>& servers)
-// {
-//     int returnValue;
-//     map<int, Request> requests;
-//     vector<struct pollfd> pollFds = loadPolls(servers);
-//     Client clientManager;
-
-//     while (true) {
-//         returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
-
-//         if (returnValue == 0) {
-//             cout << "Error: poll Timeout" << endl;
-//             // Jogar pagine de timeout
-//         }
-//         else if (returnValue == -1) {
-//             cout << "Error: poll failed" << endl;
-//         }
-//         else {
-//             for (size_t i = 0; i < pollFds.size(); i++) {
-//                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-//                     int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-//                     clientManager.addAssociation(clientFd, servers[i]);
-//                 }
-//                 else if (pollFds[i].revents & POLLIN) {
-//                     Server actualServer = clientManager.getServerFd(pollFds[i].fd);
-//                     try {
-//                         Request::readRequest(pollFds, i, requests, servers[i]);
-//                     } catch (const std::exception &e) {
-//                         cerr << "Error reading request: " << e.what() << endl;
-//                     }
-//                 }
-//                 else if (pollFds[i].revents & POLLOUT) {
-//                 	if (requests.find(pollFds[i].fd) != requests.end()
-//                         && requests[pollFds[i].fd].isReadyForResponse()) 
-//                         try {
-//                             clientManager.sendResponse(pollFds[i], requests);
-//                         } catch (const std::exception &e) {
-//                             cerr << "Error sending response: " << e.what() << endl;
-//                         }
-//                 }
-//             }
-//         }
-//     }
-// }

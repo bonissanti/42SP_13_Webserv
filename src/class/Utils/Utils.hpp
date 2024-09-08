@@ -1,5 +1,6 @@
-#ifndef DEFINES_HPP
-#define DEFINES_HPP
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 
 typedef enum {
     DEFAULT = 0,
@@ -69,8 +70,25 @@ typedef enum {
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
+#include <cstddef>
+#include <sys/stat.h>
 
 using namespace std;
 extern bool signalUsed;
+
+class Utils {
+    public:
+        static string trim(string str);
+        static int strtoi(string number);
+        static int getServersNumber(string filePath);
+        static bool validateFile(string file);
+        static void bzero(void* ptr, size_t size);
+        static string toString(size_t value);
+        static bool fileExists(const std::string& filePath);
+        static bool hasDeletePermission(const std::string& filePath);
+        static bool isFile(const string& path);
+        static string itostr(int value);
+        static string statusCodeToString(int code);
+};
 
 #endif

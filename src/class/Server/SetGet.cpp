@@ -10,14 +10,36 @@ vector<Route> Server::getRoute(void)
     return (_routes);
 }
 
-string	Server::getServerName(void){
-	return (_server_name);
+string Server::getServerName(void)
+{
+    return (_server_name);
 }
 
-int	Server::getListen(void){
-	return (_listen);
+int Server::getListen(void)
+{
+    return (_listen);
 }
 
+struct pollfd& Server::getPollFd(void)
+{
+    return (_fd);
+}
+
+string Server::getRoot() const
+{
+    return _root;
+}
+
+void Server::setClientFd(struct pollfd& pollFd)
+{
+    _tempFd = _fd;
+    _fd = pollFd;
+}
+
+void Server::getServerFd(void)
+{
+    _fd = _tempFd;
+}
 void Server::setListen(int port)
 {
     try {
@@ -76,8 +98,4 @@ void Server::setErrorPage(string error_page)
     map<int, string> mapErrorPage;
     mapErrorPage[key] = value;
     _error_page.push_back(mapErrorPage);
-}
-
-string Server::getRoot() const {
-    return _root;
 }

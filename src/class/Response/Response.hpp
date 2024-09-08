@@ -1,10 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <map>
-#include <string>
-
-#include "../../../include/defines.hpp"
+#include "../Utils/Utils.hpp"
 #include "../Request/Request.hpp"
 
 class Response {
@@ -27,12 +24,12 @@ class Response {
         ~Response();
 
         int getMethodIndex(string method);
-        string executeCGI(Request& req, const string& filePath);
+        string executeCGI(Request& req, Server &server, const string& filePath);
         string handleAutoIndex(string filePath, const string& uri);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentLength(const string& body);
-        char** configEnviron(Request& req);
+        char** configEnviron(Server& server, Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);

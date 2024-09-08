@@ -8,6 +8,18 @@ Server::Server()
     _root = "/data/";
 }
 
+Server::Server(const Server& toCopy)
+{
+    _listen = toCopy._listen;
+    _socketFd = toCopy._socketFd;
+    _fd = toCopy._fd;
+    _server_name = toCopy._server_name;
+    _root = toCopy._root;
+    _client_max_body_size = toCopy._client_max_body_size;
+    _error_page = toCopy._error_page;
+    _routes = toCopy._routes;
+}
+
 Server::~Server() {}
 
 void Server::create(ifstream& file)
@@ -47,14 +59,14 @@ void Server::create(ifstream& file)
                 throw Server::exception("Unknown configuration key: " + key);
         }
         else if (line.find("route") == 0) {
-            try
-            {
+            try {
                 Route new_route;
                 new_route.create(line, file);
-                _routes.push_back(new_route);
+                if(filterDuplicatesRoutes(new_route))
+                    _routes.push_back(new_route);
                 routeFound = true;
             }
-            catch(const Route::exception& e){
+            catch (const Route::exception& e) {
                 throw;
             }
         }
@@ -63,36 +75,40 @@ void Server::create(ifstream& file)
         throw Server::exception(RED "Error: server or listen are not set" RESET);
 }
 
-void Server::configServer(vector<Server>& servers)
+void Server::openPortsToListen(void)
 {
     int inUse = 1;
     struct sockaddr_in serverAddr;
 
     Utils::bzero(&serverAddr, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY); 
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    for (size_t i = 0; i < servers.size(); i++) {
-        serverAddr.sin_port = htons(servers[i]._listen);  
-        servers[i]._socketFd = socket(AF_INET, SOCK_STREAM, 0); 
+    serverAddr.sin_port = htons(_listen);
+    _socketFd = socket(AF_INET, SOCK_STREAM, 0);
 
-        if (setsockopt(servers[i]._socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
-            throw Server::exception(RED "Error: setsockopt failed" RESET);
+    if (setsockopt(_socketFd, SOL_SOCKET, SO_REUSEADDR, &inUse, sizeof(int)) == -1)
+        throw Server::exception(RED "Error: setsockopt failed" RESET);
 
-        int flags = fcntl(servers[i]._socketFd, F_GETFL);
-        if (flags < 0)
-            throw Server::exception(RED "Error: fcntl failed" RESET);
-
-        if (fcntl(servers[i]._socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
-            throw Server::exception(RED "Error: fcntl failed" RESET);
-
-        if (bind(servers[i]._socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-            if (errno == EADDRINUSE)
-                throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
-        }
-        if (listen(servers[i]._socketFd, 10) < 0)
-            throw Server::exception(RED "Error: listen failed" RESET);
+    if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        if (errno == EADDRINUSE)
+            throw Server::exception(RED "Error: <bind> port is in use by other server" RESET);
     }
+    if (listen(_socketFd, 10) < 0)
+        throw Server::exception(RED "Error: listen failed" RESET);
+
+    // set pollfd
+    _fd.fd = _socketFd;
+    _fd.events = POLLIN | POLLOUT;
+    _fd.revents = 0;
+}
+
+bool Server::filterDuplicatesRoutes(Route& route) {
+    for (size_t i = 0; i < _routes.size(); i++) {
+        if (_routes[i].getRoute() == route.getRoute())
+            return false;
+    }
+    return true;
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
@@ -111,4 +127,3 @@ string setRoot(string root)
         root.insert(root.end(), '/');
     return (root);
 }
-

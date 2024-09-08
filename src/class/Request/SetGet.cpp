@@ -1,4 +1,3 @@
-#include "../../../include/defines.hpp"
 #include "../Server/Server.hpp"
 #include "Request.hpp"
 
@@ -40,6 +39,11 @@ Server Request::getServer() const
 int Request::setStatusCode(HttpStatus code)
 {
     return _statusCode = code;
+}
+
+bool Request::getIsReadyForResponse() const
+{
+    return _readyForResponse;
 }
 
 string Request::getHeader(const string &field) const {

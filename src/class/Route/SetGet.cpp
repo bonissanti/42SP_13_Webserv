@@ -2,6 +2,7 @@
 
 string Route::getRoute() const
 {
+    cerr << _route << endl;
 	if (_route.empty())
     	return "";
     return _route;
