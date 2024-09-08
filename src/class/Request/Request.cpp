@@ -116,21 +116,26 @@ void Request::parseHeaders(istringstream &request_stream)
 }
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
-    string line;
+    const size_t buffer_size = 1024;
+    char buffer[buffer_size];
     vector<char> part_content;
     string filename;
-    map<string, vector<char> > headers;
+    string content_type;
     bool is_file_content = false;
     bool is_header = true;
 
-    while (getline(request_stream, line)) {
+    while (request_stream.getline(buffer, buffer_size)) {
+        string line(buffer);
+
         if (line.find(boundary) != string::npos) {
             if (!part_content.empty() && !filename.empty()) {
                 _formData["filename"] = vector<char>(filename.begin(), filename.end());
                 _formData["fileContent"] = part_content;
+                _formData["contentType"] = vector<char>(content_type.begin(), content_type.end());
             }
             part_content.clear();
             filename.clear();
+            content_type.clear();
             is_file_content = false;
             is_header = true;
         } else if (line.find("Content-Disposition: form-data; name=\"") != string::npos) {
@@ -141,11 +146,13 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
                 filename = line.substr(start_pos, end_pos - start_pos);
             }
         } else if (line.find("Content-Type:") != string::npos) {
+            size_t start_pos = line.find(": ") + 2;
+            content_type = line.substr(start_pos);
             is_file_content = true;
         } else if (is_file_content && is_header && line.empty()) {
             is_header = false; // End of headers, start of file content
         } else if (is_file_content && !is_header) {
-            part_content.insert(part_content.end(), line.begin(), line.end());
+            part_content.insert(part_content.end(), buffer, buffer + request_stream.gcount());
             part_content.push_back('\n');
         }
     }
@@ -153,6 +160,7 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
     if (!part_content.empty() && !filename.empty()) {
         _formData["filename"] = vector<char>(filename.begin(), filename.end());
         _formData["fileContent"] = part_content;
+        _formData["contentType"] = vector<char>(content_type.begin(), content_type.end());
     }
 }
 
