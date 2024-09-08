@@ -71,7 +71,6 @@ bool Request::isRequestComplete() {
 
 void Request::parseRequest(const string &raw_request) {
     _buffer.append(raw_request);
-    static int i;
 
     if (!isRequestComplete()) {
         return;
@@ -88,8 +87,6 @@ void Request::parseRequest(const string &raw_request) {
         return;
     }
 
-    cout << "Count of requests: " << ++i << endl;
-
     parseRequestLine(line);
     parseHeaders(request_stream);
     parseBody(request_stream);
@@ -97,8 +94,6 @@ void Request::parseRequest(const string &raw_request) {
     if (!validateRequest()) {
         _statusCode = BAD_REQUEST;
     }
-
-    // printRequest();
 
     _readyForResponse = true;
     _buffer.clear();
@@ -135,7 +130,7 @@ void Request::parseHeaders(istringstream &request_stream)
 }
 
 void Request::parseMultidata(istringstream &request_stream, const string &boundary) {
-    const size_t buffer_size = 65535; // Increase if necessary
+    const size_t buffer_size = 65535;
     char buffer[buffer_size];
     vector<char> partContent;
     string filename;
