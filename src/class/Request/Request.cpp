@@ -40,7 +40,6 @@ Request &Request::operator=(const Request &other)
     return *this;
 }
 
-<<<<<<< HEAD
 bool Request::isRequestComplete() {
     size_t header_end = _buffer.find("\r\n\r\n");
     if (header_end == string::npos) {
@@ -72,10 +71,6 @@ bool Request::isRequestComplete() {
 }
 
 void Request::parseRequest(const string &raw_request) {
-=======
-void Request::parseRequest(const string &raw_request)
-{
->>>>>>> master
     _buffer.append(raw_request);
     static int i;
 
