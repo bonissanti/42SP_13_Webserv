@@ -231,6 +231,25 @@ string Client::defineResponseBody(const Route &route, const string& filePath, co
     return (buffer.str());
 }
 
+void Client::handleMultiPartRequest(void)
+{
+    char buffer[65535];
+    ssize_t bytesReceived = recv(_server.getPollFd().fd, buffer, sizeof(buffer), 0);
+
+    if (bytesReceived > 0) {
+        _request->parseRequest(string(buffer, bytesReceived));
+    }
+    else if (bytesReceived == 0) {
+        cout << "Connection closed" << endl;
+        close(_server.getPollFd().fd);
+    }
+    else {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+        perror("Error: recv failed");
+        close(_server.getPollFd().fd);
+    }
+}
 bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)

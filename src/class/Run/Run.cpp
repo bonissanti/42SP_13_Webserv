@@ -105,11 +105,16 @@ void Run::startServer(vector<Server>& servers)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (servers[i].getPollFd().revents & POLLIN) {
                 try {
-                    requestFound = true;
-                    struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
-                    servers[i].setClientFd(actualFd);
-                    client.setServer(servers[i]);
-                    client.getRequest()->readRequest(actualFd);
+                    if(client.getRequest()->getIsReadyForResponse() == false)
+                    {
+                        requestFound = true;
+                        struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
+                        servers[i].setClientFd(actualFd);
+                        client.setServer(servers[i]);
+                        client.getRequest()->readRequest(actualFd);
+                    }
+                    else
+                        client.handleMultiPartRequest();
                 }
                 catch (const std::exception& e) {
                     cerr << "Error reading request: " << e.what() << endl;
