@@ -76,21 +76,21 @@ int Client::runDeleteMethod()
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
-        setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found");
+        setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found", "");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden");
+        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden", "");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
         return INTERNAL_SERVER_ERROR;
     }
 
-    setResponseData(OK, filePath, "text/plain", "200 OK");
+    setResponseData(OK, filePath, "text/plain", "200 OK", "");
     return OK;
 }
 
@@ -110,16 +110,16 @@ int Client::runGetMethod()
     string contentLength = defineContentLength(responseBody);
 
     if (_response->getStatusCode() == NOT_FOUND){
-        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found");
+        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found", "");
         return NOT_FOUND;
     } else if (_response->getStatusCode() == FORBIDDEN){
-        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden");
+        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden", "");
         return FORBIDDEN;
     } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
-        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error");
+        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");
         return INTERNAL_SERVER_ERROR;
     }
-    setResponseData(OK, filePath, contentType, responseBody);
+    setResponseData(OK, filePath, contentType, responseBody, "");
     return (OK);
 }
 

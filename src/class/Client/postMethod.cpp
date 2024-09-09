@@ -26,14 +26,14 @@ bool directoryExists(const string& path) {
 bool Client::saveUploadedFile(const string& filename, const vector<char>& fileContent, const string& directory) {
 	if (!directoryExists(directory)) {
         if (mkdir(directory.c_str(), 0777) == -1) {
-            setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
+            setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
             cerr << "Error creating directory: " << directory << endl;
             return false;
         }
 	}
 
     if (access(directory.c_str(), W_OK) == -1) {
-        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden");
+        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden", "");
         return false;
     }
 
@@ -42,7 +42,7 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 	string path = directory + "/" + finalFilename;
     ofstream outFile(path.c_str(), ios::binary);
     if (!outFile) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
         cerr << "Error opening file for writing: " << path << endl; //remove later
         return false;
     }
@@ -50,7 +50,7 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
     outFile.write(fileContent.data(), fileContent.size());
     outFile.close();
     if (!outFile.good()) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error");
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
         return false;
     }
     return true;
@@ -64,7 +64,7 @@ int Client::runPostMethod() {
         map<string, vector<char> > formData = _request->getFormData();
 
         if (formData.find("filename") == formData.end() || formData.find("fileContent") == formData.end()) {
-            setResponseData(BAD_REQUEST, "", "text/plain", "Missing form data");
+            setResponseData(BAD_REQUEST, "", "text/plain", "Missing form data", "");
             return BAD_REQUEST;
         }
 
@@ -82,13 +82,13 @@ int Client::runPostMethod() {
         // Set the correct content type in the response
         _response->setHeader("Content-type", fileContentType);
     } else if (contentType.empty()) {
-        setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header");
+        setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header", "");
         return BAD_REQUEST;
     } else {
-        setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type");
+        setResponseData(BAD_REQUEST, "", "text/plain", "Unsupported Content-Type", "");
         return BAD_REQUEST;
     }
 
-    setResponseData(OK, "", "text/plain", "File uploaded successfully");
+    setResponseData(OK, "", "text/plain", "File uploaded successfully", "");
     return OK;
 }
