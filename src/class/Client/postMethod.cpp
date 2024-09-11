@@ -89,6 +89,6 @@ int Client::runPostMethod() {
         return BAD_REQUEST;
     }
 
-    setResponseData(OK, "", "text/plain", "File uploaded successfully", "");
-    return OK;
+    setResponseData(CREATED, "", "text/plain", "File uploaded successfully", "");
+    return CREATED;
 }

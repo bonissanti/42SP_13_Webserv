@@ -90,8 +90,8 @@ int Client::runDeleteMethod()
         return INTERNAL_SERVER_ERROR;
     }
 
-    setResponseData(OK, filePath, "text/plain", "200 OK", "");
-    return OK;
+    setResponseData(NO_CONTENT, filePath, "text/plain", "204 Content Deleted", "");
+    return NO_CONTENT;
 }
 
 int Client::runGetMethod()
@@ -178,7 +178,9 @@ void Client::sendResponse(void)
 {
     string build;
 
-    if (_request->getStatusCode() == BAD_REQUEST) {
+    if (_request->getStatusCode() == BAD_REQUEST 
+        or _request->getStatusCode() == NOT_IMPLEMENTED
+        or _request->getStatusCode() == VERSION_NOT_SUPPORTED ) {
         build = _response->buildMessage();
     }
     else {

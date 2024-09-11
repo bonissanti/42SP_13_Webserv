@@ -91,9 +91,10 @@ void Request::parseRequest(const string &raw_request) {
     parseHeaders(request_stream);
     parseBody(request_stream);
 
-    if (!validateRequest()) {
-        _statusCode = BAD_REQUEST;
-    }
+    // if (!validateRequest()) {
+    //     _statusCode = BAD_REQUEST;
+    // }
+    validateRequest();
 
     _readyForResponse = true;
     _buffer.clear();
@@ -230,7 +231,7 @@ void Request::parseBody(istringstream &requestStream) {
     }
 }
 
-bool Request::validateRequest()
+bool Request::validateRequest() //mudar para void ou HttpCode
 {
     static vector<string> validMethods;
     validMethods.push_back("GET");
@@ -238,30 +239,23 @@ bool Request::validateRequest()
     validMethods.push_back("DELETE");
 
     if (find(validMethods.begin(), validMethods.end(), _method) == validMethods.end()) {
-        // cout << "Error: invalid method" << endl;
+        _statusCode = NOT_IMPLEMENTED;
         return false;
     }
     if (_version != "HTTP/1.1" && _version != "HTTP/1.0") {
         // cout << "Error: invalid HTTP version" << endl;
+        _statusCode = VERSION_NOT_SUPPORTED;
         return false;
     }
     if (_headers.find("host") == _headers.end()) {
         // cout << "Error: missing Host" << endl;
+        _statusCode = BAD_REQUEST;
         return false;
     }
 
     if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
         // cout << "Error: missing Content-Length" << endl;
-        return false;
-    }
-
-    if (_headers.find("host") == _headers.end()) {
-        // cout << "Error: missing Host" << endl;
-        return false;
-    }
-
-    if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
-        // cout << "Error: missing Content-Length" << endl;
+        _statusCode = BAD_REQUEST;
         return false;
     }
 
