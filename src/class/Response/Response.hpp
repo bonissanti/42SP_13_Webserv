@@ -46,9 +46,10 @@ class Response {
         string getFilePath(void) const;
         string getBody(void) const;
         string getIndex(void) const;
-        int getStatusCode(void) const;
         string getLocation(void) const;
+        int getStatusCode(void) const;
 
+		string getStatusPage(int statusCode);
         string buildMessage(void);
         void clear();
 };

@@ -89,6 +89,6 @@ int Client::runPostMethod() {
         return BAD_REQUEST;
     }
 
-    setResponseData(CREATED, "", "text/plain", "File uploaded successfully", "");
+    setResponseData(CREATED, "", "text/html", _response->getStatusPage(CREATED), "");
     return CREATED;
 }

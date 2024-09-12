@@ -76,21 +76,21 @@ int Client::runDeleteMethod()
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
-        setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found", "");
+        setResponseData(NOT_FOUND, "", "text/plain", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden", "");
+        setResponseData(FORBIDDEN, "", "text/plain", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
 
-    setResponseData(NO_CONTENT, filePath, "text/plain", "204 Content Deleted", "");
+    setResponseData(NO_CONTENT, filePath, "text/plain", _response->getStatusPage(NO_CONTENT), "");
     return NO_CONTENT;
 }
 

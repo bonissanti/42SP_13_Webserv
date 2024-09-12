@@ -21,6 +21,20 @@ typedef enum {
     VERSION_NOT_SUPPORTED = 505,
 } 	HttpStatus;
 
+#define BODY_201 "<html><head><title>201</title></head><body><h1>201</h1><p>Created Successfully</p></body></html>"
+#define BODY_204 "<html><head><title>204</title></head><body><h1>204</h1><p>Content Deleted</p></body></html>"
+#define BODY_301 "<html><head><title>301</title></head><body><h1>301</h1><p>Moved Permanently</p></body></html>"
+#define BODY_304 "<html><head><title>304</title></head><body><h1>304</h1><p>Not Modified</p></body></html>"
+#define BODY_400 "<html><head><title>400</title></head><body><h1>400</h1><p>Bad Request</p></body></html>"
+#define BODY_403 "<html><head><title>403</title></head><body><h1>403</h1><p>Forbidden</p></body></html>"
+#define BODY_404 "<html><head><title>404</title></head><body><h1>404</h1><p>Not Found</p></body></html>"
+#define BODY_405 "<html><head><title>405</title></head><body><h1>405</h1><p>Method Not Allowed</p></body></html>"
+#define BODY_409 "<html><head><title>409</title></head><body><h1>409</h1><p>Conflict</p></body></html>"
+#define BODY_500 "<html><head><title>500</title></head><body><h1>500</h1><p>Internal Server Error</p></body></html>"
+#define BODY_501 "<html><head><title>501</title></head><body><h1>501</h1><p>Method Not Implemented</p></body></html>"
+#define BODY_502 "<html><head><title>502</title></head><body><h1>502</h1><p>Bad Gateway</p></body></html>"
+#define BODY_505 "<html><head><title>505</title></head><body><h1>505</h1><p>HTTP Version Not Supported</p></body></html>"
+
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
 #define YELLOW "\033[0;33m"
