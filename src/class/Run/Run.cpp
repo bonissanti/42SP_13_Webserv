@@ -145,7 +145,7 @@ vector<struct pollfd> loadPolls(vector<Server> servers)
 void Run::startServer(vector<Server>& servers)
 {
     int returnValue;
-    map<int, Request> requests;
+    map<int, Request> mapRequests;
     vector<struct pollfd> pollFds = loadPolls(servers);
     Client client;
     
@@ -170,13 +170,16 @@ void Run::startServer(vector<Server>& servers)
                 }
                 else if (pollFds[i].revents & POLLIN) {
                 	Server *actualServer = client.getServerFd(pollFds[i].fd);
-                 	Request::readRequest(pollFds, i, requests, *actualServer);
+                 	Request::readRequest(pollFds, i, mapRequests, *actualServer);
                 }
                 else {
-                	if (requests.find(pollFds[i].fd) != requests.end()) {
-                    	client.sendResponse(pollFds[i], requests);
-                        pollFds.erase(pollFds.begin() + i);
-                    }
+                	if (mapRequests.find(pollFds[i].fd) != mapRequests.end()) {
+                        Request& request = mapRequests[pollFds[i].fd];
+
+                        if (request.getIsReadyForResponse()){
+                    	    client.sendResponse(pollFds[i], mapRequests);
+                            pollFds.erase(pollFds.begin() + i); }
+                        }
                 }
             }
         }

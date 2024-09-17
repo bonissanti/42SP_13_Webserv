@@ -261,6 +261,7 @@ string Client::defineResponseBody(const Route &route, const string& filePath, co
 //         close(_server.getPollFd().fd);
 //     }
 // }
+
 bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)
