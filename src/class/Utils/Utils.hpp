@@ -1,7 +1,6 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-
 typedef enum {
     DEFAULT = 0,
     OK = 200,
@@ -14,6 +13,7 @@ typedef enum {
     FORBIDDEN = 403,
     NOT_FOUND = 404,
     METHOD_NOT_ALLOWED = 405,
+    PAYLOAD_TOO_LARGE = 413,
     INTERNAL_SERVER_ERROR = 500,
     NOT_IMPLEMENTED = 501,
     BAD_GATEWAY = 502,
@@ -22,16 +22,22 @@ typedef enum {
 
 #define BODY_201 "<html><head><title>201</title></head><body><h1>201</h1><p>Created Successfully</p></body></html>"
 #define BODY_204 "<html><head><title>204</title></head><body><h1>204</h1><p>Content Deleted</p></body></html>"
-#define BODY_301 "<html><head><title>301</title></head><body><h1>301</h1><p>Moved Permanently</p></body></html>"
-#define BODY_304 "<html><head><title>304</title></head><body><h1>304</h1><p>Not Modified</p></body></html>"
-#define BODY_400 "<html><head><title>400</title></head><body><h1>400</h1><p>Bad Request</p></body></html>"
-#define BODY_403 "<html><head><title>403</title></head><body><h1>403</h1><p>Forbidden</p></body></html>"
-#define BODY_404 "<html><head><title>404</title></head><body><h1>404</h1><p>Not Found</p></body></html>"
-#define BODY_405 "<html><head><title>405</title></head><body><h1>405</h1><p>Method Not Allowed</p></body></html>"
-#define BODY_500 "<html><head><title>500</title></head><body><h1>500</h1><p>Internal Server Error</p></body></html>"
-#define BODY_501 "<html><head><title>501</title></head><body><h1>501</h1><p>Method Not Implemented</p></body></html>"
-#define BODY_502 "<html><head><title>502</title></head><body><h1>502</h1><p>Bad Gateway</p></body></html>"
-#define BODY_505 "<html><head><title>505</title></head><body><h1>505</h1><p>HTTP Version Not Supported</p></body></html>"
+
+#define ERROR200 "./content/page-errors/200.html"
+#define ERROR201 "./content/page-errors/201.html"
+#define ERROR204 "./content/page-errors/204.html"
+#define ERROR301 "./content/page-errors/301.html"
+#define ERROR304 "./content/page-errors/304.html"
+#define ERROR400 "./content/page-errors/400.html"
+#define ERROR403 "./content/page-errors/403.html" 
+#define ERROR404 "./content/page-errors/404.html"
+#define ERROR405 "./content/page-errors/405.html"
+#define ERROR408 "./content/page-errors/408.html"
+#define ERROR413 "./content/page-errors/413.html"
+#define ERROR500 "./content/page-errors/500.html"
+#define ERROR501 "./content/page-errors/501.html"
+#define ERROR502 "./content/page-errors/502.html"
+#define ERROR505 "./content/page-errors/505.html"
 
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
@@ -66,8 +72,9 @@ typedef enum {
 #define POST 1
 #define DELETE 2
 
-#define MB 1024
-#define GB 1048576
+#define KB 1024
+#define MB 1048576
+#define GB 1073741824
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -110,6 +117,7 @@ class Utils {
         static string itostr(int value);
         static string statusCodeToString(int code);
         static string removeSlash(string str);
+        static string readFile(const string& filePath);
 };
 
 #endif
