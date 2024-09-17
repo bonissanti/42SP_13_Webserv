@@ -178,15 +178,10 @@ void Client::sendResponse(void)
 {
     string build;
 
-    if (_request->getStatusCode() == BAD_REQUEST 
-        or _request->getStatusCode() == NOT_IMPLEMENTED
-        or _request->getStatusCode() == VERSION_NOT_SUPPORTED ) {
-        build = _response->buildMessage();
-    }
-    else {
-        callMethod();
-        build = _response->buildMessage();
-    }
+    setResponseData(_request->getStatusCode(), "", "text/html", _response->getStatusPage(_request->getStatusCode()), "");
+    if (_request->getStatusCode() == DEFAULT || _request->getStatusCode() == OK)
+            callMethod();
+    build = _response->buildMessage();
     send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
 

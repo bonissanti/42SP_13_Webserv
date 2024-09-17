@@ -29,6 +29,7 @@ class Server {
         string getRoot() const;
         struct pollfd& getPollFd(void);
         void getServerFd(void);
+        int getMaxBodySize();
 
         void addClient(int clientFd);
 

@@ -9,7 +9,6 @@ Response::Response()
 
 Response::~Response() {}
 
-
 string Response::buildMessage(void)
 {
     string response =
@@ -44,6 +43,38 @@ void Response::clear() {
     _headers.clear();
 }
 
+string Response::setCreatedBody(const string& filePath) {
+    string body = "<html>"
+                    "<head>"
+                    "<title>201</title>"
+                    "</head>"
+                    "<body>"
+                        "<h1>201</h1>"
+                        "<p>Created Successfully</p>"
+                        "<p><a href=\"" + filePath + "\">" + filePath + "</a></p>"
+                    "</body>"
+                "</html>";
+    return body;
+}
+
+string Response::badRequestBody(const string& message) {
+    string msg_html = "Request is malformed";
+    if (message != "")
+        msg_html = "<p>" + message + "</p>";
+
+    string body = "<html>"
+                    "<head>"
+                        "<title>400</title>"
+                    "</head>"
+                    "<body>"
+                        "<h1>400</h1>"
+                        "<p>Bad Request</p>"
+                        + msg_html + 
+                    "</body>"
+                "</html>";
+    return body;
+}
+
 string Response::getStatusPage(int statusCode) {
 	switch(statusCode)
     {
@@ -52,27 +83,28 @@ string Response::getStatusPage(int statusCode) {
         case 204:
             return BODY_204;
         case 301:
-            return BODY_301;
+            return Utils::readFile(ERROR301);
         case 304:
-            return BODY_304;
+            return Utils::readFile(ERROR304);
         case 400:
-            return BODY_400;
+            return Utils::readFile(ERROR400);
         case 403:
-            return BODY_403;
+            return Utils::readFile(ERROR403);
         case 404:
-            return BODY_404;
+            return Utils::readFile(ERROR404);
         case 405:
-            return BODY_405;
+            return Utils::readFile(ERROR405);
+        case 413:
+            return Utils::readFile(ERROR413);
         case 500:
-            return BODY_500;
+            return Utils::readFile(ERROR500);
         case 501:
-            return BODY_501;
+            return Utils::readFile(ERROR501);
         case 502:
-            return BODY_502;
+            return Utils::readFile(ERROR502);
         case 505:
-            return BODY_505;
+            return Utils::readFile(ERROR505);
         default:
             return "<html><body><h1>Unknown Status</h1></body></html>";
     }
 }
-
