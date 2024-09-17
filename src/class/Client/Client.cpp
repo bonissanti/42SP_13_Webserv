@@ -76,21 +76,21 @@ int Client::runDeleteMethod()
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
-        setResponseData(NOT_FOUND, "", "text/plain", _response->getStatusPage(NOT_FOUND), "");
+        setResponseData(NOT_FOUND, "", "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        setResponseData(FORBIDDEN, "", "text/plain", _response->getStatusPage(FORBIDDEN), "");
+        setResponseData(FORBIDDEN, "", "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
+        setResponseData(INTERNAL_SERVER_ERROR, "", "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
 
-    setResponseData(NO_CONTENT, filePath, "text/plain", _response->getStatusPage(NO_CONTENT), "");
+    setResponseData(NO_CONTENT, filePath, "text/html", _response->getStatusPage(NO_CONTENT), "");
     return NO_CONTENT;
 }
 
@@ -100,7 +100,7 @@ int Client::runGetMethod()
     Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
 
     if (matchedRoute.getRedirect() != ""){
-        setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
+        setResponseData(MOVED_PERMANENTLY, "", "text/html", _response->getStatusPage(MOVED_PERMANENTLY), matchedRoute.getRedirect());
         return (MOVED_PERMANENTLY);
     }
 
@@ -110,13 +110,13 @@ int Client::runGetMethod()
     string contentLength = defineContentLength(responseBody);
 
     if (_response->getStatusCode() == NOT_FOUND){
-        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found", "");
+        setResponseData(NOT_FOUND, filePath, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     } else if (_response->getStatusCode() == FORBIDDEN){
-        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden", "");
+        setResponseData(FORBIDDEN, filePath, "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
-        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");
+        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
     setResponseData(OK, filePath, contentType, responseBody, "");

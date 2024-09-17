@@ -322,5 +322,5 @@ void Request::clear()
     _buffer.clear();
     _isCgi = false;
     _readyForResponse = false;
-    _statusCode = HttpStatus();  // Assuming HttpStatus has a default constructor
+    _statusCode = HttpStatus();
 }

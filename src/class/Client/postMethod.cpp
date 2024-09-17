@@ -59,6 +59,9 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 int Client::runPostMethod() {
     string contentType = _request->getHeader("content-type");
     _response->setHeader("Content-type", "text/plain");
+    string uri = _request->getURI();
+    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
+    string filePath = defineFilePath(matchedRoute, uri);
 
     if (contentType.find("multipart/form-data") != string::npos) {
         map<string, vector<char> > formData = _request->getFormData();
@@ -69,13 +72,11 @@ int Client::runPostMethod() {
         }
 
         string filename = string(formData["filename"].begin(), formData["filename"].end());
-        string uri = _request->getURI();
-        string directory = "content" + uri; // Change this to your desired directory structure
 
         vector<char> fileContent = formData["fileContent"];
         string fileContentType = string(formData["contentType"].begin(), formData["contentType"].end());
 
-        if (!saveUploadedFile(filename, fileContent, directory)) {
+        if (!saveUploadedFile(filename, fileContent, filePath)) {
             return FORBIDDEN;
         }
 
@@ -89,6 +90,6 @@ int Client::runPostMethod() {
         return BAD_REQUEST;
     }
 
-    setResponseData(CREATED, "", "text/html", _response->getStatusPage(CREATED), "");
+    setResponseData(CREATED, "", "text/html", _response->getStatusPage(CREATED), filePath);
     return CREATED;
 }

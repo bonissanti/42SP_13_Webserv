@@ -14,7 +14,6 @@ typedef enum {
     FORBIDDEN = 403,
     NOT_FOUND = 404,
     METHOD_NOT_ALLOWED = 405,
-    CONFLICT = 409,
     INTERNAL_SERVER_ERROR = 500,
     NOT_IMPLEMENTED = 501,
     BAD_GATEWAY = 502,
@@ -29,7 +28,6 @@ typedef enum {
 #define BODY_403 "<html><head><title>403</title></head><body><h1>403</h1><p>Forbidden</p></body></html>"
 #define BODY_404 "<html><head><title>404</title></head><body><h1>404</h1><p>Not Found</p></body></html>"
 #define BODY_405 "<html><head><title>405</title></head><body><h1>405</h1><p>Method Not Allowed</p></body></html>"
-#define BODY_409 "<html><head><title>409</title></head><body><h1>409</h1><p>Conflict</p></body></html>"
 #define BODY_500 "<html><head><title>500</title></head><body><h1>500</h1><p>Internal Server Error</p></body></html>"
 #define BODY_501 "<html><head><title>501</title></head><body><h1>501</h1><p>Method Not Implemented</p></body></html>"
 #define BODY_502 "<html><head><title>502</title></head><body><h1>502</h1><p>Bad Gateway</p></body></html>"

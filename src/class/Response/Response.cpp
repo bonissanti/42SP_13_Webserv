@@ -46,33 +46,33 @@ void Response::clear() {
 
 string Response::getStatusPage(int statusCode) {
 	switch(statusCode)
-{
-	case 201:
-		return BODY_201;
-	case 204:
-		return BODY_204;
-	case 301:
-		return BODY_301;
-	case 304:
-		return BODY_304;
-	case 400:
-		return BODY_400;
-	case 403:
-		return BODY_403;
-	case 404:
-		return BODY_404;
-	case 405:
-		return BODY_405;
-	case 500:
-		return BODY_500;
-	case 501:
-		return BODY_501;
-	case 502:
-		return BODY_502;
-	case 505:
-		return BODY_505;
-	default:
-		return "<html><body><h1> Unknown Status</h1></body></html>";
-}
+    {
+        case 201:
+            return BODY_201;
+        case 204:
+            return BODY_204;
+        case 301:
+            return BODY_301;
+        case 304:
+            return BODY_304;
+        case 400:
+            return BODY_400;
+        case 403:
+            return BODY_403;
+        case 404:
+            return BODY_404;
+        case 405:
+            return BODY_405;
+        case 500:
+            return BODY_500;
+        case 501:
+            return BODY_501;
+        case 502:
+            return BODY_502;
+        case 505:
+            return BODY_505;
+        default:
+            return "<html><body><h1>Unknown Status</h1></body></html>";
+    }
 }
 
