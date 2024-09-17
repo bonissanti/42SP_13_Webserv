@@ -191,8 +191,8 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
             if (isFileContent && !isHeader) {
                 size_t start_of_file_content = header_end + 4;
                 partContent.insert(partContent.end(),
-                                   content_up_to_boundary.begin() + start_of_file_content,
-                                   content_up_to_boundary.end());
+                    content_up_to_boundary.begin() + start_of_file_content,
+                    content_up_to_boundary.end());
             }
 
             // Update accumulated_content
@@ -247,14 +247,18 @@ bool Request::validateRequest() //mudar para void ou HttpCode
         _statusCode = VERSION_NOT_SUPPORTED;
         return false;
     }
+
     if (_headers.find("host") == _headers.end()) {
-        // cout << "Error: missing Host" << endl;
         _statusCode = BAD_REQUEST;
         return false;
     }
 
+    if (_headers.find("content-length") != _headers.end() && Utils::strtoi(_headers["content-length"]) > _server.getMaxBodySize()) {
+        _statusCode = PAYLOAD_TOO_LARGE;
+        return false;
+    }
+
     if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
-        // cout << "Error: missing Content-Length" << endl;
         _statusCode = BAD_REQUEST;
         return false;
     }
