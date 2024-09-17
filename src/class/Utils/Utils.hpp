@@ -72,6 +72,8 @@ typedef enum {
 #include <algorithm>
 #include <cstddef>
 #include <sys/stat.h>
+#include <stack>
+
 
 using namespace std;
 extern bool signalUsed;

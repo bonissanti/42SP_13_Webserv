@@ -4,14 +4,10 @@ bool Client::_subdirAutoindex = false;
 
 Client::Client()
 {
-    _request = new Request();
-    _response = new Response();
 }
 
 Client::~Client()
 {
-    delete _request;
-    delete _response;
 }
 
 Client::ClientException::ClientException(const string& message) : msg(message) {}
@@ -20,6 +16,22 @@ Client::ClientException::~ClientException() throw() {}
 const char* Client::ClientException::what() const throw()
 {
     return (msg.c_str());
+}
+
+void Client::addAssociation(int clientFd, Server& server)
+{
+    _fdsMap[clientFd] = &server;
+}
+
+Server* Client::getServerFd(int clientFd)
+{
+    Server *serverPtr = NULL;
+    if (_fdsMap.find(clientFd) != _fdsMap.end())
+        return (_fdsMap[clientFd]);
+    else {
+        cerr << RED << "Error: serverFd not found for request" << RESET;
+    }
+    return (serverPtr);
 }
 
 int Client::getMethodIndex(string method)
@@ -32,32 +44,32 @@ int Client::getMethodIndex(string method)
     return (-1);
 }
 
-Server* Client::getServer(void)
-{
-    return (_server);
-}
+// Server Client::getServer(void)
+// {
+//     return (_server);
+// }
 
-Request* Client::getRequest(void)
-{
-    return (_request);
-}
+// Request Client::getRequest(void)
+// {
+//     return (_request);
+// }
 
-Response* Client::getResponse(void)
-{
-    return (_response);
-}
+// Response Client::getResponse(void)
+// {
+//     return (_response);
+// }
 
-void Client::setServer(Server& server)
-{
-    _server = &server;
-}
+// void Client::setServer(Server& server)
+// {
+//     _server = &server;
+// }
 
 int Client::callMethod()
 {
-    if (_request->getURI().empty())
-        return (_request->setStatusCode(BAD_REQUEST));
+    if (_request.getURI().empty())
+        return (_request.setStatusCode(BAD_REQUEST));
 
-    switch (getMethodIndex(_request->getMethod())) {
+    switch (getMethodIndex(_request.getMethod())) {
         case GET:
             return runGetMethod();
         case POST:
@@ -65,14 +77,14 @@ int Client::callMethod()
         case DELETE:
             return runDeleteMethod();
         default:
-            return (_request->setStatusCode(NOT_FOUND));
+            return (_request.setStatusCode(NOT_FOUND));
     }
 }
 
 int Client::runDeleteMethod()
 {
-    string uri = _request->getURI();
-    Route matchedRoute = _server->findMatchingRoute(uri, Client::_subdirAutoindex);
+    string uri = _request.getURI();
+    Route matchedRoute = _server.findMatchingRoute(uri, Client::_subdirAutoindex);
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
@@ -96,8 +108,8 @@ int Client::runDeleteMethod()
 
 int Client::runGetMethod()
 {
-    string uri = _request->getURI();
-    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
+    string uri = _request.getURI();
+    Route matchedRoute = _server.findMatchingRoute(uri, _subdirAutoindex);
 
     if (matchedRoute.getRedirect() != ""){
         setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
@@ -109,13 +121,13 @@ int Client::runGetMethod()
     string responseBody = defineResponseBody(matchedRoute, filePath, uri);
     string contentLength = defineContentLength(responseBody);
 
-    if (_response->getStatusCode() == NOT_FOUND){
+    if (_response.getStatusCode() == NOT_FOUND){
         setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found", "");
         return NOT_FOUND;
-    } else if (_response->getStatusCode() == FORBIDDEN){
+    } else if (_response.getStatusCode() == FORBIDDEN){
         setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden", "");
         return FORBIDDEN;
-    } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
+    } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
         setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");
         return INTERNAL_SERVER_ERROR;
     }
@@ -174,78 +186,81 @@ string Client::defineContentType(string filePath)
     return ("text/html;charset=UTF-8");
 }
 
-void Client::sendResponse(void)
+void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
 {
+    _request = requests[pollFds.fd];
+    _server = _request.getServer();
     string build;
 
-    if (_request->getStatusCode() == BAD_REQUEST) {
-        build = _response->buildMessage();
-    }
-    else {
+    if (_request.getStatusCode() == BAD_REQUEST) {
+        build = _response.buildMessage();
+    } else {
         callMethod();
-        build = _response->buildMessage();
+        build = _response.buildMessage();
     }
-    send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
+    send(pollFds.fd, build.c_str(), build.size(), 0);
     cout << "Message sent" << endl;
 
-    close(_server->getPollFd().fd);
-    _request->clear();
-    _response->clear();
+    requests.erase(pollFds.fd);
+    close(pollFds.fd);
+
+    _request.clear();
+    _response.clear();
 }
 
 string Client::defineResponseBody(const Route &route, const string& filePath, const string& uri)
 {
     if (route.getCgiOn()) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
-            return (_response->executeCGI(*_request, *_server, filePath));
+            return (_response.executeCGI(_request, _server, filePath));
     }
 
     struct stat path_stat;
     stat(filePath.c_str(), &path_stat);
     if (S_ISDIR(path_stat.st_mode)){
         if (_subdirAutoindex)
-        	return (_response->handleAutoIndex(filePath, uri));
+        	return (_response.handleAutoIndex(filePath, uri));
     } 
     
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
-        _response->setStatusCode(NOT_FOUND);
+        _response.setStatusCode(NOT_FOUND);
         return ("");
     }
     else if (file.fail()) {
-        _response->setStatusCode(INTERNAL_SERVER_ERROR);
+        _response.setStatusCode(INTERNAL_SERVER_ERROR);
         return ("");
     }
     stringstream buffer;
     buffer << file.rdbuf();
 
     if (!verifyPermission(filePath)) {
-        _response->setStatusCode(FORBIDDEN);
+        _response.setStatusCode(FORBIDDEN);
         return ("");
     }
     file.close();
     return (buffer.str());
 }
 
-void Client::handleMultiPartRequest(void)
-{
-    char buffer[65535];
-    ssize_t bytesReceived = recv(_server->getPollFd().fd, buffer, sizeof(buffer), 0);
+// void Client::handleMultiPartRequest(void)
+// {
+//     char buffer[65535];
+//     ssize_t bytesReceived = recv(_server.getPollFd().fd, buffer, sizeof(buffer), 0);
 
-    if (bytesReceived > 0) {
-        _request->parseRequest(string(buffer, bytesReceived));
-    }
-    else if (bytesReceived == 0) {
-        cout << "Connection closed" << endl;
-        close(_server->getPollFd().fd);
-    }
-    else {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return;
-        perror("Error: recv failed");
-        close(_server->getPollFd().fd);
-    }
-}
+//     if (bytesReceived > 0) {
+//         _request.parseRequest(string(buffer, bytesReceived));
+//     }
+//     else if (bytesReceived == 0) {
+//         cout << "Connection closed" << endl;
+//         close(_server.getPollFd().fd);
+//     }
+//     else {
+//         if (errno == EAGAIN || errno == EWOULDBLOCK)
+//             return;
+//         perror("Error: recv failed");
+//         close(_server.getPollFd().fd);
+//     }
+// }
 bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)
@@ -266,10 +281,10 @@ string Client::defineContentLength(const string& body)
 
 void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location){
     if (statusCode == MOVED_PERMANENTLY)
-        _response->setLocation(location);
-    _response->setStatusCode(statusCode);
-    _response->setFilePath(filePath);
-    _response->setContentType(contentType);
-    _response->setResponseBody(responseBody);
-    _response->setContentLength(defineContentLength(responseBody));
+        _response.setLocation(location);
+    _response.setStatusCode(statusCode);
+    _response.setFilePath(filePath);
+    _response.setContentType(contentType);
+    _response.setResponseBody(responseBody);
+    _response.setContentLength(defineContentLength(responseBody));
 }

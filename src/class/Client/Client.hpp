@@ -10,11 +10,12 @@
 
 class Client {
     private:
-        Server *_server;
-        Response *_response;
-        Request *_request;
+        Server _server;
+        Response _response;
+        Request _request;
         map<string, string> _mimeTypes;
         static bool _subdirAutoindex;
+        map<int, Server*> _fdsMap;
 
         string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);
@@ -26,18 +27,19 @@ class Client {
     public:
         Client();
         ~Client();
-        void addAssociation(int clientFd, Server server);
+        void addAssociation(int clientFd, Server& server);
         int callMethod(void);
         int runGetMethod(void);
         int runPostMethod(void);
         int runDeleteMethod(void);
-        void handleMultiPartRequest(void);
+        // void handleMultiPartRequest(void);
         bool saveUploadedFile(const string &filename, const std::vector<char> &fileContent, const string &directory);
-        void sendResponse(void);
+        void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
         int getMethodIndex(string method);
-        Server* getServer(void);
-        Response *getResponse(void);
-        Request *getRequest(void);
+        // Server* getServer(void);
+        // Response *getResponse(void);
+        // Request *getRequest(void);
+        Server* getServerFd(int clientFd);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody);
         void setServer(Server& server);
 

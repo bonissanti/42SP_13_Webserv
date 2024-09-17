@@ -8,8 +8,8 @@ class Server {
     private:
         int _listen;
         int _socketFd;
-        struct pollfd _fd;
-        struct pollfd _tempFd;
+        struct pollfd _fd; // inutilizado
+        struct pollfd _tempFd; // inutilizado
         string _server_name;
         string _root;
         int _client_max_body_size;
@@ -27,7 +27,6 @@ class Server {
         string getServerName(void);
         vector<Route> getRoute(void);
         string getRoot() const;
-        struct pollfd& getPollFd(void);
         void getServerFd(void);
 
         void addClient(int clientFd);
@@ -40,8 +39,8 @@ class Server {
         void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);
         void setClientFd(struct pollfd& pollFd);
-        void openPortsToListen(void);
         Route findMatchingRoute(const string& uri, bool& subdirAutoindex);
+        static void configServer(vector<Server>& servers);
 
         class exception : public std::exception {
             private:

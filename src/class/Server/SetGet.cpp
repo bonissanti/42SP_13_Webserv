@@ -20,10 +20,10 @@ int Server::getListen(void)
     return (_listen);
 }
 
-struct pollfd& Server::getPollFd(void)
-{
-    return (_fd);
-}
+// struct pollfd& Server::getPollFd(void)
+// {
+//     return (_fd);
+// }
 
 string Server::getRoot() const
 {

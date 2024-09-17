@@ -1,5 +1,7 @@
 #include "Request.hpp"
 
+Request::Request(Server& server) : _server(server), _isCgi(false), _readyForResponse (false), _statusCode(OK) {}
+
 Request::Request(const string &raw_request, Server &server)
     : _server(server), _isCgi(false), _readyForResponse(false), _statusCode(OK)
 {
@@ -295,28 +297,97 @@ void Request::printRequest() const
     cout << _body << endl;
 }
 
-void Request::readRequest(struct pollfd &actualFd)
+void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server)
 {
     char buffer[65535];
-    ssize_t bytesReceived;
-
-    bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
-
+    ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
     if (bytesReceived > 0) {
-        parseRequest(string(buffer, bytesReceived));
-    }
-    else if (bytesReceived == 0) {
-        _readyForResponse = true;
+        int fd = pollFds[i].fd;
+        if (requests.find(fd) == requests.end())
+            requests[fd] = Request(server);
+        requests[fd].parseRequest(string(buffer, bytesReceived));
+    } else if (bytesReceived == 0) {
         cout << "Connection closed" << endl;
-        close(actualFd.fd);
-    }
-    else {
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
+        requests.erase(pollFds[i].fd);
+    } else {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
         perror("Error: recv failed");
-        close(actualFd.fd);
+        close(pollFds[i].fd);
+        pollFds.erase(pollFds.begin() + i);
+        requests.erase(pollFds[i].fd);
     }
 }
+
+// void Request::readRequest(vector<struct pollfd> &pollFds, int i)
+// {
+//     char buffer[65535];
+//     ssize_t bytesReceived = recv(pollFds[i].fd, buffer, sizeof(buffer), 0);
+//     if (bytesReceived > 0) {
+//         parseRequest(string(buffer, bytesReceived));
+//     } else if (bytesReceived == 0) {
+//         cout << "Connection closed" << endl;
+//         close(pollFds[i].fd);
+//         pollFds.erase(pollFds.begin() + i);
+//         // requests.erase(pollFds[i].fd);
+//     } else {
+//         if (errno == EAGAIN || errno == EWOULDBLOCK)
+//             return;
+//         perror("Error: recv failed");
+//         close(pollFds[i].fd);
+//         pollFds.erase(pollFds.begin() + i);
+//         // requests.erase(pollFds[i].fd);
+//     }
+// }
+
+// void Request::readRequest(int clientFd)
+// {
+//     char buffer[65535];
+//     ssize_t bytesReceived;
+
+//     bytesReceived = recv(clientFd, buffer, sizeof(buffer), 0);
+
+//     if (bytesReceived > 0) {
+//         parseRequest(string(buffer, bytesReceived));
+//     }
+//     else if (bytesReceived == 0) {
+//         _readyForResponse = true;
+//         cout << "Connection closed" << endl;
+//         close(clientFd);
+//     }
+//     else {
+//         if (errno == EAGAIN || errno == EWOULDBLOCK)
+//             return;
+//         perror("Error: recv failed");
+//         close(clientFd);
+//     }
+// }
+
+
+// void Request::readRequest(struct pollfd &actualFd)
+// {
+//     char buffer[65535];
+//     ssize_t bytesReceived;
+
+//     bytesReceived = recv(actualFd.fd, buffer, sizeof(buffer), 0);
+
+//     if (bytesReceived > 0) {
+//         parseRequest(string(buffer, bytesReceived));
+//     }
+//     else if (bytesReceived == 0) {
+//         _readyForResponse = true;
+//         cout << "Connection closed" << endl;
+//         close(actualFd.fd);
+//     }
+//     else {
+//         if (errno == EAGAIN || errno == EWOULDBLOCK)
+//             return;
+//         perror("Error: recv failed");
+//         close(actualFd.fd);
+//     }
+// }
 
 void Request::clear()
 {

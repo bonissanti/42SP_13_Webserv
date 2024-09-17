@@ -57,11 +57,11 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 }
 
 int Client::runPostMethod() {
-    string contentType = _request->getHeader("content-type");
-    _response->setHeader("Content-type", "text/plain");
+    string contentType = _request.getHeader("content-type");
+    _response.setHeader("Content-type", "text/plain");
 
     if (contentType.find("multipart/form-data") != string::npos) {
-        map<string, vector<char> > formData = _request->getFormData();
+        map<string, vector<char> > formData = _request.getFormData();
 
         if (formData.find("filename") == formData.end() || formData.find("fileContent") == formData.end()) {
             setResponseData(BAD_REQUEST, "", "text/plain", "Missing form data", "");
@@ -69,7 +69,7 @@ int Client::runPostMethod() {
         }
 
         string filename = string(formData["filename"].begin(), formData["filename"].end());
-        string uri = _request->getURI();
+        string uri = _request.getURI();
         string directory = "content" + uri; // Change this to your desired directory structure
 
         vector<char> fileContent = formData["fileContent"];
@@ -80,7 +80,7 @@ int Client::runPostMethod() {
         }
 
         // Set the correct content type in the response
-        _response->setHeader("Content-type", fileContentType);
+        _response.setHeader("Content-type", fileContentType);
     } else if (contentType.empty()) {
         setResponseData(BAD_REQUEST, "", "text/plain", "Missing Content-Type header", "");
         return BAD_REQUEST;
