@@ -122,10 +122,12 @@ int Client::runGetMethod()
     string contentLength = defineContentLength(responseBody);
 
     if (_response.getStatusCode() == NOT_FOUND){
-        setResponseData(NOT_FOUND, filePath, "text/plain", "404 Not Found", "");
+        string errorContent = Utils::readFile(ERROR404);
+        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
         return NOT_FOUND;
     } else if (_response.getStatusCode() == FORBIDDEN){
-        setResponseData(FORBIDDEN, filePath, "text/plain", "403 Forbidden", "");
+        string errorContent = Utils::readFile(ERROR403);
+        setResponseData(NOT_FOUND, ERROR403, "text/html", errorContent, "");
         return FORBIDDEN;
     } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
         setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");

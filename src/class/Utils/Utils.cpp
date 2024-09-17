@@ -165,3 +165,16 @@ string Utils::statusCodeToString(int code) {
             return "Unknown Status Code";
     }
 }
+
+string Utils::readFile(const string& filePath){
+    ifstream file(filePath.c_str());
+    if (!file.is_open()){
+        throw Server::exception(RED "Error: could not open file " + filePath);
+        cerr << RESET;
+    }
+    
+    stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+    return (buffer.str());
+}

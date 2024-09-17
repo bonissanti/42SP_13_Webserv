@@ -98,39 +98,6 @@ int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     return (clientFd);
 }
 
-// pollfd Run::acceptNewConnection(int socketFd)
-// {
-//     int clientFd;
-//     socklen_t addrlen;
-//     struct sockaddr_in clientAddr;
-
-//     addrlen = sizeof(clientAddr);
-//     clientFd = accept(socketFd, (struct sockaddr*)&clientAddr, &addrlen);
-//     if (clientFd == -1) {
-//         if (errno == EWOULDBLOCK)
-//             cout << "No pending connections for now" << endl;
-//         else {
-//             close(socketFd);
-//             cerr << "Error: accept failed" << endl;
-//         }
-//     }
-//     else
-//         cout << "New communication established!" << endl;  // log message
-
-//     // int flags = fcntl(clientFd, F_GETFL, 0);
-//     // if (flags == -1)
-//     //     cerr << RED << "Error: fcntl failed" << RESET << endl;
-//     // if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) == -1)
-//     //     cerr << RED << "Error: fcntl failed" << RESET << endl;
-
-//     struct pollfd commFd;
-
-//     commFd.fd = clientFd;
-//     commFd.events = POLLIN | POLLOUT;
-//     commFd.revents = 0;
-//     return (commFd);
-// }
-
 vector<struct pollfd> loadPolls(vector<Server> servers)
 {
     vector<struct pollfd> pollFds(servers.size());
@@ -154,9 +121,6 @@ void Run::startServer(vector<Server>& servers)
         
         if (signalUsed){
             break ;
-        }
-        if (returnValue == 0){
-            cout << "Error: poll Timeout" << endl;
         }
         else if (returnValue == -1){
             break ;

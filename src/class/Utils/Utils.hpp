@@ -32,6 +32,14 @@ typedef enum {
 #define CLIENT_MBSIZE 4
 #define ROUTE 5
 
+// Macro errors
+
+#define ERROR403 "./content/page-errors/403.html"
+#define ERROR404 "./content/page-errors/404.html"
+#define ERROR405 "./content/page-errors/405.html"
+#define ERROR500 "./content/page-errors/500.html"
+#define ERROR502 "./content/page-errors/502.html"
+
 // Macro route
 #define CGIDIR "/cgi/"
 #define CGIEXEC "/usr/bin/python3"
@@ -93,6 +101,7 @@ class Utils {
         static string itostr(int value);
         static string statusCodeToString(int code);
         static string removeSlash(string str);
+        static string readFile(const string& filePath);
 };
 
 #endif
