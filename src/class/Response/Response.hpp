@@ -49,7 +49,6 @@ class Response {
         string getLocation(void) const;
         int getStatusCode(void) const;
 
-        string badRequestBody(const string& message);
         string setCreatedBody(const string& filePath);
 		string getStatusPage(int statusCode);
         string buildMessage(void);

@@ -20,12 +20,10 @@ typedef enum {
     VERSION_NOT_SUPPORTED = 505,
 } 	HttpStatus;
 
+#define BODY_200 "<html><head><title>200</title></head><body><h1>200</h1><p>OK</p></body></html>"
 #define BODY_201 "<html><head><title>201</title></head><body><h1>201</h1><p>Created Successfully</p></body></html>"
 #define BODY_204 "<html><head><title>204</title></head><body><h1>204</h1><p>Content Deleted</p></body></html>"
 
-#define ERROR200 "./content/page-errors/200.html"
-#define ERROR201 "./content/page-errors/201.html"
-#define ERROR204 "./content/page-errors/204.html"
 #define ERROR301 "./content/page-errors/301.html"
 #define ERROR304 "./content/page-errors/304.html"
 #define ERROR400 "./content/page-errors/400.html"

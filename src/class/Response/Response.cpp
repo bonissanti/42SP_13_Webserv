@@ -57,27 +57,11 @@ string Response::setCreatedBody(const string& filePath) {
     return body;
 }
 
-string Response::badRequestBody(const string& message) {
-    string msg_html = "Request is malformed";
-    if (message != "")
-        msg_html = "<p>" + message + "</p>";
-
-    string body = "<html>"
-                    "<head>"
-                        "<title>400</title>"
-                    "</head>"
-                    "<body>"
-                        "<h1>400</h1>"
-                        "<p>Bad Request</p>"
-                        + msg_html + 
-                    "</body>"
-                "</html>";
-    return body;
-}
-
 string Response::getStatusPage(int statusCode) {
 	switch(statusCode)
     {
+		case 200:
+            return BODY_200;
         case 201:
             return BODY_201;
         case 204:

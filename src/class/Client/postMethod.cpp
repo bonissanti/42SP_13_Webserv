@@ -55,12 +55,9 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
     return true;
 }
 
-int Client::runPostMethod(string uri) {
+int Client::runPostMethod(string filePath) {
     string contentType = _request->getHeader("content-type");
     _response->setHeader("Content-type", "text/plain");
-    string uri = _request->getURI();
-    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
-    string filePath = defineFilePath(matchedRoute, uri);
 
     if (contentType.find("multipart/form-data") != string::npos) {
         map<string, vector<char> > formData = _request->getFormData();
@@ -71,7 +68,7 @@ int Client::runPostMethod(string uri) {
         }
 
         string filename = string(formData["filename"].begin(), formData["filename"].end());
-        string directory = "content" + uri; // verificar
+        // string directory = "content" + uri; // verificar
 
         vector<char> fileContent = formData["fileContent"];
         string fileContentType = string(formData["contentType"].begin(), formData["contentType"].end());
@@ -82,7 +79,7 @@ int Client::runPostMethod(string uri) {
 
         // Set the correct content type in the response
         _response->setHeader("Content-type", fileContentType);
-        setResponseData(CREATED, filePath, "text/html", _response->setCreatedBody(filePath + "/" + filename), filePath);
+        setResponseData(CREATED, filePath, "text/html", _response->setCreatedBody(_request->getURI() + "/" + filename), filePath);
         return CREATED;
     } else if (contentType.empty()) {
         setResponseData(BAD_REQUEST, ERROR400, "text/html", _response->getStatusPage(BAD_REQUEST), "");
