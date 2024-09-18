@@ -4,14 +4,38 @@
 typedef enum {
     DEFAULT = 0,
     OK = 200,
+    CREATED = 201,
+    ACCEPTED = 202,
+    NO_CONTENT = 204,
     MOVED_PERMANENTLY = 301,
+    NOT_MODIFIED = 304,
     BAD_REQUEST = 400,
     FORBIDDEN = 403,
     NOT_FOUND = 404,
     METHOD_NOT_ALLOWED = 405,
+    PAYLOAD_TOO_LARGE = 413,
     INTERNAL_SERVER_ERROR = 500,
+    NOT_IMPLEMENTED = 501,
     BAD_GATEWAY = 502,
-} HttpStatus;
+    VERSION_NOT_SUPPORTED = 505,
+} 	HttpStatus;
+
+#define BODY_200 "<html><head><title>200</title></head><body><h1>200</h1><p>OK</p></body></html>"
+#define BODY_201 "<html><head><title>201</title></head><body><h1>201</h1><p>Created Successfully</p></body></html>"
+#define BODY_204 "<html><head><title>204</title></head><body><h1>204</h1><p>Content Deleted</p></body></html>"
+
+#define ERROR301 "./content/page-errors/301.html"
+#define ERROR304 "./content/page-errors/304.html"
+#define ERROR400 "./content/page-errors/400.html"
+#define ERROR403 "./content/page-errors/403.html" 
+#define ERROR404 "./content/page-errors/404.html"
+#define ERROR405 "./content/page-errors/405.html"
+#define ERROR408 "./content/page-errors/408.html"
+#define ERROR413 "./content/page-errors/413.html"
+#define ERROR500 "./content/page-errors/500.html"
+#define ERROR501 "./content/page-errors/501.html"
+#define ERROR502 "./content/page-errors/502.html"
+#define ERROR505 "./content/page-errors/505.html"
 
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
@@ -46,8 +70,9 @@ typedef enum {
 #define POST 1
 #define DELETE 2
 
-#define MB 1024
-#define GB 1048576
+#define KB 1024
+#define MB 1048576
+#define GB 1073741824
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -90,6 +115,7 @@ class Utils {
         static string statusCodeToString(int code);
         static string removeSlash(string str);
         bool isDirectory(const char* path);
+        static string readFile(const string& filePath);
 };
 
 #endif

@@ -107,12 +107,11 @@ void Run::startServer(vector<Server>& servers)
                 throw Server::exception(RED "Error: poll failed" RESET);
             if (servers[i].getPollFd().revents & POLLIN) {
                 try {
-                        requestFound = true;
+                        requestFound = true; //acho que pode remover
                         struct pollfd actualFd = Run::acceptNewConnection(servers[i].getPollFd().fd);
                         servers[i].setClientFd(actualFd);
                         client.setServer(servers[i]);
                     while (client.getRequest()->getIsReadyForResponse() == false) {
-                        cout << "getting request" << endl;
                         client.getRequest()->readRequest(actualFd);
                     }
                 }

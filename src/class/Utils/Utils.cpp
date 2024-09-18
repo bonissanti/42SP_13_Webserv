@@ -1,4 +1,5 @@
 #include "Utils.hpp"
+#include "../Server/Server.hpp"
 
 #include <sys/stat.h>
 #include <stack>
@@ -112,6 +113,10 @@ string Utils::statusCodeToString(int code) {
             return "Default";
         case OK:
             return "200 OK";
+        case CREATED:
+            return "201 Resource Created";
+        case NO_CONTENT:
+            return "204 Content Deleted";
         case MOVED_PERMANENTLY:
             return "301 Moved Permanently";
         case BAD_REQUEST:
@@ -122,11 +127,30 @@ string Utils::statusCodeToString(int code) {
             return "404 Not Found";
         case METHOD_NOT_ALLOWED:
             return "405 Method Not Allowed";
+        case PAYLOAD_TOO_LARGE:
+            return "413 Payload Too Large";
         case INTERNAL_SERVER_ERROR:
             return "500 Internal Server Error";
+        case NOT_IMPLEMENTED:
+            return "501 Method Not Implemented";
         case BAD_GATEWAY:
             return "502 Bad Gateway";
+        case VERSION_NOT_SUPPORTED:
+            return "505 HTTP Version Not Supported";
         default:
             return "Unknown Status Code";
     }
+}
+
+string Utils::readFile(const string& filePath) {
+    ifstream file(filePath.c_str());
+    if (!file.is_open()){
+        throw Server::exception(RED "Error: could not open file " + filePath);
+        cerr << RESET;
+    }
+    
+    stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+    return (buffer.str());
 }
