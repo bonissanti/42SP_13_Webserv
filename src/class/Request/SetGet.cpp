@@ -31,7 +31,7 @@ int Request::getStatusCode() const
     return _statusCode;
 }
 
-Server Request::getServer() const
+Server& Request::getServer()
 {
     return _server;
 }

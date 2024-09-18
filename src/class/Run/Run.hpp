@@ -3,17 +3,21 @@
 
 #include "../Server/Server.hpp"
 #include "../Utils/Utils.hpp"
+#include "../Client/Client.hpp"
 #include <stack>
 
 class Run {
     private:
-        Run(void);
-        ~Run();
-        static struct pollfd acceptNewConnection(int socketFd);
+        map<int, Client*> _mapClient;
+        // static struct pollfd acceptNewConnection(int socketFd);
+        // int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds);
 
     public:
-        static int setServersNumber(string filePath);
-        static void startServer(vector<Server>& servers);
+        Run(void);
+        ~Run();
+    	Client* getClientFd(int clientFd);
+        int setServersNumber(string filePath);
+        void startServer(vector<Server>& servers);
 
         class exception : public std::exception {
             private:

@@ -1,28 +1,28 @@
-#include "Response.hpp"
+#include "Client.hpp"
 
 extern char **environ;
 
-void Response::freeEnviron(char **envp)
+void Client::freeEnviron(char **envp)
 {
     for (int i = 0; envp[i]; i++)
         delete[] envp[i];
     delete[] envp;
 }
 
-bool Response::checkFile(const string &file)
+bool Client::checkFile(const string &file)
 {
     ifstream f(file.c_str());
     return (f.good());
 }
 
-char **Response::configEnviron(Server &server, Request &req)
+char **Client::configEnviron(Server& server, Request &req)
 {
     char **envp = new char *[7];
-
+    
     string serverName = "SERVER_NAME=" + server.getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(server.getListen());
-    string protocol = "SERVER_PROTOCOL=" + req._version;
-    string pathInfo = "PATH_INFO=" + req._uri;
+    string protocol = "SERVER_PROTOCOL=" + _request.getVersion();
+    string pathInfo = "PATH_INFO=" + _request.getURI();
     string method = "REQUEST_METHOD=" + req.getMethod();
     string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
 
@@ -36,20 +36,14 @@ char **Response::configEnviron(Server &server, Request &req)
     return (envp);
 }
 
-string Response::executeCGI(Request &req, Server &server, string filePath)
+string Client::executeCGI(Request &req, Server& server, string filePath)
 {
     int pid;
-    int fd[2];
+    int fd;
     int status;
     string result;
     if (!checkFile(filePath)) {
-        _statusCode = NOT_FOUND;
-        return ("");
-    }
-
-    if (Utils::isFile(filePath)) {
-        req.setStatusCode(INTERNAL_SERVER_ERROR);
-        return ("");
+        return (setPageError(NOT_FOUND, ERROR400));
     }
 
     size_t found = filePath.find('.');
@@ -58,49 +52,43 @@ string Response::executeCGI(Request &req, Server &server, string filePath)
     else
         _executor = "/usr/bin/php";
 
-    pipe(fd);
     pid = fork();
     if (pid < 0) {
         throw Server::exception(RED "Error: Fork failed" RESET);
     }
     if (pid == 0) {
-        signal(SIGINT, SIG_IGN);
-        signal(SIGTERM, SIG_IGN);
+        fd = open("/tmp/tempFile", O_TRUNC | O_CREAT | O_WRONLY, 0644);
+        signal(SIGINT, Utils::handleSignals);
+        signal(SIGTERM, Utils::handleSignals);
         char **envp = configEnviron(server, req);
         char *args[] = {const_cast<char *>(_executor.c_str()), const_cast<char *>(filePath.c_str()), NULL};
-
-        dup2(fd[1], STDOUT_FILENO);
-        close(fd[0]);
+    
+        dup2(fd, STDOUT_FILENO);
         if (execve(_executor.c_str(), args, envp) == -1) {
             freeEnviron(envp);
+            close(fd);
             cerr << RED << "Error: execve failed" << RESET << endl;
             exit(1);
         }
         freeEnviron(envp);
-        close(fd[1]);
+        close(fd);
     }
     else {
-        close(fd[1]);
-        result = readCGI(fd[0]);
-        close(fd[0]);
-        waitpid(pid, &status, 0);
-        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-            cerr << RED << "Error: child process failed" << RESET << endl;
-            kill(pid, SIGKILL);
+        clock_t time = clock();
+
+        while ((float)(clock() - time) / CLOCKS_PER_SEC < 5.0f){
+            int waitValue = waitpid(pid, &status, WNOHANG);
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+                string tempFile = "/tmp/tempFile";
+                return(Utils::readFile(tempFile));
+            }
+            else if (waitValue == -1 && status != -1)  {
+            	cerr << RED << "Error: child process failed at CGI execution" << RESET << endl;
+                kill(pid, SIGKILL);
+                return (setPageError(INTERNAL_SERVER_ERROR, ERROR500));
+            }
         }
     }
-    return (result);
-}
-
-string Response::readCGI(int fd_in)
-{
-    ssize_t bytesRead;
-    char buffer[65535];
-    string result;
-
-    while ((bytesRead = read(fd_in, &buffer, sizeof(buffer))) > 0) {
-        buffer[bytesRead] = '\0';
-        result += buffer;
-    }
-    return (result);
+    kill (pid, SIGKILL);
+    return (setPageError(REQUEST_TIMEOUT, ERROR408));
 }

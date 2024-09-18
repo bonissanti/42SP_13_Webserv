@@ -2,7 +2,7 @@
 #include "../Utils/Utils.hpp"
 
 Response::Response() 
-    : _statusCode(0), _index(""), _executor(""), _statusMessage(""), _responseBody(""),
+    : _statusCode(0), _index(""), _statusMessage(""), _responseBody(""),
       _filePath(""), _contentType(""), _contentLength(""), _location("")
 {
 }
@@ -34,7 +34,6 @@ string Response::buildMessage(void)
 void Response::clear() {
     _statusCode = 0;
     _index.clear();
-    _executor.clear();
     _statusMessage.clear();
     _responseBody.clear();
     _filePath.clear();

@@ -13,6 +13,7 @@ typedef enum {
     FORBIDDEN = 403,
     NOT_FOUND = 404,
     METHOD_NOT_ALLOWED = 405,
+    REQUEST_TIMEOUT = 408,
     PAYLOAD_TOO_LARGE = 413,
     INTERNAL_SERVER_ERROR = 500,
     NOT_IMPLEMENTED = 501,
@@ -55,6 +56,18 @@ typedef enum {
 #define CLIENT_MBSIZE 4
 #define ROUTE 5
 
+// Macro errors
+
+#define ERROR301 "./content/page-errors/301.html"
+#define ERROR400 "./content/page-errors/400.html"
+#define ERROR403 "./content/page-errors/403.html"
+#define ERROR404 "./content/page-errors/404.html"
+#define ERROR405 "./content/page-errors/405.html"
+#define ERROR408 "./content/page-errors/408.html"
+#define ERROR500 "./content/page-errors/500.html"
+#define ERROR502 "./content/page-errors/502.html"
+#define ERRORUNKNOWN "./content/page-errors/unknown.html"
+
 // Macro route
 #define CGIDIR "/cgi/"
 #define CGIEXEC "/usr/bin/python3"
@@ -95,6 +108,9 @@ typedef enum {
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <stack>
+#include <ctime>
+
 
 using namespace std;
 extern bool signalUsed;
@@ -114,6 +130,8 @@ class Utils {
         static string itostr(int value);
         static string statusCodeToString(int code);
         static string removeSlash(string str);
+        static string readFile(const string& filePath);
+        static void	handleSignals(int sigNum); 
         bool isDirectory(const char* path);
         static string readFile(const string& filePath);
 };

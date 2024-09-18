@@ -34,6 +34,7 @@ class Request {
         };
 
     public:
+        Request(Server& server);
         Request(const string& raw_request, Server& server);
         Request();
         Request(const Request& toCopy);
@@ -50,7 +51,7 @@ class Request {
         bool getIsCgi() const;
         int getStatusCode() const;
         map<int, Request> getRequest() const;
-        Server getServer() const;
+        Server& getServer();
         bool getIsReadyForResponse() const;
 
         int setStatusCode(HttpStatus code);
@@ -59,7 +60,10 @@ class Request {
         bool validateRequest();
         bool isRequestComplete();
         void parseRequest(const string& raw_request);
-        void readRequest(struct pollfd& actualFd);
+        // void readRequest(struct pollfd& actualFd);
+        // void readRequest(vector<struct pollfd> &pollFds, int i);
+        static void readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server);
+        // void readRequest(int clientFd);
         void clear();
         friend class Response;
 };
