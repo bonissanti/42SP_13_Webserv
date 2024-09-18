@@ -10,6 +10,7 @@ typedef enum {
     FORBIDDEN = 403,
     NOT_FOUND = 404,
     METHOD_NOT_ALLOWED = 405,
+    REQUEST_TIMEOUT = 408,
     INTERNAL_SERVER_ERROR = 500,
     BAD_GATEWAY = 502,
 } 	HttpStatus;
@@ -37,6 +38,7 @@ typedef enum {
 #define ERROR403 "./content/page-errors/403.html"
 #define ERROR404 "./content/page-errors/404.html"
 #define ERROR405 "./content/page-errors/405.html"
+#define ERROR408 "./content/page-errors/408.html"
 #define ERROR500 "./content/page-errors/500.html"
 #define ERROR502 "./content/page-errors/502.html"
 
@@ -81,6 +83,7 @@ typedef enum {
 #include <cstddef>
 #include <sys/stat.h>
 #include <stack>
+#include <ctime>
 
 
 using namespace std;
@@ -102,6 +105,7 @@ class Utils {
         static string statusCodeToString(int code);
         static string removeSlash(string str);
         static string readFile(const string& filePath);
+        static void	handleSignals(int sigNum); 
 };
 
 #endif

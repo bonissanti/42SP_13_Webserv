@@ -108,25 +108,7 @@ bool Server::filterDuplicatesRoutes(Route& route) {
     return true;
 }
 
-Route Server::findMatchingRoute(const string& uri, bool& subdirAutoindex){
-    Route routeDefault;
 
-    for (size_t i = 0; i < _routes.size(); i++){
-        if (uri == _routes[i].getRoute()){
-            if (_routes[i].getAutoIndex())
-                subdirAutoindex = true;
-            else
-                subdirAutoindex = false;
-            routeDefault = _routes[i];
-            return (routeDefault);
-        }
-    }
-
-    if (uri.find("/cgi") == 0){
-        routeDefault.setCgiOn(true);
-    }
-    return (routeDefault);
-}
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}
 Server::Server::exception::~exception() throw() {}

@@ -166,6 +166,13 @@ string Utils::statusCodeToString(int code) {
     }
 }
 
+void	Utils::handleSignals(int sigNum)
+{
+	(void)sigNum;
+	cerr << YELLOW << "\nBye! 👋" << RESET << endl;
+    signalUsed = true;
+}
+
 string Utils::readFile(const string& filePath){
     ifstream file(filePath.c_str());
     if (!file.is_open()){

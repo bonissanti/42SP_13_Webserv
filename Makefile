@@ -27,11 +27,12 @@ DEBUG_FLAG	= -D DEBUG
 ################################# Webserv src ################################
 
 FILES		= class/Utils/Utils.cpp		\
+			class/Client/Defines.cpp	\
 			class/Client/Client.cpp		\
+			class/Client/CGI.cpp		\
 			class/Client/postMethod.cpp	\
 			class/Request/Request.cpp 	\
 			class/Request/SetGet.cpp 	\
-			class/Response/CGI.cpp		\
 			class/Response/SetGet.cpp	\
 			class/Response/Response.cpp	\
 			class/Response/AutoIndex.cpp \

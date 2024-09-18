@@ -8,7 +8,6 @@ class Response {
     private:
         int _statusCode;
         string _index;
-        string _executor;
         string _statusMessage;
         string _responseBody;
         string _filePath;
@@ -17,20 +16,15 @@ class Response {
         string _location;
         map<string, string> _headers;
 
-        void freeEnviron(char** envp);
-        bool checkFile(const string& file);
-        string readCGI(int fd);
     public:
         Response();
         ~Response();
 
         int getMethodIndex(string method);
-        string executeCGI(Request& req, Server &server, string filePath);
         string handleAutoIndex(string filePath, const string& uri);
         string defineResponseBody(const string& filePath, Request& req);
         string defineResponseBody(Request& req);
         string defineContentLength(const string& body);
-        char** configEnviron(Server& server, Request& req);
 
         void setStatusCode(int code);
         void setFilePath(string filePath);

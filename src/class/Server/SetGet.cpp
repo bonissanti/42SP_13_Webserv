@@ -30,16 +30,16 @@ string Server::getRoot() const
     return _root;
 }
 
-void Server::setClientFd(struct pollfd& pollFd)
-{
-    _tempFd = _fd;
-    _fd = pollFd;
-}
+// void Server::setClientFd(struct pollfd& pollFd)
+// {
+//     _tempFd = _fd;
+//     _fd = pollFd;
+// }
 
-void Server::getServerFd(void)
-{
-    _fd = _tempFd;
-}
+// void Server::getServerFd(void)
+// {
+//     _fd = _tempFd;
+// }
 
 void Server::setListen(int port)
 {

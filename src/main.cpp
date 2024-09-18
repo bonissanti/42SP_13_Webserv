@@ -5,16 +5,11 @@
 vector<Server> signServers;
 bool signalUsed = false;
 
-void	handleSignals(int sigNum)
-{
-	(void)sigNum;
-	cerr << YELLOW << "\nBye! 👋" << RESET << endl;
-    signalUsed = true;
-}
-
 int main(int argc, char** argv)
 {
     Run run;
+    signal(SIGINT, Utils::handleSignals);
+    signal(SIGTERM, Utils::handleSignals);
     try {
         if (argc != 2)
             throw Server::exception(RED "Error: invalid number of arguments" RESET);
@@ -32,7 +27,6 @@ int main(int argc, char** argv)
             signServers[i].create(file);
         }
         file.close();
-        signal(SIGINT, handleSignals);
         Server::configServer(signServers);
         run.startServer(signServers);
     }
