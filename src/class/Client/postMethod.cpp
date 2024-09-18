@@ -56,7 +56,7 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
     return true;
 }
 
-int Client::runPostMethod() {
+int Client::runPostMethod(string uri) {
     string contentType = _request->getHeader("content-type");
     _response->setHeader("Content-type", "text/plain");
 
@@ -69,7 +69,6 @@ int Client::runPostMethod() {
         }
 
         string filename = string(formData["filename"].begin(), formData["filename"].end());
-        string uri = _request->getURI();
         string directory = "content" + uri; // Change this to your desired directory structure
 
         vector<char> fileContent = formData["fileContent"];

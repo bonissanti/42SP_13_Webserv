@@ -25,7 +25,7 @@ Server::~Server() {}
 void Server::create(ifstream& file)
 {
     bool routeFound = false;
-
+    /*  */
     string line;
     while (getline(file, line)) {
         // test if last line is a last route
@@ -62,7 +62,7 @@ void Server::create(ifstream& file)
             try {
                 Route new_route;
                 new_route.create(line, file);
-                if(filterDuplicatesRoutes(new_route))
+                if (filterDuplicatesRoutes(new_route))
                     _routes.push_back(new_route);
                 routeFound = true;
             }
@@ -95,7 +95,7 @@ void Server::openPortsToListen(void)
     //     throw Server::exception(RED "Error: fcntl failed" RESET);
 
     // if (fcntl(_socketFd, F_SETFL, flags | O_NONBLOCK) < 0)
-    //     throw Server::exception(RED "Error: fcntl failed" RESET); 
+    //     throw Server::exception(RED "Error: fcntl failed" RESET);
 
     if (bind(_socketFd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
         if (errno == EADDRINUSE)
@@ -109,32 +109,13 @@ void Server::openPortsToListen(void)
     _fd.revents = 0;
 }
 
-bool Server::filterDuplicatesRoutes(Route& route) {
+bool Server::filterDuplicatesRoutes(Route& route)
+{
     for (size_t i = 0; i < _routes.size(); i++) {
         if (_routes[i].getRoute() == route.getRoute())
             return false;
     }
     return true;
-}
-
-Route Server::findMatchingRoute(const string& uri, bool& subdirAutoindex){
-    Route routeDefault;
-
-    for (size_t i = 0; i < _routes.size(); i++){
-        if (uri == _routes[i].getRoute()){
-            if (_routes[i].getAutoIndex())
-                subdirAutoindex = true;
-            else
-                subdirAutoindex = false;
-            routeDefault = _routes[i];
-            return (routeDefault);
-        }
-    }
-
-    if (uri.find("/cgi") == 0){
-        routeDefault.setCgiOn(true);
-    }
-    return (routeDefault);
 }
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}

@@ -32,13 +32,12 @@ class Route {
 
         void setRoute(const string& route);
         void setAutoIndex(bool autoIndex);
-        void setCgiOn(bool cgiOn);
+        void setCgiOn(string& cgiOn);
         void setRoot(string& root);
         void setAllowMethods(const string& allowMethods);
         void setIndex(string& index);
         void setRedirect(const string& redirect);
         void setReturn(const string& ret);
-        void setCgi(string& cgi);
 
         class exception : public std::exception {
             private:
