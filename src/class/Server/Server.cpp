@@ -12,7 +12,6 @@ Server::Server(const Server& toCopy)
 {
     _listen = toCopy._listen;
     _socketFd = toCopy._socketFd;
-    _fd = toCopy._fd;
     _server_name = toCopy._server_name;
     _root = toCopy._root;
     _client_max_body_size = toCopy._client_max_body_size;
@@ -25,7 +24,7 @@ Server::~Server() {}
 void Server::create(ifstream& file)
 {
     bool routeFound = false;
-
+    /*  */
     string line;
     while (getline(file, line)) {
         // test if last line is a last route
@@ -62,7 +61,7 @@ void Server::create(ifstream& file)
             try {
                 Route new_route;
                 new_route.create(line, file);
-                if(filterDuplicatesRoutes(new_route))
+                if (filterDuplicatesRoutes(new_route))
                     _routes.push_back(new_route);
                 routeFound = true;
             }
@@ -100,14 +99,14 @@ void Server::configServer(vector<Server>& servers)
     }
 }
 
-bool Server::filterDuplicatesRoutes(Route& route) {
+bool Server::filterDuplicatesRoutes(Route& route)
+{
     for (size_t i = 0; i < _routes.size(); i++) {
         if (_routes[i].getRoute() == route.getRoute())
             return false;
     }
     return true;
 }
-
 
 
 Server::Server::exception::exception(const string& msg) : msg(msg) {}

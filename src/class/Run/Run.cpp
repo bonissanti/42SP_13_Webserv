@@ -76,18 +76,12 @@ int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
     if (clientFd == -1) {
         if (errno == EWOULDBLOCK)
-            cout << "No pending connections for now" << endl;
+            cout << YELLOW << "No pending connections for now" << RESET << endl;
         else
-            cerr << "Error: accept failed" << endl;
+            cerr << RED << "Error: accept failed" << RESET << endl;
     }
     else
-        cout << "New communication established!" << endl;  // log message
-
-    // int flags = fcntl(clientFd, F_GETFL);
-    // if (flags < 0)
-    //     throw Server::exception(RED "Error: fcntl failed" RESET);
-    // if (fcntl(clientFd, F_SETFL, flags | O_NONBLOCK) < 0)
-    //     throw Server::exception(RED "Error: fcntl failed" RESET);
+        cout << GREEN << "New communication established!" << RESET << endl;  // log message
 
     struct pollfd commFd;
 

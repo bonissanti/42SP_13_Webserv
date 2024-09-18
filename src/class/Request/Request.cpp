@@ -78,7 +78,7 @@ void Request::parseRequest(const string &raw_request) {
         return;
     }
 
-    cout << "Processing request..." << endl;
+    cout << GREEN << "Processing request..." << RESET << endl;
 
     istringstream request_stream(_buffer);
     string line;

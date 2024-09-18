@@ -24,29 +24,31 @@ class Client {
         int getMethodIndex(Route &route, string method);
         string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);
-        string defineResponseBody(const Route &route, const string &filePath, const string &uri);
+        string defineResponseBody(const Route &route, const string &filePath);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
         char** configEnviron(Server& server, Request& req);
         string executeCGI(Request& req, Server &server, string filePath);
         string setPageError(int errorCode, const string& filePath);
+        Route findMatchingRoute(string uri, bool &subdirAutoindex);
 
     public:
         Client();
         ~Client();
         void addAssociation(int clientFd, Server& server);
         int callMethod(void);
-        int runGetMethod(void);
-        int runPostMethod(void);
-        int runDeleteMethod(void);
+        int runGetMethod(string filePath, Route matchedRoute);
+        int runPostMethod(string uri);
+        int runDeleteMethod(string filePath);
+
+        void handleMultiPartRequest(void);
         bool saveUploadedFile(const string &filename, const std::vector<char> &fileContent, const string &directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
         int getMethodIndex(string method);
         Server* getServerFd(int clientFd);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody);
         void setServer(Server& server);
-        Route findMatchingRoute(string uri, bool& subdirAutoindex);
 
         class ClientException : public std::exception {
             private:

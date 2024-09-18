@@ -8,8 +8,6 @@ class Server {
     private:
         int _listen;
         int _socketFd;
-        struct pollfd _fd; // inutilizado
-        struct pollfd _tempFd; // inutilizado
         string _server_name;
         string _root;
         int _client_max_body_size;
@@ -32,6 +30,7 @@ class Server {
         void addClient(int clientFd);
 
         void create(ifstream& file);
+        
         void setServerName(string name);
         void setClientMaxBodySize(string size);
         void setErrorPage(string error_page);

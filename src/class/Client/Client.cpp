@@ -53,30 +53,28 @@ int Client::getMethodIndex(Route &route, string method)
 
 int Client::callMethod()
 {
-    Route routes = findMatchingRoute(_request.getURI(), _subdirAutoindex);
     if (_request.getURI().empty()){
         setPageError(BAD_REQUEST, ERROR400);
         return (_request.setStatusCode(BAD_REQUEST));
     }
 
-    switch (getMethodIndex(routes, _request.getMethod())) {
+    Route matchedRoute = findMatchingRoute(_request.getURI(), _subdirAutoindex);
+    string filePath = defineFilePath(matchedRoute, _request.getURI());
+
+    switch (getMethodIndex(matchedRoute, _request.getMethod())) {
         case GET:
-            return runGetMethod();
+            return runGetMethod(filePath, matchedRoute);
         case POST:
-            return runPostMethod();
+            return runPostMethod(filePath);
         case DELETE:
-            return runDeleteMethod();
+            return runDeleteMethod(filePath);
         default:
             return (METHOD_NOT_ALLOWED);
     }
 }
 
-int Client::runDeleteMethod()
+int Client::runDeleteMethod(string filePath)
 {
-    string uri = _request.getURI();
-    Route matchedRoute = findMatchingRoute(uri, Client::_subdirAutoindex);
-    string filePath = defineFilePath(matchedRoute, uri);
-
     if (!Utils::fileExists(filePath)) {
         setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found", "");
         return NOT_FOUND;
@@ -95,20 +93,49 @@ int Client::runDeleteMethod()
     setResponseData(OK, filePath, "text/plain", "200 OK", "");
     return OK;
 }
-
-int Client::runGetMethod()
+// TODO: Tratar http://localhost:8080/index
+// TODO: Tratar situacao de diretorio ou arquivo
+    
+Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
-    string uri = _request.getURI();
-    Route matchedRoute = findMatchingRoute(uri, _subdirAutoindex);
+    Route routeDefault;
+    string uriPath;
 
-    if (matchedRoute.getRedirect() != ""){
+    if(uri == "/")
+        uriPath = "/";
+    else if(std::count(uri.begin(), uri.end(), '/') == 1)
+        uriPath = uri.substr(0, uri.size());
+    else
+        uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
+
+
+    for (size_t i = 0; i < _server.getRoute().size(); i++) {
+        if (uriPath == _server.getRoute()[i].getRoute()) {
+            if (_server.getRoute()[i].getAutoIndex())
+                subdirAutoindex = true;
+            else
+                subdirAutoindex = false;
+            routeDefault = _server.getRoute()[i];
+            return (routeDefault);
+        }
+    }
+    return (routeDefault);
+}
+
+int Client::runGetMethod(string filePath, Route matchedRoute)
+{
+    if (matchedRoute.getRedirect() != "") {
         setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
         return (MOVED_PERMANENTLY);
     }
 
-    string filePath = defineFilePath(matchedRoute, uri);
+    // Descomentar apos merge Renato = 17/09
+    // if (!Utils::fileExists(filePath)) {
+    //     setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
+    //     return NOT_FOUND;
+    // }
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(matchedRoute, filePath, uri);
+    string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
 
     if (_response.getStatusCode() == NOT_FOUND){
@@ -140,7 +167,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
         build = _response.buildMessage();
     }
     send(pollFds.fd, build.c_str(), build.size(), 0);
-    cout << "Message sent" << endl;
+    cout << YELLOW << "Message sent to port: " <<  BBLUE << _server.getListen() <<  RESET << endl;
 
     requests.erase(pollFds.fd);
     close(pollFds.fd);
@@ -149,25 +176,27 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _response.clear();
 }
 
-Route Client::findMatchingRoute(string uri, bool& subdirAutoindex){
-    Route routeDefault;
 
-    for (size_t i = 0; i < _server.getRoute().size(); i++){
-        if (uri == _server.getRoute()[i].getRoute()){
-            if (_server.getRoute()[i].getAutoIndex())
-                subdirAutoindex = true;
-            else
-                subdirAutoindex = false;
-            routeDefault = _server.getRoute()[i];
-            return (routeDefault);
-        }
-    }
 
-    if (uri.find("/cgi") == 0){
-        routeDefault.setCgiOn(true);
-    }
-    return (routeDefault);
-}
+// Route Client::findMatchingRoute(string uri, bool& subdirAutoindex){
+//     Route routeDefault;
+
+//     for (size_t i = 0; i < _server.getRoute().size(); i++){
+//         if (uri == _server.getRoute()[i].getRoute()){
+//             if (_server.getRoute()[i].getAutoIndex())
+//                 subdirAutoindex = true;
+//             else
+//                 subdirAutoindex = false;
+//             routeDefault = _server.getRoute()[i];
+//             return (routeDefault);
+//         }
+//     }
+
+//     if (uri.find("/cgi") == 0){
+//         routeDefault.setCgiOn(true);
+//     }
+//     return (routeDefault);
+// }
 
 bool Client::verifyPermission(const string& file)
 {
@@ -178,7 +207,8 @@ bool Client::verifyPermission(const string& file)
     return (true);
 }
 
-void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location){
+void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location)
+{
     if (statusCode == MOVED_PERMANENTLY)
         _response.setLocation(location);
     _response.setStatusCode(statusCode);

@@ -92,20 +92,3 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
     kill (pid, SIGKILL);
     return (setPageError(REQUEST_TIMEOUT, ERROR408));
 }
-
-// string Client::readCGI(const string& tempFile)
-// {
-//     string line;
-//     ifstream file(tempFile.c_str());
-    
-//     line << file.rdbuf();
-//     // ssize_t bytesRead;
-//     // char buffer[65535];
-//     // string result;
-
-//     // while ((bytesRead = read(fd_in, &buffer, sizeof(buffer) - 1)) > 0) {
-//     //     buffer[bytesRead] = '\0';
-//     //     result += buffer;
-//     // }
-//     return (result);
-// }
