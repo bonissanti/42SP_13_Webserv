@@ -76,17 +76,17 @@ int Client::runDeleteMethod()
     string filePath = defineFilePath(matchedRoute, uri);
 
     if (!Utils::fileExists(filePath)) {
-        setResponseData(NOT_FOUND, "", "text/html", _response->getStatusPage(NOT_FOUND), "");
+        setResponseData(NOT_FOUND, ERROR404, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        setResponseData(FORBIDDEN, "", "text/html", _response->getStatusPage(FORBIDDEN), "");
+        setResponseData(FORBIDDEN, ERROR403, "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
 
@@ -110,13 +110,13 @@ int Client::runGetMethod()
     string contentLength = defineContentLength(responseBody);
 
     if (_response->getStatusCode() == NOT_FOUND){
-        setResponseData(NOT_FOUND, filePath, "text/html", _response->getStatusPage(NOT_FOUND), "");
+        setResponseData(NOT_FOUND, ERROR404, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     } else if (_response->getStatusCode() == FORBIDDEN){
-        setResponseData(FORBIDDEN, filePath, "text/html", _response->getStatusPage(FORBIDDEN), "");
+        setResponseData(FORBIDDEN, ERROR403, "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
-        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
     setResponseData(OK, filePath, contentType, responseBody, "");
@@ -243,6 +243,7 @@ void Client::handleMultiPartRequest(void)
         close(_server->getPollFd().fd);
     }
 }
+
 bool Client::verifyPermission(const string& file)
 {
     if (access(file.c_str(), F_OK) != 0)
