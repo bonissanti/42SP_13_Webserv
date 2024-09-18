@@ -26,6 +26,7 @@ class Server {
         vector<Route> getRoute(void);
         string getRoot() const;
         void getServerFd(void);
+        int getMaxBodySize();
 
         void addClient(int clientFd);
 

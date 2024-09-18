@@ -87,6 +87,10 @@ void Server::setClientMaxBodySize(string size)
     }
 }
 
+int Server::getMaxBodySize() {
+    return _client_max_body_size;
+}
+
 void Server::setErrorPage(string error_page)
 {
     size_t pos = error_page.find_first_of(" ");

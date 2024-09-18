@@ -125,6 +125,7 @@ void Run::startServer(vector<Server>& servers)
                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
                 	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
                 	client.addAssociation(clientFd, servers[i]);
+
                 }
                 else if (pollFds[i].revents & POLLIN) {
                 	Server *actualServer = client.getServerFd(pollFds[i].fd);

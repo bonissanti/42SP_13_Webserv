@@ -76,22 +76,22 @@ int Client::callMethod()
 int Client::runDeleteMethod(string filePath)
 {
     if (!Utils::fileExists(filePath)) {
-        setResponseData(NOT_FOUND, "", "text/plain", "404 Not Found", "");
+        setResponseData(NOT_FOUND, ERROR404, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
 
     if (!Utils::hasDeletePermission(filePath)) {
-        setResponseData(FORBIDDEN, "", "text/plain", "403 Forbidden", "");
+        setResponseData(FORBIDDEN, ERROR403, "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     }
 
     if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, "", "text/plain", "500 Internal Server Error", "");
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
 
-    setResponseData(OK, filePath, "text/plain", "200 OK", "");
-    return OK;
+    setResponseData(NO_CONTENT, filePath, "text/html", _response->getStatusPage(NO_CONTENT), "");
+    return NO_CONTENT;
 }
 // TODO: Tratar http://localhost:8080/index
 // TODO: Tratar situacao de diretorio ou arquivo
@@ -125,7 +125,7 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 int Client::runGetMethod(string filePath, Route matchedRoute)
 {
     if (matchedRoute.getRedirect() != "") {
-        setResponseData(MOVED_PERMANENTLY, "", "", "Moved Permanently", matchedRoute.getRedirect());
+        setResponseData(MOVED_PERMANENTLY, "", "text/html", _response->getStatusPage(MOVED_PERMANENTLY), matchedRoute.getRedirect());
         return (MOVED_PERMANENTLY);
     }
 
@@ -138,14 +138,14 @@ int Client::runGetMethod(string filePath, Route matchedRoute)
     string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
 
-    if (_response.getStatusCode() == NOT_FOUND){
-        setPageError(NOT_FOUND, ERROR404);
+    if (_response->getStatusCode() == NOT_FOUND){
+        setResponseData(NOT_FOUND, ERROR404, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
-    } else if (_response.getStatusCode() == FORBIDDEN){
-        setPageError(FORBIDDEN, ERROR403);
+    } else if (_response->getStatusCode() == FORBIDDEN){
+        setResponseData(FORBIDDEN, ERROR403, "text/html", _response->getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
-    } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
-        setPageError(INTERNAL_SERVER_ERROR, ERROR500);
+    } else if (_response->getStatusCode() == INTERNAL_SERVER_ERROR){
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), "");
         return INTERNAL_SERVER_ERROR;
     }
     setResponseData(OK, filePath, contentType, responseBody, "");
@@ -158,19 +158,19 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _server = _request.getServer();
     string build;
 
-    if (_request.getStatusCode() == BAD_REQUEST) {
-        build = _response.buildMessage();
-    } else {
+    setResponseData(_request->getStatusCode(), "", "text/html", _response->getStatusPage(_request->getStatusCode()), "");
+    if (_request->getStatusCode() == DEFAULT || _request->getStatusCode() == OK){
         if (callMethod() == METHOD_NOT_ALLOWED){
             setPageError(METHOD_NOT_ALLOWED, ERROR405);
         }
-        build = _response.buildMessage();
     }
-    send(pollFds.fd, build.c_str(), build.size(), 0);
+    build = _response->buildMessage();
+    send(_server->getPollFd().fd, build.c_str(), build.size(), 0);
     cout << YELLOW << "Message sent to port: " <<  BBLUE << _server.getListen() <<  RESET << endl;
-
+  
     requests.erase(pollFds.fd);
     close(pollFds.fd);
+
 
     _request.clear();
     _response.clear();
