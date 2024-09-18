@@ -37,3 +37,4 @@ DELETE:
 12- Server default é o primeiro que aparece.
 13- Se a rota tiver extensão ex: /index.html, considerar a rota como / e o arquivo de acesso index.html. DOING - Renan
 14- Se a rota for assim /aqui/olaMundo e a rota /aqui, precisa verificar se olaMundo é um diretorio, se for segue o index do route, se não for o arquivo a ser acessado será olaMundo. DOING - Renan
+15- Tratar rotas com mais de uma barra, exemplo /aqui/la/pagina.html. Hoje entraria na rota /aqui mas deveria procurar a rota /aqui/la.
