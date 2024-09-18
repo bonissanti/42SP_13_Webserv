@@ -54,9 +54,10 @@ int Client::getMethodIndex(Route &route, string method)
 int Client::callMethod()
 {
     Route routes = findMatchingRoute(_request.getURI(), _subdirAutoindex);
-    if (_request.getURI().empty())
+    if (_request.getURI().empty()){
         setPageError(BAD_REQUEST, ERROR400);
         return (_request.setStatusCode(BAD_REQUEST));
+    }
 
     switch (getMethodIndex(routes, _request.getMethod())) {
         case GET:
