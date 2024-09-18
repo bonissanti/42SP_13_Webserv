@@ -1,7 +1,6 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-
 typedef enum {
     DEFAULT = 0,
     OK = 200,
@@ -12,7 +11,7 @@ typedef enum {
     METHOD_NOT_ALLOWED = 405,
     INTERNAL_SERVER_ERROR = 500,
     BAD_GATEWAY = 502,
-} 	HttpStatus;
+} HttpStatus;
 
 #define RED "\033[0;31m"
 #define BYELLOW "\033[1;33m"
@@ -50,28 +49,27 @@ typedef enum {
 #define MB 1024
 #define GB 1048576
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <dirent.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <poll.h>
+#include <signal.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <signal.h>
-#include <dirent.h>
+#include <unistd.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <algorithm>
-#include <cstddef>
-#include <sys/stat.h>
 
 using namespace std;
 extern bool signalUsed;
@@ -91,6 +89,7 @@ class Utils {
         static string itostr(int value);
         static string statusCodeToString(int code);
         static string removeSlash(string str);
+        bool isDirectory(const char* path);
 };
 
 #endif
