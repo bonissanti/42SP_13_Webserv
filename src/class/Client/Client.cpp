@@ -57,24 +57,23 @@ int Client::callMethod()
     if (_request->getURI().empty())
         return (_request->setStatusCode(BAD_REQUEST));
 
+    Route matchedRoute = findMatchingRoute(_request->getURI(), _subdirAutoindex);
+    string filePath = defineFilePath(matchedRoute, _request->getURI());
+
     switch (getMethodIndex(_request->getMethod())) {
         case GET:
-            return runGetMethod();
+            return runGetMethod(filePath, matchedRoute);
         case POST:
-            return runPostMethod();
+            return runPostMethod(filePath);
         case DELETE:
-            return runDeleteMethod();
+            return runDeleteMethod(filePath);
         default:
             return (_request->setStatusCode(NOT_FOUND));
     }
 }
 
-int Client::runDeleteMethod()
+int Client::runDeleteMethod(string filePath)
 {
-    string uri = _request->getURI();
-    Route matchedRoute = _server->findMatchingRoute(uri, Client::_subdirAutoindex);
-    string filePath = defineFilePath(matchedRoute, uri);
-
     if (!Utils::fileExists(filePath)) {
         setResponseData(NOT_FOUND, ERROR404, "text/html", _response->getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
@@ -93,20 +92,49 @@ int Client::runDeleteMethod()
     setResponseData(NO_CONTENT, filePath, "text/html", _response->getStatusPage(NO_CONTENT), "");
     return NO_CONTENT;
 }
-
-int Client::runGetMethod()
+// TODO: Tratar http://localhost:8080/index
+// TODO: Tratar situacao de diretorio ou arquivo
+    
+Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
-    string uri = _request->getURI();
-    Route matchedRoute = _server->findMatchingRoute(uri, _subdirAutoindex);
+    Route routeDefault;
+    string uriPath;
 
-    if (matchedRoute.getRedirect() != ""){
+    if(uri == "/")
+        uriPath = "/";
+    else if(std::count(uri.begin(), uri.end(), '/') == 1)
+        uriPath = uri.substr(0, uri.size());
+    else
+        uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
+
+
+    for (size_t i = 0; i < getServer()->getRoute().size(); i++) {
+        if (uriPath == getServer()->getRoute()[i].getRoute()) {
+            if (getServer()->getRoute()[i].getAutoIndex())
+                subdirAutoindex = true;
+            else
+                subdirAutoindex = false;
+            routeDefault = getServer()->getRoute()[i];
+            return (routeDefault);
+        }
+    }
+    return (routeDefault);
+}
+
+int Client::runGetMethod(string filePath, Route matchedRoute)
+{
+    if (matchedRoute.getRedirect() != "") {
         setResponseData(MOVED_PERMANENTLY, "", "text/html", _response->getStatusPage(MOVED_PERMANENTLY), matchedRoute.getRedirect());
         return (MOVED_PERMANENTLY);
     }
 
-    string filePath = defineFilePath(matchedRoute, uri);
+    // Descomentar apos merge Renato = 17/09
+    // if (!Utils::fileExists(filePath)) {
+    //     setResponseData(NOT_FOUND, "", "text/html", _response->getStatusPage(NOT_FOUND), "");
+    //     return NOT_FOUND;
+    // }
     string contentType = defineContentType(filePath);
-    string responseBody = defineResponseBody(matchedRoute, filePath, uri);
+    string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
 
     if (_response->getStatusCode() == NOT_FOUND){
@@ -123,32 +151,53 @@ int Client::runGetMethod()
     return (OK);
 }
 
-string Client::defineFilePath(Route &route, string uri){
-    string filePath;
+
+
+string Client::defineFilePath(Route& route, string uri)
+{
     string root = route.getRoot();
     string index = route.getIndex();
+    string routePath = route.getRoute();
 
-    if (route.getCgiOn()){
-            filePath = root + uri.substr(route.getRoute().length()); 
-        if (uri == route.getRoute())
-            filePath = root + uri + "/" + index;
-    }
-    else if (route.getAutoIndex()){
-        if (!Utils::uriAlreadyPresent(root, uri))
-            filePath = root + (root[root.length() - 1] == '/' ? "" : "/");
-        else
-           filePath = root + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
-    }
-    else{
-        if (uri == route.getRoute() || uri == "/")
-            filePath = root + "/" + index;
-        else
-            filePath = root + uri.substr(route.getRoute().length()); 
-    }
-    return (Utils::removeSlash(filePath));
+    if (uri.find(routePath) == 0 && routePath.length() > 1)
+        uri = uri.substr(routePath.length());
+    if (root[root.length() - 1] != '/')
+        root += "/";
+    if (!uri.empty() && uri[0] == '/')
+        uri = uri.substr(1);
+    string filePath = root + uri;
+
+    return (filePath);
 }
 
+// string Client::defineFilePath(Route& route, string uri)
+// {
+//     string root = route.getRoot();
+//     string index = route.getIndex();
+//     string routePath = route.getRoute();
 
+//     if (uri.find(routePath) == 0 && routePath.length() > 1)
+//         uri = uri.substr(routePath.length());
+//     // if (root[root.length() - 1] != '/')
+//     //     root += "/";
+//     string filePath = root + uri;
+
+//     if (filePath.length() > 1 && filePath[filePath.length() - 1] == '/')
+//         filePath = filePath.substr(0, filePath.length() - 1);
+
+//     if (route.getAutoIndex()) {
+//         if (!Utils::uriAlreadyPresent(root, filePath))
+//             filePath = root + (root[root.length() - 1] == '/' ? "" : "/");
+//         else
+//             filePath = root + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
+//         if (!uri.empty() && uri[0] == '/')
+//             uri = uri.substr(1);
+//         return (filePath);
+//     }
+//     if (!uri.empty() && uri[0] == '/')
+//         uri = uri.substr(1);
+//     return (filePath);
+// }
 string Client::defineContentType(string filePath)
 {
     size_t index;
@@ -190,20 +239,33 @@ void Client::sendResponse(void)
     _response->clear();
 }
 
-string Client::defineResponseBody(const Route &route, const string& filePath, const string& uri)
+string Client::defineResponseBody(const Route& route, const string& filePath)
 {
     if (route.getCgiOn()) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
             return (_response->executeCGI(*_request, *_server, filePath));
+        else if (route.getIndex().find(".php") != string::npos || route.getIndex().find(".py") != string::npos) {
+            size_t found = 0;
+            if (route.getIndex().find(".php") != string::npos)
+                found = route.getIndex().find(".php");
+            else if (route.getIndex().find(".py") != string::npos)
+                found = route.getIndex().find(".py");
+
+            if (found == 0)
+                return (_response->executeCGI(*_request, *_server, "/cgi/index.php"));
+            size_t start = route.getIndex().rfind(' ', found);
+            string file = route.getIndex().substr(start + 1, found - start - 1);
+            return (_response->executeCGI(*_request, *_server, file));
+        }
     }
 
     struct stat path_stat;
     stat(filePath.c_str(), &path_stat);
-    if (S_ISDIR(path_stat.st_mode)){
+    if (S_ISDIR(path_stat.st_mode)) {
         if (_subdirAutoindex)
-        	return (_response->handleAutoIndex(filePath, uri));
-    } 
-    
+            return (_response->handleAutoIndex(filePath, _request->getURI()));
+    }
+
     ifstream file(filePath.c_str());
     if (!file.is_open()) {
         _response->setStatusCode(NOT_FOUND);
@@ -262,7 +324,8 @@ string Client::defineContentLength(const string& body)
     return (oss.str());
 }
 
-void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location){
+void Client::setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location)
+{
     if (statusCode == MOVED_PERMANENTLY)
         _response->setLocation(location);
     _response->setStatusCode(statusCode);

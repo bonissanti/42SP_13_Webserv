@@ -5,7 +5,7 @@
 		"type": "cppdbg",
 		"request": "launch",
 		"program": "${workspaceFolder}/webserv",
-		"args": ["config/basic.conf"],
+		"args": ["config/advanced.conf"],
 		"stopAtEntry": false,
 		"cwd": "${workspaceFolder}",
 		"preLaunchTask": "make re",

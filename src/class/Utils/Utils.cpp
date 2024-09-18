@@ -93,6 +93,14 @@ string Utils::removeSlash(string str){
     return (str);
 }
 
+bool Utils::isDirectory(const char* path) {
+    struct stat info;
+    if (stat(path, &info) != 0) {
+        return false;
+    }
+    return (info.st_mode & S_IFDIR) != 0;
+}
+
 string Utils::toString(size_t value) {
     ostringstream oss;
     oss << value;

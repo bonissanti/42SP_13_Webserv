@@ -1,9 +1,6 @@
-1- Mesclar request até chegar ao fim da requisição(multipart).
-3- Validar a Rota que esta sendo recebida no request, pois pode ser um método invalido.
-4- Lista de código de erros e respostas.
-5- Tratamento de sinais. OK
-7- Paginas de erro default.
-8- Rodar o valgrind
+1- Mesclar request até chegar ao fim da requisição(multipart). OK
+3- Validar a Rota que esta sendo recebida no request, pois pode ser um método invalido. DOING - Bruno
+4- Lista de código de erros e respostas. DOING - Renato
 GET:
     200 OK
     301 Moved Permanently
@@ -30,9 +27,14 @@ DELETE:
     404 Not Found
     409 Conflict
     500 Internal Server Error
-8- DELETE
-9- POST*
+5- Tratamento de sinais. OK
+7- Paginas de erro default.
+8- Rodar o valgrind
+8- DELETE OK
+9- POST* OK
 10- Autoindex (dir list). OK
-11- Redirect.
+11- Redirect. OK
 12- Server default é o primeiro que aparece.
-13- 
+13- Se a rota tiver extensão ex: /index.html, considerar a rota como / e o arquivo de acesso index.html. DOING - Renan
+14- Se a rota for assim /aqui/olaMundo e a rota /aqui, precisa verificar se olaMundo é um diretorio, se for segue o index do route, se não for o arquivo a ser acessado será olaMundo. DOING - Renan
+15- Tratar rotas com mais de uma barra, exemplo /aqui/la/pagina.html. Hoje entraria na rota /aqui mas deveria procurar a rota /aqui/la.

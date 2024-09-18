@@ -63,9 +63,10 @@ void Route::setAutoIndex(bool autoIndex)
     _autoIndex = autoIndex;
 }
 
-void Route::setCgiOn(bool cgiOn)
+void Route::setCgiOn(string& cgiOn)
 {
-    _cgiOn = cgiOn;
+    if(cgiOn == "on")
+        _cgiOn = true;
 }
 
 void Route::setRoot(string& root)
@@ -76,13 +77,7 @@ void Route::setRoot(string& root)
     if (root.length() > 1 && root[root.length() - 1] == '/')
         root.erase(root.end() - 1);
 
-    if (root.find("/cgi") != string::npos){
-        _cgiOn = true;
-    }
-    else if (root == "/")
-        _root = "content";
-    else
-        _root = root;
+    _root = "content" + root;
 }
 
 void Route::setAllowMethods(const string& allowMethods)
@@ -123,16 +118,4 @@ void Route::setRedirect(const string& redirect)
 void Route::setReturn(const string& ret)
 {
     _return = ret;
-}
-
-void Route::setCgi(string& cgi)
-{
-    if (cgi.substr(cgi.find_last_of(".") + 1) != ".py")
-        throw invalid_argument(RED "Error: file extension is not '.py'" RESET);
-
-    if (cgi[0] == '/')
-        cgi.erase(cgi.begin());
-    if (cgi.substr(cgi.length() - 1) == "/")
-        cgi.erase(cgi.length() - 1);
-    _cgi = cgi;
 }

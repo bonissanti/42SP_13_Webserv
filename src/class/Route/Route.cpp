@@ -57,11 +57,13 @@ void Route::create(const string& line, ifstream& file)
             else if (key == "index")
                 setIndex(value);
             else if (key == "autoindex")
-                setAutoIndex(value == "true");
+                setAutoIndex(value == "on");
             else if (key == "redirect")
                 setRedirect(value);
             else if (key == "return")
                 setReturn(value);
+            else if (key == "cgi")
+                setCgiOn(value);
             else
                 throw Route::exception("Error: Unknown configuration key: " + key);
         }

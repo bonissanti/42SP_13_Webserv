@@ -76,28 +76,27 @@ typedef enum {
 #define MB 1048576
 #define GB 1073741824
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <dirent.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <poll.h>
+#include <signal.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <signal.h>
-#include <dirent.h>
+#include <unistd.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <algorithm>
-#include <cstddef>
-#include <sys/stat.h>
 
 using namespace std;
 extern bool signalUsed;
@@ -117,6 +116,7 @@ class Utils {
         static string itostr(int value);
         static string statusCodeToString(int code);
         static string removeSlash(string str);
+        bool isDirectory(const char* path);
         static string readFile(const string& filePath);
 };
 

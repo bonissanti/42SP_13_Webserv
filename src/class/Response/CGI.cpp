@@ -15,10 +15,10 @@ bool Response::checkFile(const string &file)
     return (f.good());
 }
 
-char **Response::configEnviron(Server& server, Request &req)
+char **Response::configEnviron(Server &server, Request &req)
 {
     char **envp = new char *[7];
-    
+
     string serverName = "SERVER_NAME=" + server.getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(server.getListen());
     string protocol = "SERVER_PROTOCOL=" + req._version;
@@ -36,7 +36,7 @@ char **Response::configEnviron(Server& server, Request &req)
     return (envp);
 }
 
-string Response::executeCGI(Request &req, Server& server, string filePath)
+string Response::executeCGI(Request &req, Server &server, string filePath)
 {
     int pid;
     int fd[2];
@@ -44,6 +44,11 @@ string Response::executeCGI(Request &req, Server& server, string filePath)
     string result;
     if (!checkFile(filePath)) {
         _statusCode = NOT_FOUND;
+        return ("");
+    }
+
+    if (Utils::isFile(filePath)) {
+        req.setStatusCode(INTERNAL_SERVER_ERROR);
         return ("");
     }
 
@@ -80,7 +85,7 @@ string Response::executeCGI(Request &req, Server& server, string filePath)
         close(fd[0]);
         waitpid(pid, &status, 0);
         if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        	cerr << RED << "Error: child process failed" << RESET << endl;
+            cerr << RED << "Error: child process failed" << RESET << endl;
             kill(pid, SIGKILL);
         }
     }

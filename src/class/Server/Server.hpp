@@ -34,6 +34,7 @@ class Server {
         void addClient(int clientFd);
 
         void create(ifstream& file);
+        
         void setServerName(string name);
         void setClientMaxBodySize(string size);
         void setErrorPage(string error_page);
@@ -42,7 +43,6 @@ class Server {
         void setRoute(vector<string> routeLines, size_t& i);
         void setClientFd(struct pollfd& pollFd);
         void openPortsToListen(void);
-        Route findMatchingRoute(const string& uri, bool& subdirAutoindex);
 
         class exception : public std::exception {
             private:
