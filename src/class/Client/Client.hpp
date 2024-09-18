@@ -20,7 +20,7 @@ class Client {
 
         void freeEnviron(char** envp);
         bool checkFile(const string& file);
-        string readCGI(int fd);
+        string readCGI(const string& tempFile);
         int getMethodIndex(Route &route, string method);
         string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);
@@ -30,6 +30,7 @@ class Client {
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
         char** configEnviron(Server& server, Request& req);
         string executeCGI(Request& req, Server &server, string filePath);
+        string setPageError(int errorCode, const string& filePath);
 
     public:
         Client();

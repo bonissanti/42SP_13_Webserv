@@ -39,12 +39,11 @@ char **Client::configEnviron(Server& server, Request &req)
 string Client::executeCGI(Request &req, Server& server, string filePath)
 {
     int pid;
-    int fd[2];
+    int fd;
     int status;
     string result;
     if (!checkFile(filePath)) {
-        _response.setStatusCode(NOT_FOUND);
-        return ("");
+        return (setPageError(NOT_FOUND, ERROR400));
     }
 
     size_t found = filePath.find('.');
@@ -53,49 +52,60 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
     else
         _executor = "/usr/bin/php";
 
-    pipe(fd);
     pid = fork();
     if (pid < 0) {
         throw Server::exception(RED "Error: Fork failed" RESET);
     }
     if (pid == 0) {
+        fd = open("/tmp/tempFile", O_TRUNC | O_CREAT | O_WRONLY, 0644);
         signal(SIGINT, Utils::handleSignals);
         signal(SIGTERM, Utils::handleSignals);
         char **envp = configEnviron(server, req);
         char *args[] = {const_cast<char *>(_executor.c_str()), const_cast<char *>(filePath.c_str()), NULL};
     
-        dup2(fd[1], STDOUT_FILENO);
-        close(fd[0]);
+        dup2(fd, STDOUT_FILENO);
         if (execve(_executor.c_str(), args, envp) == -1) {
             freeEnviron(envp);
+            close(fd);
             cerr << RED << "Error: execve failed" << RESET << endl;
             exit(1);
         }
         freeEnviron(envp);
-        close(fd[1]);
+        close(fd);
     }
     else {
-        close(fd[1]);
-        result = readCGI(fd[0]);
-        close(fd[0]);
-        waitpid(pid, &status, 0);
-        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        	cerr << RED << "Error: child process failed" << RESET << endl;
-            kill(pid, SIGKILL);
+        clock_t time = clock();
+
+        while ((float)(clock() - time) / CLOCKS_PER_SEC < 5.0f){
+            int waitValue = waitpid(pid, &status, WNOHANG);
+            if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+                string tempFile = "/tmp/tempFile";
+                return(Utils::readFile(tempFile));
+            }
+            else if (waitValue == -1 && status != -1)  {
+            	cerr << RED << "Error: child process failed at CGI execution" << RESET << endl;
+                kill(pid, SIGKILL);
+                return (setPageError(INTERNAL_SERVER_ERROR, ERROR500));
+            }
         }
     }
-    return (result);
+    kill (pid, SIGKILL);
+    return (setPageError(REQUEST_TIMEOUT, ERROR408));
 }
 
-string Client::readCGI(int fd_in)
-{
-    ssize_t bytesRead;
-    char buffer[65535];
-    string result;
+// string Client::readCGI(const string& tempFile)
+// {
+//     string line;
+//     ifstream file(tempFile.c_str());
+    
+//     line << file.rdbuf();
+//     // ssize_t bytesRead;
+//     // char buffer[65535];
+//     // string result;
 
-    while ((bytesRead = read(fd_in, &buffer, sizeof(buffer) - 1)) > 0) {
-        buffer[bytesRead] = '\0';
-        result += buffer;
-    }
-    return (result);
-}
+//     // while ((bytesRead = read(fd_in, &buffer, sizeof(buffer) - 1)) > 0) {
+//     //     buffer[bytesRead] = '\0';
+//     //     result += buffer;
+//     // }
+//     return (result);
+// }

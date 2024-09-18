@@ -55,6 +55,7 @@ int Client::callMethod()
 {
     Route routes = findMatchingRoute(_request.getURI(), _subdirAutoindex);
     if (_request.getURI().empty())
+        setPageError(BAD_REQUEST, ERROR400);
         return (_request.setStatusCode(BAD_REQUEST));
 
     switch (getMethodIndex(routes, _request.getMethod())) {
@@ -110,15 +111,13 @@ int Client::runGetMethod()
     string contentLength = defineContentLength(responseBody);
 
     if (_response.getStatusCode() == NOT_FOUND){
-        string errorContent = Utils::readFile(ERROR404);
-        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+        setPageError(NOT_FOUND, ERROR404);
         return NOT_FOUND;
     } else if (_response.getStatusCode() == FORBIDDEN){
-        string errorContent = Utils::readFile(ERROR403);
-        setResponseData(NOT_FOUND, ERROR403, "text/html", errorContent, "");
+        setPageError(FORBIDDEN, ERROR403);
         return FORBIDDEN;
     } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
-        setResponseData(INTERNAL_SERVER_ERROR, filePath, "text/plain", "500 Internal Server Error", "");
+        setPageError(INTERNAL_SERVER_ERROR, ERROR500);
         return INTERNAL_SERVER_ERROR;
     }
     setResponseData(OK, filePath, contentType, responseBody, "");
@@ -135,8 +134,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
         build = _response.buildMessage();
     } else {
         if (callMethod() == METHOD_NOT_ALLOWED){
-            string errorContent = Utils::readFile(ERROR405);
-            setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
+            setPageError(METHOD_NOT_ALLOWED, ERROR405);
         }
         build = _response.buildMessage();
     }
@@ -187,4 +185,36 @@ void Client::setResponseData(int statusCode, string filePath, string contentType
     _response.setContentType(contentType);
     _response.setResponseBody(responseBody);
     _response.setContentLength(defineContentLength(responseBody));
+}
+
+string Client::setPageError(int errorCode, const string& filePath){
+    string errorContent = Utils::readFile(filePath);
+
+    switch (errorCode) {
+            case MOVED_PERMANENTLY:
+                setResponseData(MOVED_PERMANENTLY, ERROR301, "text/html", errorContent, "");
+                break ;
+            case BAD_REQUEST:
+                setResponseData(BAD_REQUEST, ERROR400, "text/html", errorContent, "");
+                break ;
+            case FORBIDDEN:
+                setResponseData(FORBIDDEN, ERROR403, "text/html", errorContent, "");
+                break ;
+            case NOT_FOUND:
+                setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+                break ;
+            case METHOD_NOT_ALLOWED:
+                setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
+                break ;
+            case INTERNAL_SERVER_ERROR:
+                setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", errorContent, "");
+                break ;
+            case BAD_GATEWAY:
+                setResponseData(BAD_GATEWAY, ERROR502, "text/html", errorContent, "");
+                break ;
+            default:
+                setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
+                break ;
+        }
+    return (errorContent);
 }

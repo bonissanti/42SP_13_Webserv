@@ -35,12 +35,15 @@ typedef enum {
 
 // Macro errors
 
+#define ERROR301 "./content/page-errors/301.html"
+#define ERROR400 "./content/page-errors/400.html"
 #define ERROR403 "./content/page-errors/403.html"
 #define ERROR404 "./content/page-errors/404.html"
 #define ERROR405 "./content/page-errors/405.html"
 #define ERROR408 "./content/page-errors/408.html"
 #define ERROR500 "./content/page-errors/500.html"
 #define ERROR502 "./content/page-errors/502.html"
+#define ERRORUNKNOWN "./content/page-errors/unknown.html"
 
 // Macro route
 #define CGIDIR "/cgi/"
