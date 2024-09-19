@@ -40,7 +40,7 @@ class Client {
         int callMethod(void);
         int runGetMethod(string filePath, Route matchedRoute);
         int runPostMethod(string uri);
-        int runDeleteMethod(string filePath);
+        int runDeleteMethod(string filePath, Route matchedRoute);
 
         void handleMultiPartRequest(void);
         bool saveUploadedFile(const string &filename, const std::vector<char> &fileContent, const string &directory);
