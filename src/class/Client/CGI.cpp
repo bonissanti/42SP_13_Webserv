@@ -15,24 +15,24 @@ bool Client::checkFile(const string &file)
     return (f.good());
 }
 
-char **Client::configEnviron(Server& server, Request &req)
+char **Client::configEnviron(Server& server, Request &req, string &filePath)
 {
-    // Determine the number of environment variables
-    int envSize = 7;
+    int envSize = 8;
     if (!req.getBody().empty()) {
-        envSize += 2; // For CONTENT_LENGTH and CONTENT_TYPE
+        envSize += 2;
     }
 
-    // Allocate memory for environment variables
-    char **envp = new char *[envSize + 1]; // +1 for the NULL terminator
+    char **envp = new char *[envSize + 1];
 
     // Basic environment variables
     string serverName = "SERVER_NAME=" + server.getServerName();
     string serverPort = "SERVER_PORT=" + Utils::itostr(server.getListen());
     string protocol = "SERVER_PROTOCOL=" + _request.getVersion();
-    string pathInfo = "PATH_INFO=" + _request.getURI();
+    string pathInfo = "PATH_INFO=" + filePath;
     string method = "REQUEST_METHOD=" + req.getMethod();
     string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
+	string scriptName = "SCRIPT_NAME=" + filePath.substr(filePath.find_last_of('/') + 1, filePath.length() - filePath.find_last_of('/'));
+	cout << scriptName << endl;
 
     envp[0] = strdup(serverName.c_str());
     envp[1] = strdup(serverPort.c_str());
@@ -40,18 +40,20 @@ char **Client::configEnviron(Server& server, Request &req)
     envp[3] = strdup(pathInfo.c_str());
     envp[4] = strdup(method.c_str());
     envp[5] = strdup(gatewayInterface.c_str());
+	envp[6] = strdup(scriptName.c_str());
 
     // Add CONTENT_LENGTH and CONTENT_TYPE if the body exists
-    int index = 6;
+    int index = 7;
     if (!req.getBody().empty()) {
         string contentLength = "CONTENT_LENGTH=" + Utils::itostr(req.getBody().size());
         string contentType = "CONTENT_TYPE=" + req.getHeader("content-type");
+		string queryString = "QUERY_STRING=" + req.getBody();
 
         envp[index++] = strdup(contentLength.c_str());
         envp[index++] = strdup(contentType.c_str());
+		envp[index++] = strdup(queryString.c_str());
     }
 
-    // Null-terminate the array
     envp[index] = NULL;
 
     return envp;
@@ -78,25 +80,36 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
         throw Server::exception(RED "Error: Fork failed" RESET);
     }
     if (pid == 0) {
-
+        // Processo filho - executa o CGI
         fd = open("/tmp/tempFile", O_TRUNC | O_CREAT | O_WRONLY, 0644);
         signal(SIGINT, Utils::handleSignals);
         signal(SIGTERM, Utils::handleSignals);
-        char **envp = configEnviron(server, req);
-        char **args = new char*[4]; // Allocate memory for 4 pointers (3 arguments + 1 NULL terminator)
-        if (req.getBody().empty()) {
-            args[0] = const_cast<char *>(_executor.c_str());
-            args[1] = const_cast<char *>(filePath.c_str());
-            args[3] = NULL;
-        } else {
-            args[0] = const_cast<char *>(_executor.c_str());
-            args[1] = const_cast<char *>(filePath.c_str());
-            args[2] = const_cast<char *>(req.getBody().c_str());
-            args[3] = NULL;
+
+        // Configura as variáveis de ambiente (envp) corretamente
+        char **envp = configEnviron(server, req, filePath);
+
+        // Prepara os argumentos do execve
+        char **args = new char*[3];
+        args[0] = const_cast<char *>(_executor.c_str());
+        args[1] = const_cast<char *>(filePath.c_str());
+        args[2] = NULL;
+
+        // Redireciona a saída para o arquivo temporário
+        dup2(fd, STDOUT_FILENO);
+        
+        // Se for uma requisição POST, redireciona o corpo da requisição para o stdin
+        if (req.getMethod() == "POST") {
+            string body = req.getBody();
+			cout << body << endl;
+            int stdin_fd = open("/tmp/tempStdin", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+            write(stdin_fd, body.c_str(), body.size());
+            close(stdin_fd);
+            stdin_fd = open("/tmp/tempStdin", O_RDONLY);
+            dup2(stdin_fd, STDIN_FILENO);  // Redireciona o STDIN
+            close(stdin_fd);
         }
-		cout << "Executing: " << _executor << " " << filePath << endl;
-		cout << "With args: " << args[0] << " " << args[1] << " " << args[2] << endl;
-		dup2(fd, STDOUT_FILENO);
+
+        // Executa o CGI (PHP ou Python)
         if (execve(_executor.c_str(), args, envp) == -1) {
             freeEnviron(envp);
             close(fd);

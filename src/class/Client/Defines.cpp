@@ -29,7 +29,7 @@ string Client::defineContentType(string filePath)
     _mimeTypes[".png"] = "image/png";
     _mimeTypes[".jpg"] = "image/jpg";
     _mimeTypes[".gif"] = "image/gif";
-    _mimeTypes[".js"] = "application/js";
+    _mimeTypes[".js"] = "application/javascript";
     _mimeTypes[".pdf"] = "application/pdf";
 
     index = filePath.rfind('.');

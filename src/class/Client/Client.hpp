@@ -28,7 +28,7 @@ class Client {
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
-        char** configEnviron(Server& server, Request& req);
+        char** configEnviron(Server& server, Request& req, string& filePath);
         string executeCGI(Request& req, Server &server, string filePath);
         string setPageError(int errorCode, const string& filePath);
         Route findMatchingRoute(string uri, bool &subdirAutoindex);
