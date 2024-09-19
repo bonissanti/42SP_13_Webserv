@@ -133,7 +133,6 @@ class Utils {
         static string readFile(const string& filePath);
         static void	handleSignals(int sigNum); 
         bool isDirectory(const char* path);
-        static string readFile(const string& filePath);
 };
 
 #endif

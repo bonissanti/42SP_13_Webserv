@@ -26,7 +26,7 @@ bool directoryExists(const string& path) {
 bool Client::saveUploadedFile(const string& filename, const vector<char>& fileContent, const string& directory) {
 	if (!directoryExists(directory)) {
         if (mkdir(directory.c_str(), 0777) == -1) {
-            setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), directory);
+            setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR), directory);
             cerr << "Error creating directory: " << directory << endl;
             return false;
         }
@@ -42,28 +42,28 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 	string path = directory + "/" + finalFilename;
     ofstream outFile(path.c_str(), ios::binary);
     if (!outFile) {
-        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), path);
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR), path);
         return false;
     }
 
     outFile.write(fileContent.data(), fileContent.size());
     outFile.close();
     if (!outFile.good()) {
-        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response->getStatusPage(INTERNAL_SERVER_ERROR), path);
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR), path);
         return false;
     }
     return true;
 }
 
 int Client::runPostMethod(string filePath) {
-    string contentType = _request->getHeader("content-type");
+    string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
 
     if (contentType.find("multipart/form-data") != string::npos) {
         map<string, vector<char> > formData = _request.getFormData();
 
         if (formData.find("filename") == formData.end() || formData.find("fileContent") == formData.end()) {
-            setResponseData(BAD_REQUEST, ERROR400, "text/html", _response->getStatusPage(BAD_REQUEST), "");
+            setResponseData(BAD_REQUEST, ERROR400, "text/html", _response.getStatusPage(BAD_REQUEST), "");
             return BAD_REQUEST;
         }
 
@@ -78,16 +78,16 @@ int Client::runPostMethod(string filePath) {
 
         // Set the correct content type in the response
         _response.setHeader("Content-type", fileContentType);
-        setResponseData(CREATED, filePath, "text/html", _response->setCreatedBody(_request->getURI() + "/" + filename), filePath);
+        setResponseData(CREATED, filePath, "text/html", _response.setCreatedBody(_request.getURI() + "/" + filename), filePath);
         return CREATED;
     } else if (contentType.empty()) {
-        setResponseData(BAD_REQUEST, ERROR400, "text/html", _response->getStatusPage(BAD_REQUEST), "");
+        setResponseData(BAD_REQUEST, ERROR400, "text/html", _response.getStatusPage(BAD_REQUEST), "");
         return BAD_REQUEST;
     } else {
-        setResponseData(BAD_REQUEST, ERROR400, "text/html", _response->getStatusPage(BAD_REQUEST), "");
+        setResponseData(BAD_REQUEST, ERROR400, "text/html", _response.getStatusPage(BAD_REQUEST), "");
         return BAD_REQUEST;
     }
 
-    setResponseData(OK, "", "text/html", _response->getStatusPage(OK), filePath);
+    setResponseData(OK, "", "text/html", _response.getStatusPage(OK), filePath);
     return CREATED;
 }
