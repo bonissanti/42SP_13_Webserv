@@ -55,6 +55,8 @@ int Client::callMethod()
     }
 
     Route matchedRoute = findMatchingRoute(_request.getURI(), _subdirAutoindex);
+    if (matchedRoute.getRoute() == "NF")
+        return (NOT_FOUND);
     string filePath = defineFilePath(matchedRoute, _request.getURI());
 
     switch (getMethodIndex(matchedRoute, _request.getMethod())) {
@@ -99,13 +101,12 @@ Server Client::getServer()
     return (_server);
 }
 
-// TODO: tratar situaçao http://localhost:8080/index
 Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
-    Route routeDefault;
     string uriPath;
+    Route routeNotFound;
 
-    if (uri == "/" || (count(uri.begin(), uri.end(), '/') == 1 && uri[0] == '/'))
+    if (uri == "/")
         uriPath = "/";
     else
         uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
@@ -116,11 +117,22 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
                 subdirAutoindex = true;
             else
                 subdirAutoindex = false;
-            routeDefault = getServer().getRoute()[i];
-            return (routeDefault);
+            return (getServer().getRoute()[i]);
         }
     }
-    return (routeDefault);
+
+    for (size_t i = 0; i < getServer().getRoute().size(); i++) {
+        if (getServer().getRoute()[i].getRoute() == "/") {
+            if (getServer().getRoute()[i].getAutoIndex())
+                subdirAutoindex = true;
+            else
+                subdirAutoindex = false;
+            return (getServer().getRoute()[i]);
+        }
+    }
+    setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
+    routeNotFound.setRoute("NF");
+    return routeNotFound;
 }
 
 int Client::runGetMethod(string filePath, Route matchedRoute)
