@@ -100,7 +100,26 @@ void Server::setErrorPage(string error_page)
     int key = Utils::strtoi(Utils::trim(error_page.substr(0, pos)));
     string value = Utils::trim(error_page.substr(pos + 1));
 
-    map<int, string> mapErrorPage;
-    mapErrorPage[key] = value;
-    _error_page.push_back(mapErrorPage);
+    _mapErrorPage[key] = value;
+    // _error_page.push_back(mapErrorPage);
+}
+
+bool Server::getErrorPage(int errorCode){
+    if (_mapErrorPage.find(errorCode) != _mapErrorPage.end()){
+        return (true);
+    }
+    else
+        return (false);
+}
+
+void Server::printErrorPages(void){
+    map<int, string>::iterator it = _mapErrorPage.begin();
+
+    while (it != _mapErrorPage.end()){
+        cerr << "key: " << it->first << endl;
+        cerr << "value: " << it->second << endl;
+        ++it;
+    }
+
+
 }

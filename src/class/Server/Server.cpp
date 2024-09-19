@@ -15,7 +15,7 @@ Server::Server(const Server& toCopy)
     _server_name = toCopy._server_name;
     _root = toCopy._root;
     _client_max_body_size = toCopy._client_max_body_size;
-    _error_page = toCopy._error_page;
+    _mapErrorPage = toCopy._mapErrorPage;
     _routes = toCopy._routes;
 }
 

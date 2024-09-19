@@ -11,8 +11,8 @@ class Server {
         string _server_name;
         string _root;
         int _client_max_body_size;
-        vector<map<int, string> > _error_page;
         vector<Route> _routes;
+        map<int, string> _mapErrorPage;
         bool filterDuplicatesRoutes(Route& route);
 
     public:
@@ -25,8 +25,10 @@ class Server {
         string getServerName(void);
         vector<Route> getRoute(void);
         string getRoot() const;
+        bool getErrorPage(int errorCode);
         void getServerFd(void);
         int getMaxBodySize();
+        
 
         void addClient(int clientFd);
 
@@ -41,6 +43,7 @@ class Server {
         void setClientFd(struct pollfd& pollFd);
         Route findMatchingRoute(const string& uri, bool& subdirAutoindex);
         static void configServer(vector<Server>& servers);
+        void printErrorPages(void);
 
         class exception : public std::exception {
             private:

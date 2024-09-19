@@ -117,6 +117,7 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
             else
                 subdirAutoindex = false;
             routeDefault = getServer().getRoute()[i];
+            cerr << "route: " << getServer().getRoute()[i].getRoute();
             return (routeDefault);
         }
     }
@@ -158,6 +159,8 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _server = _request.getServer();
     string build;
 
+
+    _server.printErrorPages();
     setResponseData(_request.getStatusCode(), "", "text/html", _response.getStatusPage(_request.getStatusCode()), "");
     if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK){
         if (callMethod() == METHOD_NOT_ALLOWED){
@@ -198,6 +201,9 @@ void Client::setResponseData(int statusCode, string filePath, string contentType
 
 string Client::setPageError(int errorCode, const string& filePath){
     string errorContent = Utils::readFile(filePath);
+    
+    if (_server.getErrorPage(errorCode) == false)
+        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
 
     switch (errorCode) {
             case MOVED_PERMANENTLY:
