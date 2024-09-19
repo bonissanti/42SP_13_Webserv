@@ -30,7 +30,8 @@ class Client {
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
         char** configEnviron(Server& server, Request& req);
         string executeCGI(Request& req, Server &server, string filePath);
-        string setPageError(int errorCode, const string& filePath);
+        // string setPageError(int errorCode, const string& filePath);
+        string setPageError(int errorCode);
         Route findMatchingRoute(string uri, bool &subdirAutoindex);
 
     public:

@@ -25,7 +25,8 @@ class Server {
         string getServerName(void);
         vector<Route> getRoute(void);
         string getRoot() const;
-        bool getErrorPage(int errorCode);
+        // bool getErrorPage(int errorCode);
+        string getErrorPage(int errorCode);
         void getServerFd(void);
         int getMaxBodySize();
         
@@ -36,7 +37,7 @@ class Server {
         
         void setServerName(string name);
         void setClientMaxBodySize(string size);
-        void setErrorPage(string error_page);
+        void setErrorPage(string errorCode);
         void setListen(int port);
         void setClientFd(int clientFd);
         void setRoute(vector<string> routeLines, size_t& i);

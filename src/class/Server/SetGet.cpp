@@ -104,12 +104,11 @@ void Server::setErrorPage(string error_page)
     // _error_page.push_back(mapErrorPage);
 }
 
-bool Server::getErrorPage(int errorCode){
-    if (_mapErrorPage.find(errorCode) != _mapErrorPage.end()){
-        return (true);
-    }
-    else
-        return (false);
+string Server::getErrorPage(int errorCode){
+    map<int, string>::iterator it = _mapErrorPage.find(errorCode);
+    if (it != _mapErrorPage.end())
+        return (it->second);
+    return ("404");
 }
 
 void Server::printErrorPages(void){
@@ -120,6 +119,4 @@ void Server::printErrorPages(void){
         cerr << "value: " << it->second << endl;
         ++it;
     }
-
-
 }

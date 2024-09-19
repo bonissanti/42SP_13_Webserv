@@ -54,7 +54,7 @@ int Client::getMethodIndex(Route &route, string method)
 int Client::callMethod()
 {
     if (_request.getURI().empty()){
-        setPageError(BAD_REQUEST, ERROR400);
+        setPageError(BAD_REQUEST);
         return (_request.setStatusCode(BAD_REQUEST));
     }
 
@@ -164,7 +164,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     setResponseData(_request.getStatusCode(), "", "text/html", _response.getStatusPage(_request.getStatusCode()), "");
     if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK){
         if (callMethod() == METHOD_NOT_ALLOWED){
-            setPageError(METHOD_NOT_ALLOWED, ERROR405);
+            setPageError(METHOD_NOT_ALLOWED);
         }
     }
     build = _response.buildMessage();
@@ -199,11 +199,16 @@ void Client::setResponseData(int statusCode, string filePath, string contentType
     _response.setContentLength(defineContentLength(responseBody));
 }
 
-string Client::setPageError(int errorCode, const string& filePath){
-    string errorContent = Utils::readFile(filePath);
+string Client::setPageError(int errorCode){
+
+    string errorContent;
+    string filePath = _server.getErrorPage(errorCode);
     
-    if (_server.getErrorPage(errorCode) == false)
-        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+    if (Utils::fileExists(filePath))
+        errorContent = Utils::readFile(filePath);
+    else{
+        errorContent = Utils::readFile(ERROR404);
+    }
 
     switch (errorCode) {
             case MOVED_PERMANENTLY:
@@ -230,6 +235,6 @@ string Client::setPageError(int errorCode, const string& filePath){
             default:
                 setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
                 break ;
-        }
+    }
     return (errorContent);
 }
