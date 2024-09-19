@@ -10,10 +10,17 @@
     <div class="container">
         <h1>Gerenciamento de Arquivos</h1>
 
-        <form id="uploadForm" enctype="multipart/form-data">
+        <form id="uploadForm" enctype="multipart/form-data" method="POST">
             <input type="file" name="file" id="fileInput" required>
+			<input type="text" name="name" value="" placeholder="Nome">
             <button type="submit">Upload</button>
         </form>
+
+		<form action="/cgi/hello.php" method="POST">
+			<input type="text" name="key1" id="key1" placeholder="Enter value for key1">
+			<input type="text" name="key2" id="key2" placeholder="Enter value for key2">
+			<input type="submit" value="Submit">
+		</form>
 
         <h2>Arquivos Disponíveis</h2>
         <ul id="fileList">

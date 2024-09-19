@@ -111,7 +111,7 @@ void Run::startServer(vector<Server>& servers)
     Client client;
     
     while (true) {
-        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
+        returnValue = poll(pollFds.data(), pollFds.size(), 100);
         
         if (signalUsed){
             break ;

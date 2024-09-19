@@ -39,7 +39,7 @@ class Client {
         void addAssociation(int clientFd, Server& server);
         int callMethod(void);
         int runGetMethod(string filePath, Route matchedRoute);
-        int runPostMethod(string uri);
+        int runPostMethod(string uri, Route matchedRoute);
         int runDeleteMethod(string filePath);
 
         void handleMultiPartRequest(void);

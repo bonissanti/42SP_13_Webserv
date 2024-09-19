@@ -65,7 +65,7 @@ int Client::callMethod()
         case GET:
             return runGetMethod(filePath, matchedRoute);
         case POST:
-            return runPostMethod(filePath);
+            return runPostMethod(filePath, matchedRoute);
         case DELETE:
             return runDeleteMethod(filePath);
         default:

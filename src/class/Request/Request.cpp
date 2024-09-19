@@ -93,9 +93,6 @@ void Request::parseRequest(const string &raw_request) {
     parseHeaders(request_stream);
     parseBody(request_stream);
 
-    // if (!validateRequest()) {
-    //     _statusCode = BAD_REQUEST;
-    // }
     validateRequest();
 
     _readyForResponse = true;
@@ -245,7 +242,6 @@ bool Request::validateRequest() //mudar para void ou HttpCode
         return false;
     }
     if (_version != "HTTP/1.1" && _version != "HTTP/1.0") {
-        // cout << "Error: invalid HTTP version" << endl;
         _statusCode = VERSION_NOT_SUPPORTED;
         return false;
     }
