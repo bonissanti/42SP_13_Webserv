@@ -204,10 +204,13 @@ string Client::setPageError(int errorCode){
     string errorContent;
     string filePath = _server.getErrorPage(errorCode);
     
-    if (Utils::fileExists(filePath))
+    if (Utils::fileExists(filePath)){
         errorContent = Utils::readFile(filePath);
+    }
     else{
         errorContent = Utils::readFile(ERROR404);
+        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+        return (errorContent);
     }
 
     switch (errorCode) {

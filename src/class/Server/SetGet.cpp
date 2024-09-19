@@ -100,7 +100,7 @@ void Server::setErrorPage(string error_page)
     int key = Utils::strtoi(Utils::trim(error_page.substr(0, pos)));
     string value = Utils::trim(error_page.substr(pos + 1));
 
-    _mapErrorPage[key] = value;
+    _mapErrorPage[key] = "content" + value;
     // _error_page.push_back(mapErrorPage);
 }
 
