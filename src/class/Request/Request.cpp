@@ -275,7 +275,6 @@ void Request::parseBody(istringstream &requestStream) {
     } else {
         string contentType = getHeader("content-type");
         if (contentType.find("multipart/form-data") != string::npos) {
-            cout << "Parsing multipart/form-data body" << endl;
             size_t boundaryPos = contentType.find("boundary=");
             if (boundaryPos == string::npos) {
                 _statusCode = BAD_REQUEST;
@@ -317,7 +316,6 @@ void Request::parseChunkedBody(istringstream &requestStream) {
         getline(requestStream, line);
         if (line != "\r" && line != "") {
             _statusCode = BAD_REQUEST;
-            std::cout << "Invalid chunk data termination" << std::endl;
             return;
         }
     }
@@ -399,8 +397,9 @@ void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Reques
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     } else {
-        if (bytesReceived <= 0)
-            perror("Error: recv failed");
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return;
+        perror("Error: recv failed");
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
