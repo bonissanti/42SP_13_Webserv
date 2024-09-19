@@ -109,7 +109,12 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
     if (uri == "/")
         uriPath = "/";
     else
-        uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
+    {
+        if(count(uri.begin(), uri.end(), '/') > 1)
+            uriPath = uri.substr(0, uri.substr(1).find_last_of("/") + 1);
+        else
+            uriPath = uri.substr(0, uri.length());
+    }
 
     for (size_t i = 0; i < getServer().getRoute().size(); i++) {
         if (uriPath == getServer().getRoute()[i].getRoute()) {
@@ -181,8 +186,11 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
         }
     }
     build = _response.buildMessage();
-    send(pollFds.fd, build.c_str(), build.size(), 0);
-    cout << YELLOW << "Message sent to port: " << BBLUE << _server.getListen() << RESET << endl;
+    int resp = send(pollFds.fd, build.c_str(), build.size(), 0);
+    if(resp <= 0)
+        cout << RED << "Error sending message" << RESET << endl;
+    else
+        cout << YELLOW << "Message sent to port: " << BBLUE << _server.getListen() << RESET << endl;
 
     requests.erase(pollFds.fd);
     close(pollFds.fd);

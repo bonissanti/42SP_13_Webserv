@@ -310,9 +310,8 @@ void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Reques
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
     } else {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return;
-        perror("Error: recv failed");
+        if (bytesReceived <= 0)
+            perror("Error: recv failed");
         close(pollFds[i].fd);
         pollFds.erase(pollFds.begin() + i);
         requests.erase(pollFds[i].fd);
