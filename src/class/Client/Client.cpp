@@ -108,10 +108,13 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 
     if (uri == "/")
         uriPath = "/";
-    else
-    {
-        if(count(uri.begin(), uri.end(), '/') > 1)
-            uriPath = uri.substr(0, uri.substr(1).find_last_of("/") + 1);
+    else {
+        if (count(uri.begin(), uri.end(), '/') > 1) {
+            if (uri.find('.') != string::npos)
+                uriPath = uri.substr(0, uri.find_last_of("/"));
+            else
+                uriPath = uri;
+        }
         else
             uriPath = uri.substr(0, uri.length());
     }
@@ -126,15 +129,6 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
         }
     }
 
-    for (size_t i = 0; i < getServer().getRoute().size(); i++) {
-        if (getServer().getRoute()[i].getRoute() == "/") {
-            if (getServer().getRoute()[i].getAutoIndex())
-                subdirAutoindex = true;
-            else
-                subdirAutoindex = false;
-            return (getServer().getRoute()[i]);
-        }
-    }
     setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
     routeNotFound.setRoute("NF");
     return routeNotFound;
@@ -187,7 +181,7 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     }
     build = _response.buildMessage();
     int resp = send(pollFds.fd, build.c_str(), build.size(), 0);
-    if(resp <= 0)
+    if (resp <= 0)
         cout << RED << "Error sending message" << RESET << endl;
     else
         cout << YELLOW << "Message sent to port: " << BBLUE << _server.getListen() << RESET << endl;
