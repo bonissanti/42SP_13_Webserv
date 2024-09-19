@@ -32,7 +32,6 @@ char **Client::configEnviron(Server& server, Request &req, string &filePath)
     string method = "REQUEST_METHOD=" + req.getMethod();
     string gatewayInterface = "GATEWAY_INTERFACE=CGI/1.1";
 	string scriptName = "SCRIPT_NAME=" + filePath.substr(filePath.find_last_of('/') + 1, filePath.length() - filePath.find_last_of('/'));
-	cout << scriptName << endl;
 
     envp[0] = strdup(serverName.c_str());
     envp[1] = strdup(serverPort.c_str());
@@ -98,16 +97,15 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
         dup2(fd, STDOUT_FILENO);
         
         // Se for uma requisição POST, redireciona o corpo da requisição para o stdin
-        if (req.getMethod() == "POST") {
-            string body = req.getBody();
-			cout << body << endl;
-            int stdin_fd = open("/tmp/tempStdin", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-            write(stdin_fd, body.c_str(), body.size());
-            close(stdin_fd);
-            stdin_fd = open("/tmp/tempStdin", O_RDONLY);
-            dup2(stdin_fd, STDIN_FILENO);  // Redireciona o STDIN
-            close(stdin_fd);
-        }
+        // if (req.getMethod() == "POST") {
+        //     string body = req.getBody();
+        //     int stdin_fd = open("/tmp/tempStdin", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        //     write(stdin_fd, body.c_str(), body.size());
+        //     close(stdin_fd);
+        //     stdin_fd = open("/tmp/tempStdin", O_RDONLY);
+        //     dup2(stdin_fd, STDIN_FILENO);  // Redireciona o STDIN
+        //     close(stdin_fd);
+        // }
 
         // Executa o CGI (PHP ou Python)
         if (execve(_executor.c_str(), args, envp) == -1) {

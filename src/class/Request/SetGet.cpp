@@ -57,3 +57,7 @@ string Request::getHeader(const string &field) const {
 map<string, vector<char> > Request::getFormData() const {
     return _formData;
 }
+
+size_t Request::getTotalChunkedLength() const {
+    return _totalChunkedLength;
+}
