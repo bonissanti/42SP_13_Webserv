@@ -1,28 +1,22 @@
 #include "Client.hpp"
 
-string Client::defineFilePath(Route &route, string uri){
-    string filePath;
+// TODO: Tratar http://localhost:8080/index
+// TODO: Tratar situacao de diretorio ou arquivo
+string Client::defineFilePath(Route& route, string uri)
+{
     string root = route.getRoot();
     string index = route.getIndex();
+    string routePath = route.getRoute();
 
-    if (route.getCgiOn()){
-            filePath = root + uri.substr(route.getRoute().length()); 
-        if (uri == route.getRoute())
-            filePath = root + uri + "/" + index;
-    }
-    else if (route.getAutoIndex()){
-        if (!Utils::uriAlreadyPresent(root, uri))
-            filePath = root + (root[root.length() - 1] == '/' ? "" : "/");
-        else
-           filePath = root + uri + (uri[uri.length() - 1] == '/' ? "" : "/");
-    }
-    else{
-        if (uri == route.getRoute() || uri == "/")
-            filePath = root + "/" + index;
-        else
-            filePath = root + uri.substr(route.getRoute().length()); 
-    }
-    return (Utils::removeSlash(filePath));
+    if (uri.find(routePath) == 0 && routePath.length() > 1)
+        uri = uri.substr(routePath.length());
+    if (root[root.length() - 1] != '/')
+        root += "/";
+    if (!uri.empty() && uri[0] == '/')
+        uri = uri.substr(1);
+    string filePath = root + uri;
+
+    return (filePath);
 }
 
 string Client::defineContentType(string filePath)
@@ -96,40 +90,6 @@ string Client::defineResponseBody(const Route& route, const string& filePath)
     file.close();
     return (buffer.str());
 }
-
-// string Client::defineResponseBody(const Route &route, const string& filePath, const string& uri)
-// {
-//     if (route.getCgiOn()) {
-//         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
-//             return (executeCGI(_request, _server, filePath));
-//     }
-
-//     struct stat path_stat;
-//     stat(filePath.c_str(), &path_stat);
-//     if (S_ISDIR(path_stat.st_mode)){
-//         if (_subdirAutoindex)
-//         	return (_response.handleAutoIndex(filePath, uri));
-//     } 
-    
-//     ifstream file(filePath.c_str());
-//     if (!file.is_open()) {
-//         _response.setStatusCode(NOT_FOUND);
-//         return ("");
-//     }
-//     else if (file.fail()) {
-//         _response.setStatusCode(INTERNAL_SERVER_ERROR);
-//         return ("");
-//     }
-//     stringstream buffer;
-//     buffer << file.rdbuf();
-
-//     if (!verifyPermission(filePath)) {
-//         _response.setStatusCode(FORBIDDEN);
-//         return ("");
-//     }
-//     file.close();
-//     return (buffer.str());
-// }
 
 string Client::defineContentLength(const string& body)
 {

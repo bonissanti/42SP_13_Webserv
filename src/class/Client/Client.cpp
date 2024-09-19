@@ -93,8 +93,7 @@ int Client::runDeleteMethod(string filePath)
     setResponseData(NO_CONTENT, filePath, "text/html", _response.getStatusPage(NO_CONTENT), "");
     return NO_CONTENT;
 }
-// TODO: Tratar http://localhost:8080/index
-// TODO: Tratar situacao de diretorio ou arquivo
+
     
 Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
@@ -129,11 +128,10 @@ int Client::runGetMethod(string filePath, Route matchedRoute)
         return (MOVED_PERMANENTLY);
     }
 
-    // Descomentar apos merge Renato = 17/09
-    // if (!Utils::fileExists(filePath)) {
-    //     setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
-    //     return NOT_FOUND;
-    // }
+    if (!Utils::fileExists(filePath)) {
+        setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
+        return NOT_FOUND;
+    }
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
@@ -175,28 +173,6 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _request.clear();
     _response.clear();
 }
-
-
-
-// Route Client::findMatchingRoute(string uri, bool& subdirAutoindex){
-//     Route routeDefault;
-
-//     for (size_t i = 0; i < _server.getRoute().size(); i++){
-//         if (uri == _server.getRoute()[i].getRoute()){
-//             if (_server.getRoute()[i].getAutoIndex())
-//                 subdirAutoindex = true;
-//             else
-//                 subdirAutoindex = false;
-//             routeDefault = _server.getRoute()[i];
-//             return (routeDefault);
-//         }
-//     }
-
-//     if (uri.find("/cgi") == 0){
-//         routeDefault.setCgiOn(true);
-//     }
-//     return (routeDefault);
-// }
 
 bool Client::verifyPermission(const string& file)
 {
