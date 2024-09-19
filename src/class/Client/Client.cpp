@@ -2,13 +2,9 @@
 
 bool Client::_subdirAutoindex = false;
 
-Client::Client()
-{
-}
+Client::Client() {}
 
-Client::~Client()
-{
-}
+Client::~Client() {}
 
 Client::ClientException::ClientException(const string& message) : msg(message) {}
 Client::ClientException::~ClientException() throw() {}
@@ -25,7 +21,7 @@ void Client::addAssociation(int clientFd, Server& server)
 
 Server* Client::getServerFd(int clientFd)
 {
-    Server *serverPtr = NULL;
+    Server* serverPtr = NULL;
     if (_fdsMap.find(clientFd) != _fdsMap.end())
         return (_fdsMap[clientFd]);
     else {
@@ -34,31 +30,33 @@ Server* Client::getServerFd(int clientFd)
     return (serverPtr);
 }
 
-int Client::getMethodIndex(Route &route, string method)
+int Client::getMethodIndex(Route& route, string method)
 {
     string allowedMethod;
 
     stringstream ss(route.getAllowMethods());
 
-    while (ss >> allowedMethod){
+    while (ss >> allowedMethod) {
         if ((allowedMethod == "get" || allowedMethod == "GET") && method == "GET")
             return (0);
         else if ((allowedMethod == "post" || allowedMethod == "POST") && method == "POST")
             return (1);
         else if ((allowedMethod == "delete" || allowedMethod == "DELETE") && method == "DELETE")
             return (2);
-    }	
+    }
     return (-1);
 }
 
 int Client::callMethod()
 {
-    if (_request.getURI().empty()){
+    if (_request.getURI().empty()) {
         setPageError(BAD_REQUEST, ERROR400);
         return (_request.setStatusCode(BAD_REQUEST));
     }
 
     Route matchedRoute = findMatchingRoute(_request.getURI(), _subdirAutoindex);
+    if (matchedRoute.getRoute() == "NF")
+        return (NOT_FOUND);
     string filePath = defineFilePath(matchedRoute, _request.getURI());
 
     switch (getMethodIndex(matchedRoute, _request.getMethod())) {
@@ -67,26 +65,30 @@ int Client::callMethod()
         case POST:
             return runPostMethod(filePath, matchedRoute);
         case DELETE:
-            return runDeleteMethod(filePath);
+            return runDeleteMethod(filePath, matchedRoute);
         default:
             return (METHOD_NOT_ALLOWED);
     }
 }
 
-int Client::runDeleteMethod(string filePath)
+int Client::runDeleteMethod(string filePath, Route matchedRoute)
 {
-    if (!Utils::fileExists(filePath)) {
+    if (matchedRoute.getRedirect() != "") {
+        setResponseData(MOVED_PERMANENTLY, "", "text/html", _response.getStatusPage(MOVED_PERMANENTLY),
+                        matchedRoute.getRedirect());
+        return (MOVED_PERMANENTLY);
+    }
+    else if (!Utils::fileExists(filePath)) {
         setResponseData(NOT_FOUND, ERROR404, "text/html", _response.getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
-
-    if (!Utils::hasDeletePermission(filePath)) {
+    else if (!Utils::hasDeletePermission(filePath)) {
         setResponseData(FORBIDDEN, ERROR403, "text/html", _response.getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
     }
-
-    if (remove(filePath.c_str()) != 0) {
-        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR), "");
+    else if (remove(filePath.c_str()) != 0) {
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR),
+                        "");
         return INTERNAL_SERVER_ERROR;
     }
 
@@ -94,37 +96,55 @@ int Client::runDeleteMethod(string filePath)
     return NO_CONTENT;
 }
 
-    
+Server Client::getServer()
+{
+    return (_server);
+}
+
 Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
-    Route routeDefault;
     string uriPath;
+    Route routeNotFound;
 
-    if(uri == "/")
+    if (uri == "/")
         uriPath = "/";
-    else if(std::count(uri.begin(), uri.end(), '/') == 1)
-        uriPath = uri.substr(0, uri.size());
     else
-        uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
+    {
+        if(count(uri.begin(), uri.end(), '/') > 1)
+            uriPath = uri.substr(0, uri.substr(1).find_last_of("/") + 1);
+        else
+            uriPath = uri.substr(0, uri.length());
+    }
 
-
-    for (size_t i = 0; i < _server.getRoute().size(); i++) {
-        if (uriPath == _server.getRoute()[i].getRoute()) {
-            if (_server.getRoute()[i].getAutoIndex())
+    for (size_t i = 0; i < getServer().getRoute().size(); i++) {
+        if (uriPath == getServer().getRoute()[i].getRoute()) {
+            if (getServer().getRoute()[i].getAutoIndex())
                 subdirAutoindex = true;
             else
                 subdirAutoindex = false;
-            routeDefault = _server.getRoute()[i];
-            return (routeDefault);
+            return (getServer().getRoute()[i]);
         }
     }
-    return (routeDefault);
+
+    for (size_t i = 0; i < getServer().getRoute().size(); i++) {
+        if (getServer().getRoute()[i].getRoute() == "/") {
+            if (getServer().getRoute()[i].getAutoIndex())
+                subdirAutoindex = true;
+            else
+                subdirAutoindex = false;
+            return (getServer().getRoute()[i]);
+        }
+    }
+    setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
+    routeNotFound.setRoute("NF");
+    return routeNotFound;
 }
 
 int Client::runGetMethod(string filePath, Route matchedRoute)
 {
     if (matchedRoute.getRedirect() != "") {
-        setResponseData(MOVED_PERMANENTLY, "", "text/html", _response.getStatusPage(MOVED_PERMANENTLY), matchedRoute.getRedirect());
+        setResponseData(MOVED_PERMANENTLY, "", "text/html", _response.getStatusPage(MOVED_PERMANENTLY),
+                        matchedRoute.getRedirect());
         return (MOVED_PERMANENTLY);
     }
 
@@ -136,14 +156,17 @@ int Client::runGetMethod(string filePath, Route matchedRoute)
     string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
 
-    if (_response.getStatusCode() == NOT_FOUND){
+    if (_response.getStatusCode() == NOT_FOUND) {
         setResponseData(NOT_FOUND, ERROR404, "text/html", _response.getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
-    } else if (_response.getStatusCode() == FORBIDDEN){
+    }
+    else if (_response.getStatusCode() == FORBIDDEN) {
         setResponseData(FORBIDDEN, ERROR403, "text/html", _response.getStatusPage(FORBIDDEN), "");
         return FORBIDDEN;
-    } else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR){
-        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR), "");
+    }
+    else if (_response.getStatusCode() == INTERNAL_SERVER_ERROR) {
+        setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", _response.getStatusPage(INTERNAL_SERVER_ERROR),
+                        "");
         return INTERNAL_SERVER_ERROR;
     }
     setResponseData(OK, filePath, contentType, responseBody, "");
@@ -157,18 +180,20 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     string build;
 
     setResponseData(_request.getStatusCode(), "", "text/html", _response.getStatusPage(_request.getStatusCode()), "");
-    if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK){
-        if (callMethod() == METHOD_NOT_ALLOWED){
+    if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK) {
+        if (callMethod() == METHOD_NOT_ALLOWED) {
             setPageError(METHOD_NOT_ALLOWED, ERROR405);
         }
     }
     build = _response.buildMessage();
-    send(pollFds.fd, build.c_str(), build.size(), 0);
-    cout << YELLOW << "Message sent to port: " <<  BBLUE << _server.getListen() <<  RESET << endl;
-  
+    int resp = send(pollFds.fd, build.c_str(), build.size(), 0);
+    if(resp <= 0)
+        cout << RED << "Error sending message" << RESET << endl;
+    else
+        cout << YELLOW << "Message sent to port: " << BBLUE << _server.getListen() << RESET << endl;
+
     requests.erase(pollFds.fd);
     close(pollFds.fd);
-
 
     _request.clear();
     _response.clear();
@@ -194,34 +219,35 @@ void Client::setResponseData(int statusCode, string filePath, string contentType
     _response.setContentLength(defineContentLength(responseBody));
 }
 
-string Client::setPageError(int errorCode, const string& filePath){
+string Client::setPageError(int errorCode, const string& filePath)
+{
     string errorContent = Utils::readFile(filePath);
 
     switch (errorCode) {
-            case MOVED_PERMANENTLY:
-                setResponseData(MOVED_PERMANENTLY, ERROR301, "text/html", errorContent, "");
-                break ;
-            case BAD_REQUEST:
-                setResponseData(BAD_REQUEST, ERROR400, "text/html", errorContent, "");
-                break ;
-            case FORBIDDEN:
-                setResponseData(FORBIDDEN, ERROR403, "text/html", errorContent, "");
-                break ;
-            case NOT_FOUND:
-                setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
-                break ;
-            case METHOD_NOT_ALLOWED:
-                setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
-                break ;
-            case INTERNAL_SERVER_ERROR:
-                setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", errorContent, "");
-                break ;
-            case BAD_GATEWAY:
-                setResponseData(BAD_GATEWAY, ERROR502, "text/html", errorContent, "");
-                break ;
-            default:
-                setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
-                break ;
-        }
+        case MOVED_PERMANENTLY:
+            setResponseData(MOVED_PERMANENTLY, ERROR301, "text/html", errorContent, "");
+            break;
+        case BAD_REQUEST:
+            setResponseData(BAD_REQUEST, ERROR400, "text/html", errorContent, "");
+            break;
+        case FORBIDDEN:
+            setResponseData(FORBIDDEN, ERROR403, "text/html", errorContent, "");
+            break;
+        case NOT_FOUND:
+            setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+            break;
+        case METHOD_NOT_ALLOWED:
+            setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
+            break;
+        case INTERNAL_SERVER_ERROR:
+            setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", errorContent, "");
+            break;
+        case BAD_GATEWAY:
+            setResponseData(BAD_GATEWAY, ERROR502, "text/html", errorContent, "");
+            break;
+        default:
+            setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
+            break;
+    }
     return (errorContent);
 }

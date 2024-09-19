@@ -105,7 +105,7 @@ void Route::setIndex(string& index){
         throw Route::exception(RED "Error: misformatted root index, please use 'file.ext'" RESET);
     if (index[index.length() - 1] == '/')
         throw Route::exception(RED "Error: misformatted root index, please use 'file.ext'" RESET);
-    _index = index;
+    _index = index.substr(0, index.find(' '));
 }
 
 void Route::setRedirect(const string& redirect)
