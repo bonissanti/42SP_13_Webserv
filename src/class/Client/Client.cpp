@@ -94,27 +94,29 @@ int Client::runDeleteMethod(string filePath)
     return NO_CONTENT;
 }
 
-    
+Server Client::getServer()
+{
+    return (_server);
+}
+
+//TODO: tratar situaçao http://localhost:8080/index
 Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
 {
     Route routeDefault;
     string uriPath;
 
-    if(uri == "/")
+    if(uri == "/" || (count(uri.begin(), uri.end(), '/') == 1 && uri[0] == '/'))
         uriPath = "/";
-    else if(std::count(uri.begin(), uri.end(), '/') == 1)
-        uriPath = uri.substr(0, uri.size());
     else
         uriPath = uri.substr(0, uri.substr(1).find("/") + 1);
 
-
-    for (size_t i = 0; i < _server.getRoute().size(); i++) {
-        if (uriPath == _server.getRoute()[i].getRoute()) {
-            if (_server.getRoute()[i].getAutoIndex())
+    for (size_t i = 0; i < getServer().getRoute().size(); i++) {
+        if (uriPath == getServer().getRoute()[i].getRoute()) {
+            if (getServer().getRoute()[i].getAutoIndex())
                 subdirAutoindex = true;
             else
                 subdirAutoindex = false;
-            routeDefault = _server.getRoute()[i];
+            routeDefault = getServer().getRoute()[i];
             return (routeDefault);
         }
     }

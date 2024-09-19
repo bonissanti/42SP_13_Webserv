@@ -46,6 +46,8 @@ class Client {
         bool saveUploadedFile(const string &filename, const std::vector<char> &fileContent, const string &directory);
         void sendResponse(struct pollfd& pollFds, map<int, Request>& requests);
         int getMethodIndex(string method);
+
+        Server getServer(void);
         Server* getServerFd(int clientFd);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody);
         void setServer(Server& server);
