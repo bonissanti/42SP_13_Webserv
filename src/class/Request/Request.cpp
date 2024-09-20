@@ -155,6 +155,7 @@ void Request::parseRequest(const string &raw_request) {
     parseHeaders(request_stream);
     parseBody(request_stream);
 
+	printRequest();
     validateRequest();
 
     _readyForResponse = true;
@@ -379,7 +380,7 @@ void Request::printRequest() const
     //     }
     //     cout << endl;
     // }
-    cout << _body << endl;
+    // cout << _body << endl;
 }
 
 void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server)

@@ -43,16 +43,8 @@ void Response::clear() {
 }
 
 string Response::setCreatedBody(const string& filePath) {
-    string body = "<html>"
-                    "<head>"
-                    "<title>201</title>"
-                    "</head>"
-                    "<body>"
-                        "<h1>201</h1>"
-                        "<p>Created Successfully</p>"
-                        "<p><a href=\"" + filePath + "\">" + filePath + "</a></p>"
-                    "</body>"
-                "</html>";
+    string body = "Created Successfully\n"
+				 + filePath;
     return body;
 }
 

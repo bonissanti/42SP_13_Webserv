@@ -31,7 +31,6 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
             return false;
         }
 	}
-
     if (access(directory.c_str(), W_OK) == -1) {
         setResponseData(FORBIDDEN, ERROR403, "text/html", "403 Forbidden", "");
         return false;
@@ -57,8 +56,14 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 
 int Client::runPostMethod(string filePath, Route matchedRoute) {
     string contentType = _request.getHeader("content-type");
-    _response.setHeader("Content-type", "text/plain");
-
+	string route = matchedRoute.getRoute();
+    if (route.find(_request.getURI()) == string::npos) {
+		route += _request.getURI();
+	}
+	route += filePath.substr(0, filePath.find_last_of("/") + 1) + route;
+	cout << filePath << endl;
+	cout << matchedRoute.getRoute() << endl;
+	cout << route << endl;
     if (contentType.find("multipart/form-data") != string::npos) {
         map<string, vector<char> > formData = _request.getFormData();
 
@@ -72,13 +77,13 @@ int Client::runPostMethod(string filePath, Route matchedRoute) {
         vector<char> fileContent = formData["fileContent"];
         string fileContentType = string(formData["contentType"].begin(), formData["contentType"].end());
 
-        if (!saveUploadedFile(filename, fileContent, filePath)) {
+        if (!saveUploadedFile(filename, fileContent, route)) {
             return FORBIDDEN;
         }
 
         // Set the correct content type in the response
         _response.setHeader("Content-type", fileContentType);
-        setResponseData(CREATED, filePath, "text/html", _response.setCreatedBody(_request.getURI() + "/" + filename), filePath);
+        setResponseData(CREATED, "", "text/html", _response.setCreatedBody(_request.getURI() + "/" + filename), "");
         return CREATED;
     } else if (contentType.find("x-www-form-urlencoded") != string::npos) {
 		string contentType = defineContentType(filePath);

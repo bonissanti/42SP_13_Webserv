@@ -174,8 +174,6 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _server = _request.getServer();
     string build;
 
-
-    _server.printErrorPages();
     setResponseData(_request.getStatusCode(), "", "text/html", _response.getStatusPage(_request.getStatusCode()), "");
     if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK) {
         if (callMethod() == METHOD_NOT_ALLOWED)
