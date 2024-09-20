@@ -9,8 +9,8 @@ string Client::defineFilePath(Route& route, string uri)
     }
     else if (count(uri.begin(), uri.end(), '/') == 1) {
         if (uri.find('.') != string::npos) {
-            if (Utils::fileExists(root + '/' + uri))
-                return root.substr(0, root.length()) + '/' + uri;
+            if (Utils::fileExists(root + uri))
+                return root.substr(0, root.length()) + uri;
             else
                 return (root.substr(0, root.length()) + '/' + index);
         }
@@ -19,7 +19,7 @@ string Client::defineFilePath(Route& route, string uri)
     }
     else if (count(uri.begin(), uri.end(), '/') > 1) {
         string file = uri.substr(uri.find_last_of("/") + 1);
-        if (Utils::fileExists(root + '/' + file))
+        if (Utils::fileExists(root + file))
             return root.substr(0, root.length()) + '/' + file;
         else
             return (root.substr(0, root.length()) + '/' + index);
@@ -90,9 +90,8 @@ string Client::defineResponseBody(Route& route, const string& filePath)
 
 bool Client::allowAutoIndex(Route& route, string filePath)
 {
-    if(route.getAutoIndex() == true && route.getAutoIndex() == true)
-    {
-        if(filePath.find('.') != string::npos)
+    if (route.getAutoIndex() == true && route.getAutoIndex() == true) {
+        if (filePath.find('.') != string::npos)
             return (false);
         return (true);
     }
