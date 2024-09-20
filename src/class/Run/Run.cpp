@@ -7,8 +7,9 @@
 Run::Run() {}
 Run::~Run() {}
 
-Client* Run::getClientFd(int clientFd){
-    Client *clientPtr = NULL;
+Client* Run::getClientFd(int clientFd)
+{
+    Client* clientPtr = NULL;
     if (_mapClient.find(clientFd) != _mapClient.end())
         return (_mapClient[clientFd]);
     return (clientPtr);
@@ -44,21 +45,21 @@ int Run::setServersNumber(string filePath)
             //     listenFound = true;
             // }
             else if (insideServerBlock)
-            if (insideServerBlock) {
-                if (c == '{') {
-                    brackets.push(c);
-                }
-                else if (c == '}') {
-                    if (brackets.empty()) {
-                        serverCount = -1;
+                if (insideServerBlock) {
+                    if (c == '{') {
+                        brackets.push(c);
                     }
-                    brackets.pop();
-                    if (brackets.empty()) {
-                        insideServerBlock = false;
-                        ++serverCount;
+                    else if (c == '}') {
+                        if (brackets.empty()) {
+                            serverCount = -1;
+                        }
+                        brackets.pop();
+                        if (brackets.empty()) {
+                            insideServerBlock = false;
+                            ++serverCount;
+                        }
                     }
                 }
-            }
         }
     }
     if (serverCount == -1 || serverCount > 1024)
@@ -75,10 +76,7 @@ int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds)
     addrlen = sizeof(clientAddr);
     clientFd = accept(serverSocket, (struct sockaddr*)&clientAddr, &addrlen);
     if (clientFd == -1) {
-        if (errno == EWOULDBLOCK)
-            cout << YELLOW << "No pending connections for now" << RESET << endl;
-        else
-            cerr << RED << "Error: accept failed" << RESET << endl;
+        cerr << RED << "Error: accept failed" << RESET << endl;
     }
     else
         cout << GREEN << "New communication established!" << RESET << endl;  // log message
@@ -109,36 +107,35 @@ void Run::startServer(vector<Server>& servers)
     map<int, Request> mapRequests;
     vector<struct pollfd> pollFds = loadPolls(servers);
     Client client;
-    
+
     while (true) {
-        returnValue = poll(pollFds.data(), pollFds.size(), 60 * 1000);
+        returnValue = poll(pollFds.data(), pollFds.size(), 100);
         
         if (signalUsed){
             break ;
         }
-        else if (returnValue == -1){
-            break ;
+        else if (returnValue == -1) {
+            break;
         }
-        else
-        {
+        else {
             for (size_t i = 0; i < pollFds.size(); i++) {
                 if ((pollFds[i].revents & POLLIN) && (i < servers.size())) {
-                	int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
-                	client.addAssociation(clientFd, servers[i]);
-
+                    int clientFd = acceptNewConnection(pollFds[i].fd, pollFds);
+                    client.addAssociation(clientFd, servers[i]);
                 }
                 else if (pollFds[i].revents & POLLIN) {
-                	Server *actualServer = client.getServerFd(pollFds[i].fd);
-                 	Request::readRequest(pollFds, i, mapRequests, *actualServer);
+                    Server* actualServer = client.getServerFd(pollFds[i].fd);
+                    Request::readRequest(pollFds, i, mapRequests, *actualServer);
                 }
                 else {
-                	if (mapRequests.find(pollFds[i].fd) != mapRequests.end()) {
+                    if (mapRequests.find(pollFds[i].fd) != mapRequests.end()) {
                         Request& request = mapRequests[pollFds[i].fd];
 
-                        if (request.getIsReadyForResponse()){
-                    	    client.sendResponse(pollFds[i], mapRequests);
-                            pollFds.erase(pollFds.begin() + i); }
+                        if (request.getIsReadyForResponse()) {
+                            client.sendResponse(pollFds[i], mapRequests);
+                            pollFds.erase(pollFds.begin() + i);
                         }
+                    }
                 }
             }
         }

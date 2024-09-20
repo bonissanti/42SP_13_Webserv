@@ -16,6 +16,7 @@ class Request {
         Server _server;
         bool _isCgi;
         bool _readyForResponse;
+		size_t _totalChunkedLength;
         HttpStatus _statusCode;
 
         void parseRequestLine(const string& line);
@@ -53,6 +54,7 @@ class Request {
         map<int, Request> getRequest() const;
         Server& getServer();
         bool getIsReadyForResponse() const;
+		size_t getTotalChunkedLength() const;
 
         int setStatusCode(HttpStatus code);
 
@@ -60,10 +62,8 @@ class Request {
         bool validateRequest();
         bool isRequestComplete();
         void parseRequest(const string& raw_request);
-        // void readRequest(struct pollfd& actualFd);
-        // void readRequest(vector<struct pollfd> &pollFds, int i);
+		void parseChunkedBody(istringstream &requestStream);
         static void readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server);
-        // void readRequest(int clientFd);
         void clear();
         friend class Response;
 };

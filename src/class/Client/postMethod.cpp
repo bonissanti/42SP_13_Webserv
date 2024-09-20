@@ -55,7 +55,7 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
     return true;
 }
 
-int Client::runPostMethod(string filePath) {
+int Client::runPostMethod(string filePath, Route matchedRoute) {
     string contentType = _request.getHeader("content-type");
     _response.setHeader("Content-type", "text/plain");
 
@@ -80,9 +80,19 @@ int Client::runPostMethod(string filePath) {
         _response.setHeader("Content-type", fileContentType);
         setResponseData(CREATED, filePath, "text/html", _response.setCreatedBody(_request.getURI() + "/" + filename), filePath);
         return CREATED;
-    } else if (contentType.empty()) {
-        setResponseData(BAD_REQUEST, ERROR400, "text/html", _response.getStatusPage(BAD_REQUEST), "");
-        return BAD_REQUEST;
+    } else if (contentType.find("x-www-form-urlencoded") != string::npos) {
+		string contentType = defineContentType(filePath);
+    	string responseBody = defineResponseBody(matchedRoute, filePath);
+		setResponseData(_response.getStatusCode(), "", contentType, responseBody, filePath);
+		return _response.getStatusCode();
+	} else if (contentType.find("text/plain") != string::npos) {
+        string body = _request.getBody();
+        if (!saveUploadedFile("plain_text.txt", vector<char>(body.begin(), body.end()), filePath)) {
+            return FORBIDDEN;
+        }
+		
+        setResponseData(CREATED, filePath, "text/plain", "File uploaded successfully.", filePath);
+        return CREATED;
     } else {
         setResponseData(BAD_REQUEST, ERROR400, "text/html", _response.getStatusPage(BAD_REQUEST), "");
         return BAD_REQUEST;

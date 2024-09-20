@@ -42,33 +42,95 @@ Request &Request::operator=(const Request &other)
     return *this;
 }
 
+int hexStringToInt(const std::string& hexStr) {
+    int result;
+    std::istringstream iss(hexStr);
+
+    if (hexStr.size() > 2 && (hexStr[0] == '0' && (hexStr[1] == 'x' || hexStr[1] == 'X'))) {
+        iss.ignore(2);
+    }
+
+    iss >> std::hex >> result;
+
+    if (iss.fail() || !iss.eof()) {
+        throw std::invalid_argument("Invalid hexadecimal string: " + hexStr);
+    }
+
+    return result;
+}
+
 bool Request::isRequestComplete() {
     size_t header_end = _buffer.find("\r\n\r\n");
     if (header_end == string::npos) {
         return false;
     }
 
-    // Parse headers to find Content-Length
     istringstream header_stream(_buffer.substr(0, header_end));
     string line;
     size_t content_length = 0;
+    bool is_chunked = false;
     while (getline(header_stream, line) && !line.empty()) {
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string header_name = line.substr(0, colon_pos);
             string header_value = line.substr(colon_pos + 1);
+
+            header_value.erase(0, header_value.find_first_not_of(" \t"));
+            header_value.erase(header_value.find_last_not_of(" \t") + 1);
             _headers[header_name] = header_value;
 
             if (header_name == "Content-Length") {
                 content_length = Utils::strtoi(header_value);
+            } else if (header_name == "Transfer-Encoding" && header_value.find("chunked") != string::npos) {
+                is_chunked = true;
             }
         }
     }
 
-    // Check if the entire body is received
-    size_t body_start = header_end + 4; // Move past "\r\n\r\n"
-    size_t body_length = _buffer.size() - body_start;
-    return body_length >= content_length;
+    size_t body_start = header_end + 4;
+    if (is_chunked) {
+        _totalChunkedLength = 0;
+
+        size_t pos = body_start;
+        while (true) {
+            size_t chunk_size_end = _buffer.find("\r\n", pos);
+            if (chunk_size_end == string::npos) {
+                return false;
+            }
+
+            string chunk_size_str = _buffer.substr(pos, chunk_size_end - pos);
+
+            size_t chunk_size = 0;
+            try {
+                chunk_size = hexStringToInt(chunk_size_str);
+            } catch (const std::invalid_argument &e) {
+                return true;
+            }
+            pos = chunk_size_end + 2;
+            if (chunk_size == 0) {
+                size_t last_chunk_end = _buffer.find("\r\n", pos);
+                if (last_chunk_end != string::npos) {
+                    if (_headers.find("content-length") == _headers.end()) {
+						std::stringstream ss;
+						ss << _totalChunkedLength;
+						_headers["content-length"] = ss.str();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            if (pos + chunk_size + 2 > _buffer.size()) {
+                return false;
+            }
+
+            _totalChunkedLength += chunk_size;
+            pos += chunk_size + 2;
+        }
+    } else {
+        size_t body_length = _buffer.size() - body_start;
+        return body_length >= content_length;
+    }
 }
 
 void Request::parseRequest(const string &raw_request) {
@@ -93,9 +155,6 @@ void Request::parseRequest(const string &raw_request) {
     parseHeaders(request_stream);
     parseBody(request_stream);
 
-    // if (!validateRequest()) {
-    //     _statusCode = BAD_REQUEST;
-    // }
     validateRequest();
 
     _readyForResponse = true;
@@ -116,7 +175,7 @@ void Request::parseHeaders(istringstream &request_stream)
     string line;
 
     while (getline(request_stream, line) && line != "\r" && line != "") {
-        // Skip boundary extraction
+
         size_t colon_pos = line.find(':');
         if (colon_pos != string::npos) {
             string key = line.substr(0, colon_pos);
@@ -150,24 +209,21 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
 
         size_t boundaryPos = accumulated_content.find(boundary);
         while (boundaryPos != string::npos) {
-            // Process the previous part
+
             if (!partContent.empty() && !filename.empty()) {
                 _formData["filename"] = vector<char>(filename.begin(), filename.end());
                 _formData["fileContent"] = partContent;
                 _formData["contentType"] = vector<char>(contentType.begin(), contentType.end());
             }
 
-            // Reset for the next part
             partContent.clear();
             filename.clear();
             contentType.clear();
             isFileContent = false;
             isHeader = true;
 
-            // Extract content up to the boundary
             string content_up_to_boundary = accumulated_content.substr(0, boundaryPos + boundary.size());
 
-            // Process headers
             size_t header_end = content_up_to_boundary.find("\r\n\r\n");
             if (header_end != string::npos) {
                 string headers = content_up_to_boundary.substr(0, header_end);
@@ -175,21 +231,20 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
 
                 size_t filename_pos = headers.find("filename=\"");
                 if (filename_pos != string::npos) {
-                    filename_pos += 10; // Move past 'filename="'
+                    filename_pos += 10;
                     size_t filename_end = headers.find("\"", filename_pos);
                     filename = headers.substr(filename_pos, filename_end - filename_pos);
                 }
 
                 size_t type_pos = headers.find("Content-Type:");
                 if (type_pos != string::npos) {
-                    type_pos += 14; // Move past 'Content-Type: '
+                    type_pos += 14;
                     size_t type_end = headers.find("\r\n", type_pos);
                     contentType = headers.substr(type_pos, type_end - type_pos);
                     isFileContent = true;
                 }
             }
 
-            // Add content after headers to partContent
             if (isFileContent && !isHeader) {
                 size_t start_of_file_content = header_end + 4;
                 partContent.insert(partContent.end(),
@@ -197,18 +252,15 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
                     content_up_to_boundary.end());
             }
 
-            // Update accumulated_content
             accumulated_content = accumulated_content.substr(boundaryPos + boundary.size());
             boundaryPos = accumulated_content.find(boundary);
         }
     }
 
-    // Ensure the last chunk is added to partContent
     if (!accumulated_content.empty() && isFileContent && !isHeader) {
         partContent.insert(partContent.end(), accumulated_content.begin(), accumulated_content.end());
     }
 
-    // Process the final part if it exists
     if (!partContent.empty() && !filename.empty()) {
         _formData["filename"] = vector<char>(filename.begin(), filename.end());
         _formData["fileContent"] = partContent;
@@ -217,19 +269,55 @@ void Request::parseMultidata(istringstream &request_stream, const string &bounda
 }
 
 void Request::parseBody(istringstream &requestStream) {
-    string contentType = getHeader("content-type");
-    if (contentType.find("multipart/form-data") != string::npos) {
-        cout << "Parsing multipart/form-data body" << endl;
-        size_t boundaryPos = contentType.find("boundary=");
-        if (boundaryPos == string::npos) {
+    string transferEncoding = getHeader("transfer-encoding");
+    if (transferEncoding.find("chunked") != string::npos) {
+        parseChunkedBody(requestStream);
+    } else {
+        string contentType = getHeader("content-type");
+        if (contentType.find("multipart/form-data") != string::npos) {
+            size_t boundaryPos = contentType.find("boundary=");
+            if (boundaryPos == string::npos) {
+                _statusCode = BAD_REQUEST;
+                std::cout << "Boundary not found in Content-Type" << std::endl;
+                return;
+            }
+            string boundary = "--" + contentType.substr(boundaryPos + 9);
+            parseMultidata(requestStream, boundary);
+        } else {
+            getline(requestStream, _body, '\0');
+        }
+    }
+}
+
+void Request::parseChunkedBody(istringstream &requestStream) {
+    string line;
+    while (getline(requestStream, line)) {
+        if (!line.empty() && line[line.size() - 1] == '\r') {
+            line.erase(line.size() - 1);
+        }
+
+        size_t chunkSize = 0;
+        try {
+            chunkSize = hexStringToInt(line);
+        } catch (const std::invalid_argument &e) {
             _statusCode = BAD_REQUEST;
-            std::cout << "Boundary not found in Content-Type" << std::endl;
             return;
         }
-        string boundary = "--" + contentType.substr(boundaryPos + 9);
-        parseMultidata(requestStream, boundary);
-    } else {
-        getline(requestStream, _body, '\0');
+
+        if (chunkSize == 0) {
+            break;
+        }
+
+        char *buffer = new char[chunkSize];
+        requestStream.read(buffer, chunkSize);
+        _body.append(buffer, chunkSize);
+        delete[] buffer;
+
+        getline(requestStream, line);
+        if (line != "\r" && line != "") {
+            _statusCode = BAD_REQUEST;
+            return;
+        }
     }
 }
 
@@ -245,7 +333,6 @@ bool Request::validateRequest() //mudar para void ou HttpCode
         return false;
     }
     if (_version != "HTTP/1.1" && _version != "HTTP/1.0") {
-        // cout << "Error: invalid HTTP version" << endl;
         _statusCode = VERSION_NOT_SUPPORTED;
         return false;
     }
@@ -260,7 +347,7 @@ bool Request::validateRequest() //mudar para void ou HttpCode
         return false;
     }
 
-    if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end()) {
+    if (_method.compare("POST") == 0 && _headers.find("content-length") == _headers.end() && _headers.find("transfer-encoding") == _headers.end()) {
         _statusCode = BAD_REQUEST;
         return false;
     }
@@ -280,18 +367,18 @@ void Request::printRequest() const
     for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
         cout << it->first << ": " << it->second << endl;
     }
-    for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-        cout << it->first << ": ";
-        for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-            cout << it->first << ": ";
-            for (vector<char>::const_iterator iter = it->second.begin(); iter != it->second.end(); ++iter) {
-                char c = *iter;
-                cout << c;
-            }
-            cout << endl;
-        }
-        cout << endl;
-    }
+    // for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+    //     cout << it->first << ": ";
+    //     for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
+    //         cout << it->first << ": ";
+    //         for (vector<char>::const_iterator iter = it->second.begin(); iter != it->second.end(); ++iter) {
+    //             char c = *iter;
+    //             cout << c;
+    //         }
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    // }
     cout << _body << endl;
 }
 

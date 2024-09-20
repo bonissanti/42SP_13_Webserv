@@ -28,7 +28,7 @@ class Client {
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
-        char** configEnviron(Server& server, Request& req);
+        char** configEnviron(Server& server, Request& req, string& filePath);
         string executeCGI(Request& req, Server &server, string filePath);
         // string setPageError(int errorCode, const string& filePath);
         string setPageError(int errorCode);
@@ -40,8 +40,8 @@ class Client {
         void addAssociation(int clientFd, Server& server);
         int callMethod(void);
         int runGetMethod(string filePath, Route matchedRoute);
-        int runPostMethod(string uri);
-        int runDeleteMethod(string filePath);
+        int runPostMethod(string uri, Route matchedRoute);
+        int runDeleteMethod(string filePath, Route matchedRoute);
 
         void handleMultiPartRequest(void);
         bool saveUploadedFile(const string &filename, const std::vector<char> &fileContent, const string &directory);

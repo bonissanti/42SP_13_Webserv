@@ -68,7 +68,7 @@ void Server::setClientMaxBodySize(string size)
         switch (unit[0]) {
             case 'k':
             case 'K':
-                _client_max_body_size = Utils::strtoi(size.substr(0, pos));
+                _client_max_body_size = Utils::strtoi(size.substr(0, pos)) * KB;
                 break;
             case 'm':
             case 'M':

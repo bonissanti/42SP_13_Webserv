@@ -1,9 +1,9 @@
-http://localhost:8080/index
+http://localhost:1027/index
 
-http://localhost:8080/index/index.html
+http://localhost:1027/index/index.html
 
-http://localhost:8080/cgi
+http://localhost:1027/cgi
 
-http://localhost:8080/
+http://localhost:1027/
 
-http://localhost:8080/cgi/index.php
+http://localhost:1027/cgi/index.php

@@ -4,12 +4,12 @@
         {
             "label": "make re",
             "type": "shell",
-            "command": "make re",
+            "command": "make",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": ["$gcc"]
-        }
+        },
     ]
 }

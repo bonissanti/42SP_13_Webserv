@@ -1,22 +1,30 @@
 #include "Client.hpp"
 
-// TODO: Tratar http://localhost:8080/index
-// TODO: Tratar situacao de diretorio ou arquivo
 string Client::defineFilePath(Route& route, string uri)
 {
-    string root = route.getRoot();
     string index = route.getIndex();
-    string routePath = route.getRoute();
-
-    if (uri.find(routePath) == 0 && routePath.length() > 1)
-        uri = uri.substr(routePath.length());
-    if (root[root.length() - 1] != '/')
-        root += "/";
-    if (!uri.empty() && uri[0] == '/')
-        uri = uri.substr(1);
-    string filePath = root + uri;
-
-    return (filePath);
+    string root = route.getRoot();
+    if (uri == "/") {
+        return (root.substr(0, root.length()) + '/' + index);
+    }
+    else if (count(uri.begin(), uri.end(), '/') == 1) {
+        if (uri.find('.') != string::npos) {
+            if (Utils::fileExists(root + '/' + uri))
+                return root.substr(0, root.length()) + '/' + uri;
+            else
+                return (root.substr(0, root.length()) + '/' + index);
+        }
+        else
+            return (root.substr(0, root.length()) + '/' + index);
+    }
+    else if (count(uri.begin(), uri.end(), '/') > 1) {
+        string file = uri.substr(uri.find_last_of("/") + 1);
+        if (Utils::fileExists(root + '/' + file))
+            return root.substr(0, root.length()) + '/' + file;
+        else
+            return (root.substr(0, root.length()) + '/' + index);
+    }
+    return ("NF");
 }
 
 string Client::defineContentType(string filePath)
@@ -29,7 +37,7 @@ string Client::defineContentType(string filePath)
     _mimeTypes[".png"] = "image/png";
     _mimeTypes[".jpg"] = "image/jpg";
     _mimeTypes[".gif"] = "image/gif";
-    _mimeTypes[".js"] = "application/js";
+    _mimeTypes[".js"] = "application/javascript";
     _mimeTypes[".pdf"] = "application/pdf";
 
     index = filePath.rfind('.');
@@ -46,29 +54,18 @@ string Client::defineContentType(string filePath)
 
 string Client::defineResponseBody(const Route& route, const string& filePath)
 {
-    if (route.getCgiOn()) {
+    if (route.getCgiOn() == true) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
             return (executeCGI(_request, _server, filePath));
-        else if (route.getIndex().find(".php") != string::npos || route.getIndex().find(".py") != string::npos) {
-            size_t found = 0;
-            if (route.getIndex().find(".php") != string::npos)
-                found = route.getIndex().find(".php");
-            else if (route.getIndex().find(".py") != string::npos)
-                found = route.getIndex().find(".py");
-
-            if (found == 0)
-                return (executeCGI(_request, _server, "/cgi/index.php"));
-            size_t start = route.getIndex().rfind(' ', found);
-            string file = route.getIndex().substr(start + 1, found - start - 1);
-            return (executeCGI(_request, _server, file));
-        }
     }
 
-    struct stat path_stat;
-    stat(filePath.c_str(), &path_stat);
-    if (S_ISDIR(path_stat.st_mode)) {
-        if (_subdirAutoindex)
-            return (_response.handleAutoIndex(filePath, _request.getURI()));
+    if (_subdirAutoindex == true) {
+        struct stat path_stat;
+        string filePathFilter = filePath.substr(0, filePath.find_last_of("/") + 1);
+        stat(filePathFilter.c_str(), &path_stat);
+        if (S_ISDIR(path_stat.st_mode)) {
+                return (_response.handleAutoIndex(filePathFilter, _request.getURI()));
+        }
     }
 
     ifstream file(filePath.c_str());
