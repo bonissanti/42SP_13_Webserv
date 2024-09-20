@@ -20,9 +20,9 @@ string Client::defineFilePath(Route& route, string uri)
     else if (count(uri.begin(), uri.end(), '/') > 1) {
         string file = uri.substr(uri.find_last_of("/") + 1);
         if (Utils::fileExists(root + '/' + file))
-            return root.substr(0, root.length()) + '/' + file;
+            return root + '/' + file;
         else
-            return (root.substr(0, root.length()) + '/' + index);
+            return root + '/' + index;
     }
     return ("NF");
 }
@@ -54,7 +54,7 @@ string Client::defineContentType(string filePath)
 
 string Client::defineResponseBody(Route& route, const string& filePath)
 {
-    if (route.getCgiOn() == true && allowAutoIndex(route, filePath) == false) {
+    if (route.getCgiOn() == true) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
             return (executeCGI(_request, _server, filePath));
     }
@@ -62,6 +62,8 @@ string Client::defineResponseBody(Route& route, const string& filePath)
     struct stat path_stat;
     string filePathFilter = filePath.substr(0, filePath.find_last_of("/") + 1);
     stat(filePathFilter.c_str(), &path_stat);
+
+    
     if (_subdirAutoindex == true && allowAutoIndex(route, filePath) == true) {
         if (S_ISDIR(path_stat.st_mode)) {
             return (_response.handleAutoIndex(filePathFilter, _request.getURI()));
@@ -88,10 +90,10 @@ string Client::defineResponseBody(Route& route, const string& filePath)
     return (buffer.str());
 }
 
-bool Client::allowAutoIndex(Route& route, string filePath)
+bool Client::allowAutoIndex(Route route, string filePath)
 {
-    if (route.getAutoIndex() == true && route.getAutoIndex() == true) {
-        if (filePath.find('.') != string::npos)
+    if (route.getAutoIndex() == true && route.getIndex() == "") {
+        if (filePath.find('.') != string::npos && Utils::fileExists(filePath))
             return (false);
         return (true);
     }
