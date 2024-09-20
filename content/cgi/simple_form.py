@@ -5,7 +5,7 @@ from pathlib import Path
 
 base_dir = Path(__file__).resolve().parent.parent
 not_allowed_page_path = base_dir / "page-errors" / "405.html"
-# database_path = base_dir / "database" / "user_emails.csv"
+database_path = base_dir / "database" / "user_emails.csv"
 error_page_path = base_dir / "page-errors" / "400.html"
 internal_error_page_path = base_dir / "page-errors" / "500.html"
 
@@ -14,14 +14,14 @@ if (os.environ.get("REQUEST_METHOD", None) != "POST"):
         print(f.read())
 
 else:
-    # if not os.path.exists(database_path):
-    #     with open(database_path, "w") as file:
-    #         file.write("")
-    # os.chmod(database_path, 0o777)
-    # content = os.environ.get("QUERY_STRING", None)
-    # if content is None:
-    #     with open(error_page_path, "r") as f:
-    #         print(f.read())
+    if not os.path.exists(database_path):
+        with open(database_path, "w") as file:
+            file.write("")
+    os.chmod(database_path, 0o777)
+    content = os.environ.get("QUERY_STRING", None)
+    if content is None:
+        with open(error_page_path, "r") as f:
+            print(f.read())
 
     try:
         email = content.split("&")[0].split("=")[1]
@@ -78,9 +78,9 @@ else:
             print(f"<p>Email: {email}</p>")
             print(f"<p>Telefone: {email}</p>")
             print(f"<p>Mensagem {message}</p>")
-            # with open(database_path, "a") as file:
-            #     file.write(f"\n{name},{email}, {phone}, {message}")
-            #     file.close()
+            with open(database_path, "a") as file:
+                file.write(f"\n{name},{email}, {phone}, {message}")
+                file.close()
         else:
             print("<p>Infelizmente não recebemos os dados que precisávamos :(</p>")
 
