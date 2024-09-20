@@ -49,8 +49,8 @@ int Client::getMethodIndex(Route& route, string method)
 
 int Client::callMethod()
 {
-    if (_request.getURI().empty()) {
-        setPageError(BAD_REQUEST, ERROR400);
+    if (_request.getURI().empty()){
+        setPageError(BAD_REQUEST);
         return (_request.setStatusCode(BAD_REQUEST));
     }
 
@@ -174,11 +174,12 @@ void Client::sendResponse(struct pollfd& pollFds, map<int, Request>& requests)
     _server = _request.getServer();
     string build;
 
+
+    _server.printErrorPages();
     setResponseData(_request.getStatusCode(), "", "text/html", _response.getStatusPage(_request.getStatusCode()), "");
     if (_request.getStatusCode() == DEFAULT || _request.getStatusCode() == OK) {
-        if (callMethod() == METHOD_NOT_ALLOWED) {
-            setPageError(METHOD_NOT_ALLOWED, ERROR405);
-        }
+        if (callMethod() == METHOD_NOT_ALLOWED)
+            setPageError(METHOD_NOT_ALLOWED);
     }
     build = _response.buildMessage();
     int resp = send(pollFds.fd, build.c_str(), build.size(), 0);
@@ -214,35 +215,54 @@ void Client::setResponseData(int statusCode, string filePath, string contentType
     _response.setContentLength(defineContentLength(responseBody));
 }
 
-string Client::setPageError(int errorCode, const string& filePath)
-{
-    string errorContent = Utils::readFile(filePath);
+string Client::setPageError(int errorCode){
+
+    string errorContent;
+    string filePath = _server.getErrorPage(errorCode);
+    
+    if (Utils::fileExists(filePath)){
+        errorContent = Utils::readFile(filePath);
+    }
+    else{
+        errorContent = Utils::readFile(ERROR404);
+        setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+        return (errorContent);
+    }
 
     switch (errorCode) {
-        case MOVED_PERMANENTLY:
-            setResponseData(MOVED_PERMANENTLY, ERROR301, "text/html", errorContent, "");
-            break;
-        case BAD_REQUEST:
-            setResponseData(BAD_REQUEST, ERROR400, "text/html", errorContent, "");
-            break;
-        case FORBIDDEN:
-            setResponseData(FORBIDDEN, ERROR403, "text/html", errorContent, "");
-            break;
-        case NOT_FOUND:
-            setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
-            break;
-        case METHOD_NOT_ALLOWED:
-            setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
-            break;
-        case INTERNAL_SERVER_ERROR:
-            setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", errorContent, "");
-            break;
-        case BAD_GATEWAY:
-            setResponseData(BAD_GATEWAY, ERROR502, "text/html", errorContent, "");
-            break;
-        default:
-            setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
-            break;
+            case MOVED_PERMANENTLY:
+                setResponseData(MOVED_PERMANENTLY, ERROR301, "text/html", errorContent, "");
+                break ;
+            case BAD_REQUEST:
+                setResponseData(BAD_REQUEST, ERROR400, "text/html", errorContent, "");
+                break ;
+            case FORBIDDEN:
+                setResponseData(FORBIDDEN, ERROR403, "text/html", errorContent, "");
+                break ;
+            case NOT_FOUND:
+                setResponseData(NOT_FOUND, ERROR404, "text/html", errorContent, "");
+                break ;
+            case METHOD_NOT_ALLOWED:
+                setResponseData(METHOD_NOT_ALLOWED, ERROR405, "text/html", errorContent, "");
+                break ;
+            case PAYLOAD_TOO_LARGE:
+                setResponseData(PAYLOAD_TOO_LARGE, ERROR413, "text/html", errorContent, "");
+                break ;
+            case INTERNAL_SERVER_ERROR:
+                setResponseData(INTERNAL_SERVER_ERROR, ERROR500, "text/html", errorContent, "");
+                break ;
+            case NOT_IMPLEMENTED:
+                setResponseData(NOT_IMPLEMENTED, ERROR501, "text/html", errorContent, "");
+                break ; 
+            case BAD_GATEWAY:
+                setResponseData(BAD_GATEWAY, ERROR502, "text/html", errorContent, "");
+                break ;
+            case VERSION_NOT_SUPPORTED:
+                setResponseData(VERSION_NOT_SUPPORTED, ERROR505, "text/html", errorContent, "");
+                break ; 
+            default:
+                setResponseData(BAD_REQUEST, ERRORUNKNOWN, "text/html", errorContent, "");
+                break ;
     }
     return (errorContent);
 }

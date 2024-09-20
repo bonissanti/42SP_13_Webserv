@@ -65,7 +65,7 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
     int status;
     string result;
     if (!checkFile(filePath)) {
-        return (setPageError(NOT_FOUND, ERROR400));
+        return (setPageError(NOT_FOUND));
     }
 
     size_t found = filePath.find('.');
@@ -129,10 +129,10 @@ string Client::executeCGI(Request &req, Server& server, string filePath)
             else if (waitValue == -1 && status != -1)  {
             	cerr << RED << "Error: child process failed at CGI execution" << RESET << endl;
                 kill(pid, SIGKILL);
-                return (setPageError(INTERNAL_SERVER_ERROR, ERROR500));
+                return (setPageError(INTERNAL_SERVER_ERROR));
             }
         }
     }
     kill (pid, SIGKILL);
-    return (setPageError(REQUEST_TIMEOUT, ERROR408));
+    return (setPageError(REQUEST_TIMEOUT));
 }
