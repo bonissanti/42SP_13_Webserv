@@ -142,7 +142,7 @@ int Client::runGetMethod(string filePath, Route matchedRoute)
         return (MOVED_PERMANENTLY);
     }
 
-    if (!Utils::fileExists(filePath) && matchedRoute.getCgiOn() == true) {
+    if (!Utils::fileExists(filePath) && allowAutoIndex(matchedRoute, filePath) == false) {
         setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }

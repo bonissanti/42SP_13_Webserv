@@ -24,7 +24,7 @@ class Client {
         int getMethodIndex(Route &route, string method);
         string defineFilePath(Route &route, string uri);
         string defineContentType(string filePath);
-        string defineResponseBody(const Route &route, const string &filePath);
+        string defineResponseBody(Route &route, const string &filePath);
         bool verifyPermission(const string &file);
         string defineContentLength(const string &body);
         void setResponseData(int statusCode, string filePath, string contentType, string responseBody, string location);
@@ -32,6 +32,7 @@ class Client {
         string executeCGI(Request& req, Server &server, string filePath);
         string setPageError(int errorCode, const string& filePath);
         Route findMatchingRoute(string uri, bool &subdirAutoindex);
+        bool allowAutoIndex(Route& route, string filePath);
 
     public:
         Client();

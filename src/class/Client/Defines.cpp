@@ -52,19 +52,19 @@ string Client::defineContentType(string filePath)
     return ("text/html;charset=UTF-8");
 }
 
-string Client::defineResponseBody(const Route& route, const string& filePath)
+string Client::defineResponseBody(Route& route, const string& filePath)
 {
-    if (route.getCgiOn() == true) {
+    if (route.getCgiOn() == true && allowAutoIndex(route, filePath) == false) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
             return (executeCGI(_request, _server, filePath));
     }
 
-    if (_subdirAutoindex == true) {
-        struct stat path_stat;
-        string filePathFilter = filePath.substr(0, filePath.find_last_of("/") + 1);
-        stat(filePathFilter.c_str(), &path_stat);
+    struct stat path_stat;
+    string filePathFilter = filePath.substr(0, filePath.find_last_of("/") + 1);
+    stat(filePathFilter.c_str(), &path_stat);
+    if (_subdirAutoindex == true && allowAutoIndex(route, filePath) == true) {
         if (S_ISDIR(path_stat.st_mode)) {
-                return (_response.handleAutoIndex(filePathFilter, _request.getURI()));
+            return (_response.handleAutoIndex(filePathFilter, _request.getURI()));
         }
     }
 
@@ -88,6 +88,16 @@ string Client::defineResponseBody(const Route& route, const string& filePath)
     return (buffer.str());
 }
 
+bool Client::allowAutoIndex(Route& route, string filePath)
+{
+    if(route.getAutoIndex() == true && route.getAutoIndex() == true)
+    {
+        if(filePath.find('.') != string::npos)
+            return (false);
+        return (true);
+    }
+    return (false);
+}
 string Client::defineContentLength(const string& body)
 {
     ostringstream oss;
