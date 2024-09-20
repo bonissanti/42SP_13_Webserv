@@ -115,8 +115,10 @@ Route Client::findMatchingRoute(string uri, bool& subdirAutoindex)
             else
                 uriPath = uri;
         }
-        else if(count(uri.begin(), uri.end(), '/') == 1)
+        else if(count(uri.begin(), uri.end(), '/') == 1 && uri.find('.') != string::npos)
             uriPath = '/';
+        else if(count(uri.begin(), uri.end(), '/') == 1 && uri.find('.') == string::npos)
+            uriPath = uri;
     }
 
     for (size_t i = 0; i < getServer().getRoute().size(); i++) {

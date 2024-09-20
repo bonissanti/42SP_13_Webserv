@@ -33,7 +33,7 @@ class Client {
         // string setPageError(int errorCode, const string& filePath);
         string setPageError(int errorCode);
         Route findMatchingRoute(string uri, bool &subdirAutoindex);
-        bool allowAutoIndex(Route& route, string filePath);
+        bool allowAutoIndex(Route route, string filePath);
 
     public:
         Client();
