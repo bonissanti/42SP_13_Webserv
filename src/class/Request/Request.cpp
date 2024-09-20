@@ -155,8 +155,8 @@ void Request::parseRequest(const string &raw_request) {
     parseHeaders(request_stream);
     parseBody(request_stream);
 
-	printRequest();
-    validateRequest();
+    if (_statusCode != BAD_REQUEST)
+        validateRequest();
 
     _readyForResponse = true;
     _buffer.clear();

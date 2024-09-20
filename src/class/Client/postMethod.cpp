@@ -56,14 +56,7 @@ bool Client::saveUploadedFile(const string& filename, const vector<char>& fileCo
 
 int Client::runPostMethod(string filePath, Route matchedRoute) {
     string contentType = _request.getHeader("content-type");
-	string route = matchedRoute.getRoute();
-    if (route.find(_request.getURI()) == string::npos) {
-		route += _request.getURI();
-	}
-	route += filePath.substr(0, filePath.find_last_of("/") + 1) + route;
-	cout << filePath << endl;
-	cout << matchedRoute.getRoute() << endl;
-	cout << route << endl;
+
     if (contentType.find("multipart/form-data") != string::npos) {
         map<string, vector<char> > formData = _request.getFormData();
 
@@ -77,7 +70,7 @@ int Client::runPostMethod(string filePath, Route matchedRoute) {
         vector<char> fileContent = formData["fileContent"];
         string fileContentType = string(formData["contentType"].begin(), formData["contentType"].end());
 
-        if (!saveUploadedFile(filename, fileContent, route)) {
+        if (!saveUploadedFile(filename, fileContent, filePath)) {
             return FORBIDDEN;
         }
 
