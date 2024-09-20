@@ -2,8 +2,8 @@
 
 string Route::getRoute() const
 {
-	if (_route.empty())
-    	return "";
+    if (_route.empty())
+        return "";
     return _route;
 }
 
@@ -46,8 +46,8 @@ string Route::getReturn() const
 
 string Route::getCgi() const
 {
-	if (_cgi.empty())
-		return ("");
+    if (_cgi.empty())
+        return ("");
     return _cgi;
 }
 
@@ -65,12 +65,14 @@ void Route::setAutoIndex(bool autoIndex)
 
 void Route::setCgiOn(string& cgiOn)
 {
-    if(cgiOn == "on")
+    if (cgiOn == "on")
         _cgiOn = true;
 }
 
 void Route::setRoot(string& root)
 {
+    if (root == "/")
+        return;
     if (root.empty() || root[0] != '/')
         throw Route::exception(RED "Error: misformatted root path, please use '/path'" RESET);
 
@@ -100,7 +102,8 @@ void Route::setAllowMethods(const string& allowMethods)
     _allowMethods = allowMethods;
 }
 
-void Route::setIndex(string& index){
+void Route::setIndex(string& index)
+{
     if (index[0] == '/')
         throw Route::exception(RED "Error: misformatted root index, please use 'file.ext'" RESET);
     if (index[index.length() - 1] == '/')

@@ -54,16 +54,18 @@ string Client::defineContentType(string filePath)
 
 string Client::defineResponseBody(const Route& route, const string& filePath)
 {
-    if (route.getCgiOn()) {
+    if (route.getCgiOn() == true) {
         if (filePath.find(".py") != string::npos || filePath.find(".php") != string::npos)
             return (executeCGI(_request, _server, filePath));
     }
 
-    struct stat path_stat;
-    stat(filePath.c_str(), &path_stat);
-    if (S_ISDIR(path_stat.st_mode)) {
-        if (_subdirAutoindex)
-            return (_response.handleAutoIndex(filePath, _request.getURI()));
+    if (_subdirAutoindex == true) {
+        struct stat path_stat;
+        string filePathFilter = filePath.substr(0, filePath.find_last_of("/") + 1);
+        stat(filePathFilter.c_str(), &path_stat);
+        if (S_ISDIR(path_stat.st_mode)) {
+                return (_response.handleAutoIndex(filePathFilter, _request.getURI()));
+        }
     }
 
     ifstream file(filePath.c_str());

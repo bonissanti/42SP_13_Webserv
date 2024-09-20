@@ -142,13 +142,14 @@ int Client::runGetMethod(string filePath, Route matchedRoute)
         return (MOVED_PERMANENTLY);
     }
 
-    if (!Utils::fileExists(filePath)) {
+    if (!Utils::fileExists(filePath) && matchedRoute.getCgiOn() == true) {
         setResponseData(NOT_FOUND, "", "text/html", _response.getStatusPage(NOT_FOUND), "");
         return NOT_FOUND;
     }
     string contentType = defineContentType(filePath);
     string responseBody = defineResponseBody(matchedRoute, filePath);
     string contentLength = defineContentLength(responseBody);
+    
 
     if (_response.getStatusCode() == NOT_FOUND) {
         setResponseData(NOT_FOUND, ERROR404, "text/html", _response.getStatusPage(NOT_FOUND), "");
