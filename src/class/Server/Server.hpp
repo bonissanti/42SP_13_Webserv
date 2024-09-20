@@ -25,12 +25,10 @@ class Server {
         string getServerName(void);
         vector<Route> getRoute(void);
         string getRoot() const;
-        // bool getErrorPage(int errorCode);
         string getErrorPage(int errorCode);
         void getServerFd(void);
         int getMaxBodySize();
         
-
         void addClient(int clientFd);
 
         void create(ifstream& file);

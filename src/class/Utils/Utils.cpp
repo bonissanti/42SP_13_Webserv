@@ -184,7 +184,6 @@ string Utils::statusCodeToString(int code) {
     }
 }
 
-
 void	Utils::handleSignals(int sigNum)
 {
 	(void)sigNum;

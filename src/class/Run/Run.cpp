@@ -28,8 +28,6 @@ int Run::setServersNumber(string filePath)
     string rawLine, line;
     int serverCount = 0;
     bool insideServerBlock = false;
-    // bool listenFound = false;
-    // bool allowedMethodsFound = false;
     stack<char> brackets;
 
     while (getline(file, rawLine)) {
@@ -41,9 +39,6 @@ int Run::setServersNumber(string filePath)
                 i += 5;
                 continue;
             }
-            // else if (insideServerBlock && line.substr(i, 6) == "listen"){
-            //     listenFound = true;
-            // }
             else if (insideServerBlock)
                 if (insideServerBlock) {
                     if (c == '{') {

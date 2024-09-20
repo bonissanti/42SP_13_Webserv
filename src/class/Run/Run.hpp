@@ -9,8 +9,6 @@
 class Run {
     private:
         map<int, Client*> _mapClient;
-        // static struct pollfd acceptNewConnection(int socketFd);
-        // int acceptNewConnection(int serverSocket, vector<struct pollfd>& pollFds);
 
     public:
         Run(void);

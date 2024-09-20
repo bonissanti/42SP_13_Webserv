@@ -358,31 +358,6 @@ bool Request::validateRequest() //mudar para void ou HttpCode
     return true;
 }
 
-//-----------UTILS-------------
-
-void Request::printRequest() const
-{
-    cout << _method << " " << _uri << " " << _version << endl;
-
-    vector<string> key, value;
-    for (map<string, string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it) {
-        cout << it->first << ": " << it->second << endl;
-    }
-    // for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-    //     cout << it->first << ": ";
-    //     for (map<string, vector<char> >::const_iterator it = _formData.begin(); it != _formData.end(); ++it) {
-    //         cout << it->first << ": ";
-    //         for (vector<char>::const_iterator iter = it->second.begin(); iter != it->second.end(); ++iter) {
-    //             char c = *iter;
-    //             cout << c;
-    //         }
-    //         cout << endl;
-    //     }
-    //     cout << endl;
-    // }
-    // cout << _body << endl;
-}
-
 void Request::readRequest(vector<struct pollfd> &pollFds, int i, map<int, Request> &requests, Server server)
 {
     char buffer[65535];
