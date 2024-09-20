@@ -19,7 +19,7 @@ string Client::defineFilePath(Route& route, string uri)
     }
     else if (count(uri.begin(), uri.end(), '/') > 1) {
         string file = uri.substr(uri.find_last_of("/") + 1);
-        if (Utils::fileExists(root + file))
+        if (Utils::fileExists(root + '/' + file))
             return root.substr(0, root.length()) + '/' + file;
         else
             return (root.substr(0, root.length()) + '/' + index);
